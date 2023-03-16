@@ -6,7 +6,7 @@ import datetime as DT
 import math
 import time as tm
 from func.redirect import nav_page
-from st_aggrid import JsCode, AgGrid, GridOptionsBuilder, ColumnsAutoSizeMode
+from st_aggrid import JsCode, AgGrid, GridOptionsBuilder#, ColumnsAutoSizeMode
 from st_aggrid.shared import GridUpdateMode, AgGridTheme
 from database import con, cursor
 
