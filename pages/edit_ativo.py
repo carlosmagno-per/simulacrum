@@ -7,7 +7,8 @@ import math
 import time as tm
 from func.redirect import nav_page
 import pymysql
-from database import con, cursor, moeda
+from sqlalchemy import create_engine
+from database import con, cursor, moeda, base_df
 import locale
 
 locale.setlocale(locale.LC_ALL, "pt_BR.UTF-8")
@@ -19,6 +20,7 @@ st.set_page_config(
     page_icon="invest_smart_logo.png",
     page_title="Simulador - Edit Ativos 0.15",
     initial_sidebar_state="collapsed",
+    # layout="wide",
 )
 
 col1, mid, col2 = st.columns([20, 1, 16])
@@ -35,14 +37,15 @@ st.header("Editando um Ativo")
 v4 = int(st.session_state.df_ativo.ativo_id[0])
 
 
-v1_categ = st.session_state.df_ativo.Categoria[0]
-v1_ativo = st.session_state.df_ativo.Ativo[0]
-v1_data = st.session_state.df_ativo["Data de Vencimento"][0]
-v1_pl_apl = st.session_state.df_ativo["PL Aplicado"][0]
-v1_retorno = st.session_state.df_ativo.retorno[0]
-v1_repasse = st.session_state.df_ativo.repasse[0]
-v1_roa_head = st.session_state.df_ativo.roa_head[0]
-v1_roa_rec = st.session_state.df_ativo.roa_rec[0]
+v1_categ = st.session_state.df_ativo.Categoria.iloc[0]
+v1_ativo = st.session_state.df_ativo.Ativo.iloc[0]
+v1_data = st.session_state.df_ativo["Data de Vencimento"].iloc[0]
+v1_data_inicio = st.session_state.df_ativo["Data de Início"].iloc[0]
+v1_pl_apl = st.session_state.df_ativo["PL Aplicado"].iloc[0]
+v1_retorno = st.session_state.df_ativo.retorno.iloc[0]
+v1_repasse = st.session_state.df_ativo.repasse.iloc[0]
+v1_roa_head = st.session_state.df_ativo.roa_head.iloc[0]
+v1_roa_rec = st.session_state.df_ativo.roa_rec.iloc[0]
 
 st.markdown(
     """<hr style="height:1px;border:none;color:#9966ff;background-color:#9966ff;" /> """,
@@ -110,24 +113,21 @@ with colValue2:
 
 colNome3, colValue3 = st.columns(2)
 with colNome3:
-    data = st.date_input(
-        "Data de Vencimento: ",
-        min_value=DT.date.today(),
-        value=DT.datetime.strptime(v1_data[:10], "%Y-%m-%d"),
+    data_inicial = st.date_input(
+        "Data de Início: ",
+        # min_value=DT.date.today(),
+        value=DT.datetime.strptime(v1_data_inicio[:10], "%Y-%m-%d"),
     )
 
 with colValue3:
-    roa_head = st.number_input(
-        "ROA Cabeça (%): ",
-        min_value=0.0,
-        max_value=100.0,
-        value=float(v1_roa_head),
-        format="%.2f",
-        step=0.01,
+    data = st.date_input(
+        "Data de Vencimento: ",
+        # min_value=DT.date.today(),
+        value=DT.datetime.strptime(v1_data[:10], "%Y-%m-%d"),
     )
 
 
-colRoa_rec, colRepasse = st.columns(2)  # colRoa_rec, colCod, colRepasse = st.columns(3)
+colRoa_rec, colroa_head, colRepasse = st.columns(3)
 
 with colRoa_rec:
     roa_rec = st.number_input(
@@ -139,8 +139,15 @@ with colRoa_rec:
         step=0.1,
     )
 
-# with colCod:
-#     cod = st.text_input("Código/ Nome Cliente: ", value="John Doe")
+with colroa_head:
+    roa_head = st.number_input(
+        "ROA Cabeça (%): ",
+        min_value=0.0,
+        max_value=100.0,
+        value=float(v1_roa_head),
+        format="%.2f",
+        step=0.01,
+    )
 
 with colRepasse:
     roa_reps = st.number_input(
@@ -153,110 +160,66 @@ with colRepasse:
     )
 
 st.markdown(
-    """<hr style="height:1px;border:none;color:#9966ff;background-color:#9966ff;" /> """,
+    """<hr style="height:1px;border:none;color:#9966ff;background-color:#9966ff;" /> 
+    <p > Visualização do ativo por uma tabela </p>
+    """,
     unsafe_allow_html=True,
 )
 
-dias = DT.datetime.strptime(str(data), "%Y-%m-%d") - DT.datetime.strptime(
-    str(DT.date.today()), "%Y-%m-%d"
-)
-mes = round(dias.days / 30)
+if data > data_inicial:
 
-
-endDate = DT.datetime.strptime(str(data), "%Y-%m-%d")
-startDate = DT.datetime.strptime(str(DT.date.today()), "%Y-%m-%d")
-
-# Getting List of Days using pandas
-if mes < 1:
-    datesRange = pd.date_range(startDate, periods=1, freq="m")
-    datesRange = list(datesRange)
-else:
-    datesRange = pd.date_range(startDate, periods=mes + 1, freq="m")
-    datesRange = list(datesRange)
-
-datesRange = [DT.datetime.strftime(x, "%b-%y") for x in datesRange]
-
-datesRange = pd.DataFrame(datesRange)
-
-############## calculator######################
-pl = pl_apl + pl_apl * ((1.0 + (retorno / 100.0)) ** (1.0 / 12.0) - 1.0)
-
-n = 0
-l = mes + 1
-pl_1 = []
-
-for n in range(n, l):
-    pl = pl_apl + pl_apl * ((1.0 + (retorno / 100.0)) ** (n / 12.0) - 1.0)
-    pl_1.append(pl)
-    n = +1
-##########################################################################################
-##########################VARIAVEIS DE INTERRESSE#########################################
-##########################################################################################
-roa_1 = roa_head + roa_rec
-
-fat_1 = pl_apl * roa_1
-fat = pl * roa_rec
-imposto = -0.2 * fat
-receit_liqu = math.fsum([fat, imposto])
-result_assessor = receit_liqu * roa_reps
-##########################################################################################
-##########################################################################################
-
-n = 0
-roa_vini = [roa_1]
-for n in range(n, l - 1):
-    roa_vini.append(roa_rec)
-    n += 1
-
-
-dataframe = pd.DataFrame()
-
-dataframe["Mês"] = datesRange.iloc[:, 0:1]
-dataframe["PL Retido"] = pl_1
-dataframe["Roa/Mês(%)"] = roa_vini
-dataframe["Faturamento"] = dataframe["PL Retido"] * (dataframe["Roa/Mês(%)"] / 100)
-dataframe["Imposto"] = dataframe["Faturamento"] * -0.2
-dataframe["Receita Líquida"] = dataframe["Faturamento"] + dataframe["Imposto"]
-dataframe["Resultado assessor"] = dataframe["Receita Líquida"] * (roa_reps / 100)
-
-moeda(
-    dataframe,
-    [
-        "PL Retido",
-        "Faturamento",
-        "Imposto",
-        "Receita Líquida",
-        "Resultado assessor",
-    ],
-)
-
-dataframe["Roa/Mês(%)"] = dataframe["Roa/Mês(%)"].apply(lambda x: "{:,.2f}%".format(x))
-
-st.dataframe(dataframe)
-
-
-sql = """UPDATE variaveis 
-        SET categoria = ? ,
-        ativo = ? ,
-        data_venc = ? ,
-        pl_aplicado = ? ,
-        retorno = ? ,
-        repasse = ? ,
-        roa_head = ? ,
-        roa_rec = ?
-        WHERE ativo_id = ?"""
-
-if st.button("Salvar"):
-    cursor.execute(
-        sql,
-        (categoria, ativo, data, pl_apl, retorno, roa_reps, roa_head, roa_rec, v4),
+    dataframe = base_df(
+        data, data_inicial, pl_apl, retorno, roa_head, roa_rec, roa_reps
     )
-    con.commit()
-    st.success("O ativo foi editado com sucesso")
-    tm.sleep(1)
-    with st.spinner("Redirecionando o Assessor para a Página de Ativos"):
+
+    hide_dataframe_row_index = """
+                <style>
+                .row_heading.level0 {display:none}
+                .blank {display:none}
+                </style>
+                """
+
+    # Inject CSS with Markdown
+    st.markdown(hide_dataframe_row_index, unsafe_allow_html=True)
+
+    st.dataframe(dataframe)
+
+    sql = """UPDATE variaveis 
+            SET categoria = ? ,
+            ativo = ? ,
+            data_venc = ? ,
+            pl_aplicado = ? ,
+            retorno = ? ,
+            repasse = ? ,
+            roa_head = ? ,
+            roa_rec = ?,
+            data_ativo = ?
+            WHERE ativo_id = ?"""
+
+    if st.button("Salvar"):
+        cursor.execute(
+            sql,
+            (
+                categoria,
+                ativo,
+                data,
+                pl_apl,
+                retorno,
+                roa_reps,
+                roa_head,
+                roa_rec,
+                data_inicial,
+                v4,
+            ),
+        )
+        con.commit()
+        st.success("O ativo foi editado com sucesso")
         tm.sleep(1)
-    nav_page("cliente_ativo")
+        with st.spinner("Redirecionando o Assessor para a Página de Ativos"):
+            tm.sleep(1)
+        nav_page("cliente_ativo")
+else:
+    st.error("Data de vencimento menor que a data de Início.")
 
 st.markdown(
     """<hr style="height:1px;border:none;color:#9966ff;background-color:#9966ff;" /> """,
@@ -266,7 +229,6 @@ st.markdown(
 if st.button("Voltar"):
     nav_page("cliente_ativo")
 
-
 st.markdown(
     """
 <style>
@@ -274,11 +236,26 @@ st.markdown(
         display: none
     }
     footer {visibility: hidden;}
+    .st-ip::after {
+    background-color: rgb(153, 102, 255);
+}
+    .css-qriz5p:hover:enabled, .css-qriz5p:focus:enabled {
+    color: rgb(255, 255, 255);
+    background-color: rgb(153, 102, 255);
+    transition: none 0s ease 0s;
+    outline: none;
+}
+    img {
+    background-color: rgb(14, 17, 23);
+    }
+
+    .st-fu {
+    color: rgb(153, 102, 255);
+}
 </style>
 """,
     unsafe_allow_html=True,
 )
-
 
 # cursor.close()
 # con.close()

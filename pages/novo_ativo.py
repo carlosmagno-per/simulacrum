@@ -6,8 +6,11 @@ import datetime as DT
 import math
 import time as tm
 from func.redirect import nav_page
-from database import con, cursor, moeda
+from sqlalchemy import create_engine
+from database import con, cursor, moeda, base_df
 import locale
+import streamlit.components.v1 as components
+
 
 locale.setlocale(locale.LC_ALL, "pt_BR.UTF-8")
 
@@ -18,6 +21,7 @@ st.set_page_config(
     page_icon="invest_smart_logo.png",
     page_title="Simulador - Novo Ativos 0.15",
     initial_sidebar_state="collapsed",
+    # layout="wide",
 )
 col1, mid, col2 = st.columns([20, 1, 16])
 with col1:
@@ -26,6 +30,7 @@ with col2:
     st.image(
         "investsmart_endosso_horizontal_fundopreto.png",
     )
+
 
 st.header("Incluindo um Novo ativo para o Cliente")
 
@@ -82,20 +87,14 @@ with colValue2:
 
 colNome3, colValue3 = st.columns(2)
 with colNome3:
-    data = st.date_input("Data de Vencimento: ", min_value=DT.date.today())
+    data_inicial = st.date_input("Data de Início: ", min_value=DT.date.today())
 
 with colValue3:
-    roa_head = st.number_input(
-        "ROA Cabeça (%): ",
-        min_value=0.0,
-        max_value=100.0,
-        value=float(face["ROA Cabeça"][face["PRODUTOS"] == ativo]),
-        format="%.2f",
-        step=0.01,
-    )
+    data = st.date_input("Data de Vencimento: ", min_value=DT.date.today())
 
 
-colRoa_rec, colRepasse = st.columns(2)  # colRoa_rec, colCod, colRepasse = st.columns(3)
+# colRoa_rec, colRepasse = st.columns(2)
+colRoa_rec, colroa_head, colRepasse = st.columns(3)
 
 with colRoa_rec:
     roa_rec = st.number_input(
@@ -107,8 +106,15 @@ with colRoa_rec:
         step=0.1,
     )
 
-# with colCod:
-#     cod = st.text_input("Código/ Nome Cliente: ", value="John Doe")
+with colroa_head:
+    roa_head = st.number_input(
+        "ROA Cabeça (%): ",
+        min_value=0.0,
+        max_value=100.0,
+        value=float(face["ROA Cabeça"][face["PRODUTOS"] == ativo]),
+        format="%.2f",
+        step=0.01,
+    )
 
 with colRepasse:
     roa_reps = st.number_input(
@@ -121,114 +127,48 @@ with colRepasse:
     )
 
 st.markdown(
-    """<hr style="height:1px;border:none;color:#9966ff;background-color:#9966ff;" /> """,
+    """<hr style="height:1px;border:none;color:#9966ff;background-color:#9966ff;" /> 
+    <p > Visualização do ativo por uma tabela </p>
+    """,
     unsafe_allow_html=True,
 )
 
-dias = DT.datetime.strptime(str(data), "%Y-%m-%d") - DT.datetime.strptime(
-    str(DT.date.today()), "%Y-%m-%d"
-)
-mes = round(dias.days / 30)
+if data > data_inicial:
 
-
-endDate = DT.datetime.strptime(str(data), "%Y-%m-%d")
-startDate = DT.datetime.strptime(str(DT.date.today()), "%Y-%m-%d")
-
-# Getting List of Days using pandas
-if mes < 1:
-    datesRange = pd.date_range(startDate, periods=1, freq="m")
-    datesRange = list(datesRange)
-else:
-    datesRange = pd.date_range(startDate, periods=mes + 1, freq="m")
-    datesRange = list(datesRange)
-
-datesRange = [DT.datetime.strftime(x, "%b-%y") for x in datesRange]
-
-datesRange = pd.DataFrame(datesRange)
-
-############## calculator######################
-pl = pl_apl + pl_apl * ((1.0 + (retorno / 100.0)) ** (1.0 / 12.0) - 1.0)
-
-n = 0
-l = mes + 1
-pl_1 = []
-
-for n in range(n, l):
-    pl = pl_apl + pl_apl * ((1.0 + (retorno / 100.0)) ** (n / 12.0) - 1.0)
-    pl_1.append(pl)
-    n = +1
-##########################################################################################
-##########################VARIAVEIS DE INTERRESSE#########################################
-##########################################################################################
-roa_1 = roa_head + roa_rec
-
-fat_1 = pl_apl * roa_1
-fat = pl * roa_rec
-imposto = -0.2 * fat
-receit_liqu = math.fsum([fat, imposto])
-result_assessor = receit_liqu * roa_reps
-##########################################################################################
-##########################################################################################
-
-n = 0
-roa_vini = [roa_1]
-for n in range(n, l - 1):
-    roa_vini.append(roa_rec)
-    n += 1
-
-
-dataframe = pd.DataFrame()
-
-dataframe["Mês"] = datesRange.iloc[:, 0:1]
-dataframe["PL Retido"] = pl_1
-dataframe["Roa/Mês(%)"] = roa_vini
-dataframe["Faturamento"] = dataframe["PL Retido"] * (dataframe["Roa/Mês(%)"] / 100)
-dataframe["Imposto"] = dataframe["Faturamento"] * -0.2
-dataframe["Receita Líquida"] = dataframe["Faturamento"] + dataframe["Imposto"]
-dataframe["Resultado assessor"] = dataframe["Receita Líquida"] * (roa_reps / 100)
-
-moeda(
-    dataframe,
-    [
-        "PL Retido",
-        "Faturamento",
-        "Imposto",
-        "Receita Líquida",
-        "Resultado assessor",
-    ],
-)
-
-dataframe["Roa/Mês(%)"] = dataframe["Roa/Mês(%)"].apply(lambda x: "{:,.2f}%".format(x))
-
-st.dataframe(dataframe)
-
-
-sql = "INSERT INTO variaveis (client_id, empresa, categoria, ativo, data_venc, pl_aplicado, retorno, repasse, roa_head, roa_rec, data_ativo) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?)"
-today = DT.datetime.strftime(DT.datetime.today(), "%Y-%m-%d")
-
-if st.button("Salvar"):
-    cursor.execute(
-        sql,
-        (
-            v3,
-            "INVESTSMART",
-            categoria,
-            ativo,
-            data,
-            pl_apl,
-            retorno,
-            roa_reps,
-            roa_head,
-            roa_rec,
-            today,
-        ),
+    dataframe = base_df(
+        data, data_inicial, pl_apl, retorno, roa_head, roa_rec, roa_reps
     )
-    con.commit()
-    st.success("O ativo foi editado com sucesso")
-    tm.sleep(1)
-    with st.spinner("Redirecionando o Assessor para a Página de Ativos"):
+
+    st.dataframe(dataframe)
+
+    sql = "INSERT INTO variaveis (client_id, empresa, categoria, ativo, data_venc, pl_aplicado, retorno, repasse, roa_head, roa_rec, data_ativo) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?)"
+    # today = DT.datetime.strftime(DT.datetime.today(), "%Y-%m-%d")
+
+    if st.button("Salvar"):
+        cursor.execute(
+            sql,
+            (
+                v3,
+                "INVESTSMART",
+                categoria,
+                ativo,
+                data,
+                pl_apl,
+                retorno,
+                roa_reps,
+                roa_head,
+                roa_rec,
+                data_inicial,
+            ),
+        )
+        con.commit()
+        st.success("O ativo foi editado com sucesso")
         tm.sleep(1)
-    nav_page("cliente_ativo")
+        with st.spinner("Redirecionando o Assessor para a Página de Ativos"):
+            tm.sleep(1)
+        nav_page("cliente_ativo")
+else:
+    st.error("Data de vencimento tem que ser maior que a data de Início.")
 
 st.markdown(
     """<hr style="height:1px;border:none;color:#9966ff;background-color:#9966ff;" /> """,
@@ -242,6 +182,7 @@ if st.button("Voltar"):
 
 # st.markdown("[Pula lá para cima](#hyper_v1)", unsafe_allow_html=True)
 
+
 st.markdown(
     """
 <style>
@@ -249,6 +190,22 @@ st.markdown(
         display: none
     }
     footer {visibility: hidden;}
+    .st-ip::after {
+    background-color: rgb(153, 102, 255);
+}
+    .css-qriz5p:hover:enabled, .css-qriz5p:focus:enabled {
+    color: rgb(255, 255, 255);
+    background-color: rgb(153, 102, 255);
+    transition: none 0s ease 0s;
+    outline: none;
+}
+    img {
+    background-color: rgb(14, 17, 23);
+    }
+
+    .st-fu {
+    color: rgb(153, 102, 255);
+}
 </style>
 """,
     unsafe_allow_html=True,

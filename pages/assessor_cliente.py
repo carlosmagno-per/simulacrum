@@ -1,5 +1,6 @@
 import streamlit as st
 import plotly.graph_objects as go
+import plotly.express as px
 import numpy as np
 import pandas as pd
 import datetime as DT
@@ -8,7 +9,7 @@ import time as tm
 from func.redirect import nav_page
 from st_aggrid import JsCode, AgGrid, GridOptionsBuilder, ColumnsAutoSizeMode
 from st_aggrid.shared import GridUpdateMode, AgGridTheme
-from database import con, cursor
+from database import con, cursor, moeda
 
 # from func.connect import con, cursor
 
@@ -26,10 +27,12 @@ id_v1 = st.session_state.usuario
 
 dark = dark[dark["sigla"] == id_v1]
 
+
 st.set_page_config(
     page_icon="invest_smart_logo.png",
     page_title="Simulador - Clientes 0.15",
     initial_sidebar_state="collapsed",
+    # layout="wide",
 )
 
 col1, mid, col2 = st.columns([20, 1, 16])
@@ -102,7 +105,9 @@ with mycntnr:
 #####################################
 
 st.markdown(
-    """<hr style="height:1px;border:none;color:#9966ff;background-color:#9966ff;" /> """,
+    """<hr style="height:1px;border:none;color:#9966ff;background-color:#9966ff;" />
+    <p > Novos Clientes</p>
+    """,
     unsafe_allow_html=True,
 )
 
@@ -131,6 +136,104 @@ if st.session_state["button1"]:
         # )
         # nav_page("cliente_ativo")
         st._rerun()
+
+st.markdown(
+    """
+    <hr style="height:1px;border:none;color:#9966ff;background-color:#9966ff;" /> 
+    <p > Gráfico com visao de Pl aplicado</p>
+    """,
+    unsafe_allow_html=True,
+)
+
+hide_dataframe_row_index = """
+            <style>
+            .row_heading.level0 {display:none}
+            .blank {display:none}
+            </style>
+            """
+
+# Inject CSS with Markdown
+st.markdown(hide_dataframe_row_index, unsafe_allow_html=True)
+
+if "button91" not in st.session_state:
+    st.session_state["button91"] = False
+
+list_client_id = dark["client_id"].unique()
+list_client_id = list(list_client_id)
+
+fair = pd.read_sql("SELECT * FROM variaveis", con)
+fair = fair[fair.client_id.isin(list_client_id)]
+# st.dataframe(fair)
+if st.button("Ver os Gráfico de Pl aplicado"):
+    st.session_state["button91"] = not st.session_state["button91"]
+if st.session_state["button91"]:
+    colgraph1, colgraph2 = st.tabs(["Grafico por Categoria", "Grafico por Ativo"])
+    with colgraph1:
+        df_categ = fair.groupby("categoria")["pl_aplicado"].sum().reset_index()
+        st.markdown(hide_dataframe_row_index, unsafe_allow_html=True)
+        # st.dataframe(df_categ)
+        fig = px.bar(
+            df_categ.sort_values(by="pl_aplicado", ascending=False),
+            x="pl_aplicado",
+            y="categoria",
+            # width=300,
+            # height=500,
+            text="R$ "
+            + round(df_categ.pl_aplicado.sort_values(ascending=False), 2).astype(str),
+            color="categoria",
+            color_discrete_sequence=px.colors.sequential.Viridis,
+            title="Pl aplicado por Categoria, todos clientes",
+        )
+        fig.update_layout(
+            font=dict(family="Arial", size=18, color="White"),
+            paper_bgcolor="rgba(0,0,0,0)",
+            plot_bgcolor="rgba(0,0,0,0)",
+            xaxis=dict(title="", tickvals=[], ticktext=[]),
+            yaxis=dict(title=""),
+            showlegend=False,
+            uniformtext_minsize=8,
+            uniformtext_mode="hide",
+        )
+        fig.update_yaxes(showgrid=False)
+        fig.update_xaxes(showgrid=False)
+        fig.data[0].marker.color = "#9966ff"
+        # fig.data[0].textposition = "auto"
+        # fig.data[0].insidetextanchor = "middle"
+        st.plotly_chart(fig)
+
+    with colgraph2:
+        df_ativo = fair.groupby("ativo")["pl_aplicado"].sum().reset_index()
+        st.markdown(hide_dataframe_row_index, unsafe_allow_html=True)
+        # st.dataframe(df_ativo)
+        fig = px.bar(
+            df_ativo.sort_values(by="pl_aplicado", ascending=False),
+            x="pl_aplicado",
+            y="ativo",
+            # width=450,
+            # height=500,
+            text="R$ "
+            + round(df_ativo.pl_aplicado.sort_values(ascending=False), 2).astype(str),
+            color="ativo",
+            color_discrete_sequence=px.colors.sequential.Viridis,
+            title="PL aplicado por Ativo, todos clientes",
+        )
+        fig.update_layout(
+            font=dict(family="Arial", size=18, color="White"),
+            paper_bgcolor="rgba(0,0,0,0)",
+            plot_bgcolor="rgba(0,0,0,0)",
+            xaxis=dict(title="", tickvals=[], ticktext=[]),
+            yaxis=dict(title=""),
+            showlegend=False,
+            uniformtext_minsize=8,
+            uniformtext_mode="hide",
+        )
+        fig.update_yaxes(showgrid=False)
+        fig.update_xaxes(showgrid=False)
+        fig.data[0].marker.color = "#9966ff"
+        # fig.data[0].textposition = "auto"
+        # fig.data[0].insidetextanchor = "middle"
+        st.plotly_chart(fig)
+
 
 st.markdown(
     """<hr style="height:1px;border:none;color:#9966ff;background-color:#9966ff;" /> """,
@@ -165,6 +268,9 @@ no_sidebar_style = """
     <style>
         div[data-testid="stSidebarNav"] {display: none;}
         footer {visibility: hidden;}
+        img{
+    background-color: rgb(14, 17, 23);
+}
     </style>
 """
 # st.markdown(no_sidebar_style, unsafe_allow_html=True)

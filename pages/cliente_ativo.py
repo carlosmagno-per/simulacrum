@@ -1,5 +1,5 @@
 import streamlit as st
-import plotly.graph_objects as go
+import plotly.express as px
 import numpy as np
 import pandas as pd
 import datetime as DT
@@ -8,7 +8,7 @@ import time as tm
 from func.redirect import nav_page
 from st_aggrid import JsCode, AgGrid, GridOptionsBuilder, ColumnsAutoSizeMode
 from st_aggrid.shared import GridUpdateMode, AgGridTheme
-from database import con, cursor
+from database import con, cursor, base_df, besmart_base
 
 # from func.connect import con, cursor
 
@@ -27,6 +27,8 @@ dark = dark.rename(
         "ativo": "Ativo",
         "pl_aplicado": "PL Aplicado",
         "data_venc": "Data de Vencimento",
+        "data_ativo": "Data de Início",
+        "empresa": "Empresa",
     }
 )
 
@@ -36,6 +38,7 @@ st.set_page_config(
     page_icon="invest_smart_logo.png",
     page_title="Simulador - Ativos 0.15",
     initial_sidebar_state="collapsed",
+    # layout="wide",
 )
 
 col1, mid, col2 = st.columns([20, 1, 16])
@@ -52,6 +55,7 @@ st.markdown(
     """<hr style="height:1px;border:none;color:#9966ff;background-color:#9966ff;" /> """,
     unsafe_allow_html=True,
 )
+
 
 colNome, colValue1 = st.columns(2)
 
@@ -79,9 +83,11 @@ gridOptions = GridOptionsBuilder.from_dataframe(
     dark[
         [
             # "client_id",
+            "Empresa",
             "Categoria",
             "Ativo",
             "PL Aplicado",
+            "Data de Início",
             "Data de Vencimento",
             # "shelf_id",
         ]
@@ -104,6 +110,7 @@ with mycntnr:
         dark,
         gridOptions=gb,
         height=400,
+        # width=5000,
         allow_unsafe_jscode=True,
         theme=AgGridTheme.ALPINE,
         update_mode=GridUpdateMode.SELECTION_CHANGED,
@@ -121,6 +128,8 @@ st.markdown(
 
 st.session_state["df_ativo"] = pd.DataFrame(dta["selected_rows"])
 
+# st.dataframe(st.session_state.df_ativo)
+
 if "button1" not in st.session_state:
     st.session_state["button1"] = False
 
@@ -132,21 +141,145 @@ with botao1:
 
 with botao2:
     if st.button("Incluir um novo ativo Be.Smart"):
-        st.session_state["button1"] = not st.session_state["button1"]
-    if st.session_state["button1"]:
-        checks = st.radio(
-            "Qual tipo de produto será Incluido:",
-            [
-                "Cambio",
-                "Protect",
-                "Credito",
-                "Diversificações",
-                "Empresas",
-            ],
-            horizontal=True,
+        #         st.session_state["button1"] = not st.session_state["button1"]
+        # if st.session_state["button1"]:
+        # checks = st.radio(
+        #     "Qual tipo de produto será Incluido:",
+        #     [
+        #         "Cambio",
+        #         "Protect",
+        #         "Credito",
+        #         "Diversificações",
+        #         "Empresas",
+        #     ],
+        #     horizontal=True,
+        # )
+        # if st.button("Incluir esse tipo de ativo"):
+        nav_page("besmart_novo_ativo")
+
+st.markdown(
+    """
+    <hr style="height:1px;border:none;color:#9966ff;background-color:#9966ff;" /> 
+    <p > Gráfico com visao da Comissão do Assessor</p>
+    """,
+    unsafe_allow_html=True,
+)
+
+if "button10" not in st.session_state:
+    st.session_state["button10"] = False
+
+face = pd.read_excel("base_besmart.xlsx")
+face["Categoria"] = face["Categoria"].apply(lambda x: x.replace("_", " "))
+face["Produto"] = face["Produto"].apply(lambda x: x.replace("_", " "))
+face["porcem_repasse"] = face["porcem_repasse"] * 100.0
+
+if st.button("Ver o Gráfico, Ganho do Assessor"):
+    st.session_state["button10"] = not st.session_state["button10"]
+if st.session_state["button10"]:
+    tab1, tab2 = st.tabs(["Grafico cliente selecionado", "Grafico Geral"])
+    with tab1:
+        if st.session_state["df_ativo"].empty:
+            st.error(
+                "Não há como mostrar um gráfico, pois não foi selecionado um ativo"
+            )
+        else:
+            if st.session_state.df_ativo.Empresa.iloc[0] == "INVESTSMART":
+                grasph_df = base_df(
+                    st.session_state.df_ativo["Data de Vencimento"].iloc[0],
+                    st.session_state.df_ativo["Data de Início"].iloc[0],
+                    st.session_state.df_ativo["PL Aplicado"].iloc[0],
+                    st.session_state.df_ativo.retorno.iloc[0],
+                    st.session_state.df_ativo.roa_head.iloc[0],
+                    st.session_state.df_ativo.roa_rec.iloc[0],
+                    st.session_state.df_ativo.repasse.iloc[0],
+                    moeda_real=False,
+                )
+            else:
+                grasph_df = besmart_base(
+                    st.session_state.df_ativo["Data de Vencimento"].iloc[0],
+                    st.session_state.df_ativo["Data de Início"].iloc[0],
+                    face,
+                    st.session_state.df_ativo.Empresa.iloc[0],
+                    st.session_state.df_ativo.Categoria.iloc[0],
+                    st.session_state.df_ativo.Ativo.iloc[0],
+                    st.session_state.df_ativo["PL Aplicado"].iloc[0],
+                    st.session_state.df_ativo.repasse.iloc[0],
+                )
+            # st.dataframe(grasph_df)
+            fig = px.line(
+                grasph_df,
+                x="Mês",
+                y="Resultado assessor",
+                markers=True,
+                text="R$ " + round(grasph_df["Resultado assessor"], 2).astype(str),
+                title=f"""Categoria: {dark.Categoria.iloc[0]}\n
+                Ativo: {dark.Ativo.iloc[0]}\n 
+                Cliente: {name_v1}""",
+            )
+            fig.update_xaxes(showgrid=False)
+            fig.update_yaxes(title_font_size=24, griddash="dot", rangemode="tozero")
+            fig.data[0].line.color = "#9966ff"
+            st.plotly_chart(fig)
+    with tab2:
+        smart = pd.DataFrame(columns=["Mês", "Resultado assessor"])
+        for i in dark["ativo_id"].unique():
+            df = dark[dark["ativo_id"] == i]
+            df = df.reset_index().drop("index", 1)
+
+            # st.dataframe(df)
+            if df.Empresa.iloc[0] == "INVESTSMART":
+                grasph_df = base_df(
+                    df["Data de Vencimento"].iloc[0],
+                    df["Data de Início"].iloc[0],
+                    df["PL Aplicado"].iloc[0],
+                    df.retorno.iloc[0],
+                    df.roa_head.iloc[0],
+                    df.roa_rec.iloc[0],
+                    df.repasse.iloc[0],
+                    moeda_real=False,
+                )
+            else:
+
+                grasph_df = besmart_base(
+                    df["Data de Vencimento"].iloc[0],
+                    df["Data de Início"].iloc[0],
+                    face,
+                    df.Empresa.iloc[0],
+                    df.Categoria.iloc[0],
+                    df.Ativo.iloc[0],
+                    df["PL Aplicado"].iloc[0],
+                    df.repasse.iloc[0],
+                )
+            # st.dataframe(grasph_df)
+            smart = smart.append(grasph_df)
+        smart["Mês"] = smart["Mês"].apply(lambda x: DT.datetime.strptime(x, "%b-%y"))
+        smart["Mês"] = smart["Mês"].apply(lambda x: DT.datetime.strftime(x, "%m-%y"))
+        # st.dataframe(smart)
+        final = (
+            smart[["Mês", "Resultado assessor"]]
+            .groupby(smart["Mês"])["Resultado assessor"]
+            .sum()
+            .reset_index()
         )
-        if st.button("Incluir esse tipo de ativo"):
-            nav_page("novo_ativo")
+        final["Mês"] = final["Mês"].apply(lambda x: DT.datetime.strptime(x, "%m-%y"))
+        final["ano"] = final["Mês"].astype("datetime64").dt.year
+        final["mes"] = final["Mês"].astype("datetime64").dt.month
+        final["Mês"] = final["Mês"].apply(lambda x: DT.datetime.strftime(x, "%b-%y"))
+        final = final.sort_values(["ano", "mes"]).reset_index(drop=True)
+        # st.dataframe(final)
+        fig = px.line(
+            final,
+            x="Mês",
+            y="Resultado assessor",
+            markers=True,
+            text="R$ " + round(final["Resultado assessor"], 2).astype(str),
+            title=f"Resultado Geral do Assessor por mês",
+        )
+        fig.update_xaxes(showgrid=False)
+        fig.update_yaxes(title_font_size=24, griddash="dot", rangemode="tozero")
+        fig.data[0].line.color = "#9966ff"
+        st.plotly_chart(fig)
+
 
 st.markdown(
     """<hr style="height:1px;border:none;color:#9966ff;background-color:#9966ff;" /> """,
@@ -164,7 +297,11 @@ with botao4:
         if st.session_state["df_ativo"].empty:
             st.error("Não foi selecionado um ativo")
         else:
-            nav_page("edit_ativo")
+            if st.session_state.df_ativo.Empresa.iloc[0] == "INVESTSMART":
+                nav_page("edit_ativo")
+            else:
+                nav_page("besmart_edit_ativo")
+
 
 with botao5:
     if st.button("Deletar um Ativo"):
@@ -178,7 +315,6 @@ with botao5:
             tm.sleep(1)
             st._rerun()
 
-
 st.markdown(
     """
 <style>
@@ -186,6 +322,9 @@ st.markdown(
         display: none
     }
     footer {visibility: hidden;}
+    img{
+    background-color: rgb(14, 17, 23);
+}
 </style>
 """,
     unsafe_allow_html=True,
