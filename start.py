@@ -18,6 +18,7 @@ st.set_page_config(
     page_icon="invest_smart_logo.png",
     page_title="Simulador 0.15",
     initial_sidebar_state="collapsed",
+    # layout="wide",
 )
 
 
