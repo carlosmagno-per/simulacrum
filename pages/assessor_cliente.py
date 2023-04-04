@@ -243,7 +243,7 @@ st.markdown(
 botao1, botao2 = st.columns(2)
 
 with botao1:
-    if st.button("Ver Portifolio"):
+    if st.button("Ver Portifolio do Cliente Selecionado"):
         st.session_state["df_cliente"] = pd.DataFrame(dta["selected_rows"])
         if st.session_state["df_cliente"].empty:
             st.error("Não foi selecionado um Cliente")
@@ -251,7 +251,7 @@ with botao1:
             nav_page("cliente_ativo")
 
 with botao2:
-    if st.button("Deletar um Cliente"):
+    if st.button("Deletar o Cliente Selecionado"):
         st.session_state["df_cliente"] = pd.DataFrame(dta["selected_rows"])
         if st.session_state["df_cliente"].empty:
             st.error("Não foi selecionado um Cliente")
