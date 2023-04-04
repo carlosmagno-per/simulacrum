@@ -293,7 +293,7 @@ with botao3:
         nav_page("assessor_cliente")
 
 with botao4:
-    if st.button("Editar um Ativo"):
+    if st.button("Editar o Ativo Selecionado"):
         if st.session_state["df_ativo"].empty:
             st.error("Não foi selecionado um ativo")
         else:
@@ -304,7 +304,7 @@ with botao4:
 
 
 with botao5:
-    if st.button("Deletar um Ativo"):
+    if st.button("Deletar o Ativo Selecionado"):
         if st.session_state["df_ativo"].empty:
             st.error("Não foi selecionado um ativo")
         else:
