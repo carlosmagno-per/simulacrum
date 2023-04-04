@@ -189,8 +189,8 @@ if data > data_inicial:
                 "Mês",
                 "Custo do Produto",
                 "Comissão Bruta",
-                "Receita Líquida",
                 "Imposto",
+                "Receita Líquida",
                 "Resultado assessor",
             ]
         ]
