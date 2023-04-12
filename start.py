@@ -16,7 +16,7 @@ sigla = df["SIGLA"].unique()
 
 st.set_page_config(
     page_icon="invest_smart_logo.png",
-    page_title="Simulador 0.15",
+    page_title="Simulador 0.25",
     initial_sidebar_state="collapsed",
     # layout="wide",
 )
@@ -47,9 +47,11 @@ st.session_state["assessor"] = nome
 
 st.subheader(f"BEM VINDO/A, {nome}")
 
-if st.button("Iniciar a ferramenta"):
-    nav_page("assessor_cliente")
+# if st.button("Iniciar a ferramenta"):
+#     nav_page("assessor_cliente")
 
+if st.button("Iniciar a ferramenta"):
+    nav_page("wide_project")
 
 no_sidebar_style = """
     <style>

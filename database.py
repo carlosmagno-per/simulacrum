@@ -181,9 +181,9 @@ def besmart_base(
     df["Comissão Bruta"] = (
         df["numero"].map(dic).apply(lambda x: numpy.array(x[0], dtype=float))
     )
-    df["Resulatdo Bruto"] = (df["Comissão Bruta"] / 100) * df["Custo do Produto"]
-    df["Imposto"] = df["Resulatdo Bruto"] * 0.2
-    df["Receita Líquida"] = df["Resulatdo Bruto"] - df["Imposto"]
+    df["Resultado Bruto"] = (df["Comissão Bruta"] / 100) * df["Custo do Produto"]
+    df["Imposto"] = df["Resultado Bruto"] * 0.2
+    df["Receita Líquida"] = df["Resultado Bruto"] - df["Imposto"]
     df["Resultado assessor"] = df["Receita Líquida"] * (roa_reps / 100)
 
     df["Comissão Bruta"] = df["Comissão Bruta"].apply(lambda x: "{:,.2f}%".format(x))
