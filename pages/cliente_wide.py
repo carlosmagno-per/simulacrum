@@ -338,48 +338,57 @@ with chart1:
             fig.data[0].line.color = "#9966ff"
             st.plotly_chart(fig)
 with chart2:
-    # try:
-    st.text("")
-    st.text("")
-    st.text("")
-    st.text("")
-    # st.dataframe(dark)
-    # st.dataframe(df_ativo)
-    df_categ = df_ativo.groupby("Ativo")["PL Aplicado"].sum().reset_index()
-    # st.dataframe(df_categ)
-    fig = px.bar(
-        df_categ.sort_values(by="PL Aplicado", ascending=False),
-        x="PL Aplicado",
-        y="Ativo",
-        width=700,
-        # height=500,
-        text="R$ "
-        + round(df_categ["PL Aplicado"].sort_values(ascending=False), 2).astype(
-            str
-        ),
-        color="Ativo",
-        color_discrete_sequence=px.colors.sequential.Viridis,
-        title="Pl aplicado por Ativos, todos clientes",
-    )
-    fig.update_layout(
-        font=dict(family="Arial", size=18, color="White"),
-        # paper_bgcolor="rgba(0,0,0,0)",
-        # plot_bgcolor="rgba(0,0,0,0)",
-        xaxis=dict(title="", tickvals=[], ticktext=[]),
-        yaxis=dict(title=""),
-        showlegend=False,
-        uniformtext_minsize=8,
-        uniformtext_mode="hide",
-    )
-    fig.update_yaxes(showgrid=False)
-    fig.update_xaxes(showgrid=False)
-    fig.data[0].marker.color = "#9966ff"
-    fig.data[0].textfont.color = "white"
-    fig.data[0].textposition = "auto"
-    fig.data[0].insidetextanchor = "middle"
-    st.plotly_chart(fig)
-    # except:
-    #     st.error("Você não possui um Portifolio nesta ferramenta")
+    if (
+        st.session_state["df_cliente"]["Qnt. Ativos InvestSmart"].iloc[0]
+        + st.session_state["df_cliente"]["Qnt. Produtos BeSmart"].iloc[0]
+        == 0
+    ):
+
+        st.text("")
+        st.error("Esse Cliente não tem Portifolio")
+    else:
+        # try:
+        st.text("")
+        st.text("")
+        st.text("")
+        st.text("")
+        # st.dataframe(dark)
+        # st.dataframe(df_ativo)
+        df_categ = df_ativo.groupby("Ativo")["PL Aplicado"].sum().reset_index()
+        # st.dataframe(df_categ)
+        fig = px.bar(
+            df_categ.sort_values(by="PL Aplicado", ascending=False),
+            x="PL Aplicado",
+            y="Ativo",
+            width=700,
+            # height=500,
+            text="R$ "
+            + round(df_categ["PL Aplicado"].sort_values(ascending=False), 2).astype(
+                str
+            ),
+            color="Ativo",
+            color_discrete_sequence=px.colors.sequential.Viridis,
+            title="Pl aplicado por Ativos, todos clientes",
+        )
+        fig.update_layout(
+            font=dict(family="Arial", size=18, color="White"),
+            # paper_bgcolor="rgba(0,0,0,0)",
+            # plot_bgcolor="rgba(0,0,0,0)",
+            xaxis=dict(title="", tickvals=[], ticktext=[]),
+            yaxis=dict(title=""),
+            showlegend=False,
+            uniformtext_minsize=8,
+            uniformtext_mode="hide",
+        )
+        fig.update_yaxes(showgrid=False)
+        fig.update_xaxes(showgrid=False)
+        fig.data[0].marker.color = "#9966ff"
+        fig.data[0].textfont.color = "white"
+        fig.data[0].textposition = "auto"
+        fig.data[0].insidetextanchor = "middle"
+        st.plotly_chart(fig)
+        # except:
+        #     st.error("Você não possui um Portifolio nesta ferramenta")
 
 st.markdown(
     """<hr style="height:1px;border:none;color:#9966ff;background-color:#9966ff;" /> """,
