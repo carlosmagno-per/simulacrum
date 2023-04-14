@@ -37,7 +37,7 @@ prem, table = st.columns(2)
 with prem:
     st.subheader("**Premissas**")
 
-    face = pd.read_excel("base_besmart.xlsx")
+    face = pd.read_excel("base_besmart_v2.xlsx")
     face["Categoria"] = face["Categoria"].apply(lambda x: x.replace("_", " "))
     face["Produto"] = face["Produto"].apply(lambda x: x.replace("_", " "))
     face["porcem_repasse"] = face["porcem_repasse"] * 100.0
@@ -115,14 +115,30 @@ with prem:
     #     )
 
     # with colrepas:
-    roa_reps = st.number_input(
-        "Repasse Assessor (%): ",
-        min_value=0.0,
-        format="%f",
-        value=50.0,
-        max_value=100.0,
-        step=1.0,
-    )
+    if produto == "PJ":
+        colrepas, situation = st.columns(2)
+        with colrepas:
+            roa_reps = st.number_input(
+                "Repasse Assessor (%): ",
+                min_value=0.0,
+                format="%f",
+                value=50.0,
+                max_value=100.0,
+                step=1.0,
+            )
+        with situation:
+            roa_rec = st.selectbox("Corretagem Vitalícia (%)", [5, 2, 4, 0])
+    else:
+        roa_reps = st.number_input(
+            "Repasse Assessor (%): ",
+            min_value=0.0,
+            format="%f",
+            value=50.0,
+            max_value=100.0,
+            step=1.0,
+        )
+        roa_rec = 0
+
 # ((valor * com_brut) - 0.2 * (valor * com_brut)) * repas_asse
 
 # st.markdown(
@@ -137,7 +153,15 @@ with table:
     st.subheader("**Visualização do ativo por uma tabela**")
     if data > data_inicial:
         df = besmart_base(
-            data, data_inicial, face, empresa, categoria, produto, pl_apl, roa_reps
+            data,
+            data_inicial,
+            face,
+            empresa,
+            categoria,
+            produto,
+            pl_apl,
+            roa_reps,
+            roa_rec,
         )
 
         # dias = DT.datetime.strptime(str(data), "%Y-%m-%d") - DT.datetime.strptime(
@@ -213,7 +237,7 @@ with table:
                     0,
                     roa_reps,
                     0,
-                    0,
+                    roa_rec,
                     data_inicial,
                 ),
             )
@@ -258,18 +282,6 @@ st.markdown(
     img{
     background-color: rgb(14, 17, 23);
     }
-
-    .st-fu {
-    color: rgb(153, 102, 255);
-}
-
-.st-hd::after {
-    background-color: rgb(153, 102, 255);
-}
-
-.st-ha::after {
-    border-color: transparent;
-}
 
 </style>
 """,

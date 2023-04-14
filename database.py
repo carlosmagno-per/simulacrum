@@ -143,7 +143,7 @@ def base_df(
 
 
 def besmart_base(
-    data, data_inicial, face, empresa, categoria, produto, pl_apl, roa_reps
+    data, data_inicial, face, empresa, categoria, produto, pl_apl, roa_reps, roa_rec=0
 ):
 
     dias = DT.datetime.strptime(str(data), "%Y-%m-%d") - DT.datetime.strptime(
@@ -167,24 +167,55 @@ def besmart_base(
     datesRange = pd.DataFrame(datesRange)
 
     df = pd.DataFrame()
-    masquerede = face[
-        (face["Empresa"] == empresa)
-        & (face["Categoria"] == categoria)
-        & (face["Produto"] == produto)
-    ][["porcem_repasse", "Mês"]]
-    df["Mês"] = datesRange.iloc[:, 0:1]
-    df["Custo do Produto"] = pl_apl
-    df["numero"] = df.index + 1
-    df["numero"][df["numero"] > 12] = 12
-    masquerede = masquerede[masquerede["Mês"].isin(df["numero"])]
-    dic = masquerede.set_index("Mês").T.to_dict("list")
-    df["Comissão Bruta"] = (
-        df["numero"].map(dic).apply(lambda x: numpy.array(x[0], dtype=float))
-    )
-    df["Resultado Bruto"] = (df["Comissão Bruta"] / 100) * df["Custo do Produto"]
-    df["Imposto"] = df["Resultado Bruto"] * 0.2
-    df["Receita Líquida"] = df["Resultado Bruto"] - df["Imposto"]
-    df["Resultado assessor"] = df["Receita Líquida"] * (roa_reps / 100)
+    if produto != "PJ":
+        masquerede = face[
+            (face["Empresa"] == empresa)
+            & (face["Categoria"] == categoria)
+            & (face["Produto"] == produto)
+        ][["porcem_repasse", "Mês"]]
+        df["Mês"] = datesRange.iloc[:, 0:1]
+        df["Custo do Produto"] = pl_apl
+        df["numero"] = df.index + 1
+        df["numero"][df["numero"] > max(masquerede["Mês"])] = max(masquerede["Mês"])
+        masquerede = masquerede[masquerede["Mês"].isin(df["numero"])]
+        dic = masquerede.set_index("Mês").T.to_dict("list")
+        df["Comissão Bruta"] = (
+            df["numero"]
+            .map(dic)
+            .fillna(method="ffill")
+            .apply(lambda x: numpy.array(x[0], dtype=float))
+        )
+        df["Resultado Bruto"] = (df["Comissão Bruta"] / 100) * df["Custo do Produto"]
+        df["Imposto"] = df["Resultado Bruto"] * 0.2
+        df["Receita Líquida"] = df["Resultado Bruto"] - df["Imposto"]
+        df["Resultado assessor"] = df["Receita Líquida"] * (roa_reps / 100)
 
-    df["Comissão Bruta"] = df["Comissão Bruta"].apply(lambda x: "{:,.2f}%".format(x))
-    return df
+        df["Comissão Bruta"] = df["Comissão Bruta"].apply(
+            lambda x: "{:,.2f}%".format(x)
+        )
+        return df
+    else:
+        masquerede = face[
+            (face["Empresa"] == empresa)
+            & (face["Categoria"] == categoria)
+            & (face["Produto"] == produto)
+        ][["porcem_repasse", "Mês"]]
+        df["Mês"] = datesRange.iloc[:, 0:1]
+        df["Custo do Produto"] = pl_apl
+        df["numero"] = df.index + 1
+        df["numero"][df["numero"] > max(masquerede["Mês"])] = max(masquerede["Mês"])
+        masquerede = masquerede[masquerede["Mês"].isin(df["numero"])]
+        dic = masquerede.set_index("Mês").T.to_dict("list")
+        df["Comissão Bruta"] = (
+            df["numero"].map(dic).apply(lambda x: numpy.array(x[0], dtype=float))
+        )
+        df["Comissão Bruta"][max(masquerede["Mês"]) :] = roa_rec
+        df["Resultado Bruto"] = (df["Comissão Bruta"] / 100) * df["Custo do Produto"]
+        df["Imposto"] = df["Resultado Bruto"] * 0.2
+        df["Receita Líquida"] = df["Resultado Bruto"] - df["Imposto"]
+        df["Resultado assessor"] = df["Receita Líquida"] * (roa_reps / 100)
+
+        df["Comissão Bruta"] = df["Comissão Bruta"].apply(
+            lambda x: "{:,.2f}%".format(x)
+        )
+        return df

@@ -251,18 +251,6 @@ st.markdown(
     background-color: rgb(14, 17, 23);
     }
 
-    .st-fu {
-    color: rgb(153, 102, 255);
-}
-
-.st-hd::after {
-    background-color: rgb(153, 102, 255);
-}
-
-.st-ha::after {
-    border-color: transparent;
-}
-
 </style>
 """,
     unsafe_allow_html=True,

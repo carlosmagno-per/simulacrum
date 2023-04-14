@@ -156,7 +156,7 @@ with botao4:
         st.session_state["button44"] = not st.session_state["button44"]
 
     if st.session_state["button44"]:
-        disco = st.text("Tem Certeza ?")
+        disco = st.write("Tem Certeza ?")
         sim, nao = st.columns(2)
         with sim:
             if st.button("Sim"):
