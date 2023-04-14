@@ -58,7 +58,7 @@ prem, table = st.columns(2)
 with prem:
     st.subheader("**Premissas**")
 
-    face = pd.read_excel("base_besmart.xlsx")
+    face = pd.read_excel("base_besmart_v2.xlsx")
     face["Categoria"] = face["Categoria"].apply(lambda x: x.replace("_", " "))
     face["Produto"] = face["Produto"].apply(lambda x: x.replace("_", " "))
     face["porcem_repasse"] = face["porcem_repasse"] * 100.0
@@ -92,15 +92,6 @@ with prem:
             )
 
     colvalor, colpain = st.columns(2)
-    with colvalor:
-        pl_apl = st.number_input(
-            "Valor da Venda (R$): ",
-            min_value=0.0,
-            format="%f",
-            value=float(v1_pl_apl),
-            step=1000.0,
-        )
-        st.text("R$" + locale.currency(pl_apl, grouping=True, symbol=None))
     try:
         ind_2 = list(face.Produto[face["Categoria"] == categoria].unique()).index(
             v1_ativo
@@ -117,6 +108,51 @@ with prem:
                 "Produto: ",
                 list(face.Produto[face["Categoria"] == categoria].unique()),
             )
+    with colvalor:
+        if produto == "Icatu (até R$299,99)":
+            pl_apl = st.number_input(
+                "Valor do Produto (R$): ",
+                min_value=0.0,
+                max_value=299.00,
+                format="%f",
+                value=float(v1_pl_apl),
+                step=100.0,
+            )
+        elif produto == "Icatu (R$300,00 - R$599,99)":
+            pl_apl = st.number_input(
+                "Valor do Produto (R$): ",
+                min_value=300.0,
+                max_value=599.00,
+                format="%f",
+                value=float(v1_pl_apl),
+                step=100.0,
+            )
+        elif produto == "Icatu (apartir de R$600,00)":
+            pl_apl = st.number_input(
+                "Valor do Produto (R$): ",
+                min_value=600.0,
+                format="%f",
+                value=float(v1_pl_apl),
+                step=100.0,
+            )
+        elif produto == "Sulamérica Prestige (até R$5000,00)":
+            pl_apl = st.number_input(
+                "Valor do Produto (R$): ",
+                min_value=0.0,
+                max_value=5000.00,
+                format="%f",
+                value=float(v1_pl_apl),
+                step=100.0,
+            )
+        else:
+            pl_apl = st.number_input(
+                "Valor da Venda (R$): ",
+                min_value=0.0,
+                format="%f",
+                value=float(v1_pl_apl),
+                step=1000.0,
+            )
+        st.text("R$" + locale.currency(pl_apl, grouping=True, symbol=None))
 
     colNome3, colValue3 = st.columns(2)
     with colNome3:
@@ -127,11 +163,19 @@ with prem:
         )
 
     with colValue3:
-        data = st.date_input(
-            "Data de Vencimento: ",
-            # min_value=DT.date.today()
-            value=DT.datetime.strptime(v1_data[:10], "%Y-%m-%d"),
-        )
+        if produto == "Icatu Esporádico" or produto == "Sulamérica Prestige Esporádico":
+            data = st.date_input(
+                "Data de Vencimento: ",
+                min_value=data_inicial,
+                max_value=data_inicial + DT.timedelta(days=15),
+                value=DT.datetime.strptime(v1_data[:10], "%Y-%m-%d"),
+            )
+        else:
+            data = st.date_input(
+                "Data de Vencimento: ",
+                # min_value=DT.date.today()
+                value=DT.datetime.strptime(v1_data[:10], "%Y-%m-%d"),
+            )
 
     dias = DT.datetime.strptime(str(data), "%Y-%m-%d") - DT.datetime.strptime(
         str(data_inicial), "%Y-%m-%d"
@@ -203,7 +247,7 @@ with table:
         df["Mês"] = datesRange.iloc[:, 0:1]
         df["Custo do Produto"] = pl_apl
         df["numero"] = df.index + 1
-        df["numero"][df["numero"] > 12] = 12
+        df["numero"][df["numero"] > max(masquerede["Mês"])] = max(masquerede["Mês"])
         masquerede = masquerede[masquerede["Mês"].isin(df["numero"])]
         dic = masquerede.set_index("Mês").T.to_dict("list")
         df["Comissão Bruta"] = (

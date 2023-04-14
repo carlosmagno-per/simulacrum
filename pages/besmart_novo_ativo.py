@@ -62,28 +62,74 @@ with prem:
         )
 
     colvalor, colpain = st.columns(2)
-    with colvalor:
-        pl_apl = st.number_input(
-            "Valor do Produto (R$): ",
-            min_value=0.0,
-            format="%f",
-            value=10000.0,
-            step=1000.0,
-        )
-        st.text("R$" + locale.currency(pl_apl, grouping=True, symbol=None))
 
     with colpain:
         produto = st.selectbox(
             "Produto: ",
             list(face.Produto[face["Categoria"] == categoria].unique()),
         )
+    with colvalor:
+        if produto == "Icatu (até R$299,99)":
+            pl_apl = st.number_input(
+                "Valor do Produto (R$): ",
+                min_value=0.0,
+                max_value=299.00,
+                format="%f",
+                value=100.00,
+                step=100.0,
+            )
+        elif produto == "Icatu (R$300,00 - R$599,99)":
+            pl_apl = st.number_input(
+                "Valor do Produto (R$): ",
+                min_value=300.0,
+                max_value=599.00,
+                format="%f",
+                value=300.00,
+                step=100.0,
+            )
+        elif produto == "Icatu (apartir de R$600,00)":
+            pl_apl = st.number_input(
+                "Valor do Produto (R$): ",
+                min_value=600.0,
+                format="%f",
+                value=600.00,
+                step=100.0,
+            )
+        elif produto == "Sulamérica Prestige (até R$5000,00)":
+            pl_apl = st.number_input(
+                "Valor do Produto (R$): ",
+                min_value=0.0,
+                max_value=5000.00,
+                format="%f",
+                value=1000.00,
+                step=100.0,
+            )
+        else:
+            pl_apl = st.number_input(
+                "Valor do Produto (R$): ",
+                min_value=0.0,
+                format="%f",
+                value=10000.0,
+                step=1000.0,
+            )
+        st.text("R$" + locale.currency(pl_apl, grouping=True, symbol=None))
 
     colNome3, colValue3 = st.columns(2)
     with colNome3:
         data_inicial = st.date_input("Data de Início: ", min_value=DT.date.today())
 
     with colValue3:
-        data = st.date_input("Data de Vencimento: ", min_value=DT.date.today())
+        if produto == "Icatu Esporádico" or produto == "Sulamérica Prestige Esporádico":
+            data = st.date_input(
+                "Data de Vencimento: ",
+                min_value=data_inicial,
+                max_value=data_inicial + DT.timedelta(days=15),
+            )
+        else:
+            data = st.date_input(
+                "Data de Vencimento: ",
+                min_value=DT.date.today(),
+            )
 
     dias = DT.datetime.strptime(str(data), "%Y-%m-%d") - DT.datetime.strptime(
         str(data_inicial), "%Y-%m-%d"

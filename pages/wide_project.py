@@ -120,7 +120,7 @@ else:
 smart = pd.DataFrame(columns=["Mês", "Resultado assessor"])
 # st.dataframe(fair)
 
-face = pd.read_excel("base_besmart.xlsx")
+face = pd.read_excel("base_besmart_v2.xlsx")
 face["Categoria"] = face["Categoria"].apply(lambda x: x.replace("_", " "))
 face["Produto"] = face["Produto"].apply(lambda x: x.replace("_", " "))
 face["porcem_repasse"] = face["porcem_repasse"] * 100.0

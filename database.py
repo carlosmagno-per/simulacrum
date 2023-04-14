@@ -176,9 +176,9 @@ def besmart_base(
         df["Mês"] = datesRange.iloc[:, 0:1]
         df["Custo do Produto"] = pl_apl
         df["numero"] = df.index + 1
-        df["numero"][df["numero"] > max(masquerede["Mês"])] = max(masquerede["Mês"])
         masquerede = masquerede[masquerede["Mês"].isin(df["numero"])]
         dic = masquerede.set_index("Mês").T.to_dict("list")
+        df["numero"][df["numero"] > max(masquerede["Mês"])] = max(masquerede["Mês"])
         df["Comissão Bruta"] = (
             df["numero"]
             .map(dic)
