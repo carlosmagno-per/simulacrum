@@ -104,7 +104,7 @@ with cliente:
         dta = AgGrid(
             dark,
             gridOptions=gb,
-            height=300,
+            #height=300,
             # width=5000,
             allow_unsafe_jscode=True,
             theme=AgGridTheme.ALPINE,
