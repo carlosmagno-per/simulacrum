@@ -113,7 +113,7 @@ with prem:
             pl_apl = st.number_input(
                 "Valor do Produto (R$): ",
                 min_value=0.0,
-                max_value=299.00,
+                # max_value=299.00,
                 format="%f",
                 value=float(v1_pl_apl),
                 step=100.0,
@@ -122,7 +122,7 @@ with prem:
             pl_apl = st.number_input(
                 "Valor do Produto (R$): ",
                 min_value=300.0,
-                max_value=599.00,
+                # max_value=599.00,
                 format="%f",
                 value=float(v1_pl_apl),
                 step=100.0,
@@ -139,7 +139,7 @@ with prem:
             pl_apl = st.number_input(
                 "Valor do Produto (R$): ",
                 min_value=0.0,
-                max_value=5000.00,
+                # max_value=5000.00,
                 format="%f",
                 value=float(v1_pl_apl),
                 step=100.0,
@@ -168,7 +168,7 @@ with prem:
                 "Data de Vencimento: ",
                 min_value=data_inicial,
                 max_value=data_inicial + DT.timedelta(days=15),
-                value=DT.datetime.strptime(v1_data[:10], "%Y-%m-%d"),
+                value=data_inicial + DT.timedelta(days=15),
             )
         else:
             data = st.date_input(
@@ -187,14 +187,39 @@ with prem:
     else:
         mes = mes
 
-    roa_reps = st.number_input(
-        "Repasse Assessor (%): ",
-        min_value=0.0,
-        format="%f",
-        value=float(v1_repasse),
-        max_value=100.0,
-        step=1.0,
-    )
+    if produto == "PJ":
+        colrepas, situation = st.columns(2)
+        with colrepas:
+            roa_reps = st.number_input(
+                "Repasse Assessor (%): ",
+                min_value=0.0,
+                format="%f",
+                value=50.0,
+                max_value=100.0,
+                step=1.0,
+            )
+        with situation:
+            roa_rec = st.selectbox("Corretagem Vitalícia (%)", [5, 2, 4, 0])
+            if roa_rec == 5:
+                st.write("Valor comum para a empresa Assim")
+            elif roa_rec == 2:
+                st.write(
+                    "Valor comum para as empresas Amil, Bradesco, Sulámerica, Golden Cross OU Intermédica"
+                )
+            elif roa_rec == 4:
+                st.write("Valor comum para a empresa Porto Seguro")
+            elif roa_rec == 0:
+                st.write("Valor comum para as empresas Unimed OU Omint")
+    else:
+        roa_reps = st.number_input(
+            "Repasse Assessor (%): ",
+            min_value=0.0,
+            format="%f",
+            value=50.0,
+            max_value=100.0,
+            step=1.0,
+        )
+        roa_rec = 0
 
     # colcom_brt, colporrep = st.columns(2)
     # with colcom_brt:
@@ -239,28 +264,60 @@ with table:
         datesRange = pd.DataFrame(datesRange)
 
         df = pd.DataFrame()
-        masquerede = face[
-            (face["Empresa"] == empresa)
-            & (face["Categoria"] == categoria)
-            & (face["Produto"] == produto)
-        ][["porcem_repasse", "Mês"]]
-        df["Mês"] = datesRange.iloc[:, 0:1]
-        df["Custo do Produto"] = pl_apl
-        df["numero"] = df.index + 1
-        df["numero"][df["numero"] > max(masquerede["Mês"])] = max(masquerede["Mês"])
-        masquerede = masquerede[masquerede["Mês"].isin(df["numero"])]
-        dic = masquerede.set_index("Mês").T.to_dict("list")
-        df["Comissão Bruta"] = (
-            df["numero"].map(dic).apply(lambda x: numpy.array(x[0], dtype=float))
-        )
-        df["Resultado Bruto"] = (df["Comissão Bruta"] / 100) * df["Custo do Produto"]
-        df["Imposto"] = df["Resultado Bruto"] * 0.2
-        df["Receita Líquida"] = df["Resultado Bruto"] - df["Imposto"]
-        df["Resultado do Assessor"] = df["Receita Líquida"] * (roa_reps / 100)
+        if produto != "PJ":
+            masquerede = face[
+                (face["Empresa"] == empresa)
+                & (face["Categoria"] == categoria)
+                & (face["Produto"] == produto)
+            ][["porcem_repasse", "Mês"]]
+            df["Mês"] = datesRange.iloc[:, 0:1]
+            df["Custo do Produto"] = pl_apl
+            df["numero"] = df.index + 1
+            masquerede = masquerede[masquerede["Mês"].isin(df["numero"])]
+            dic = masquerede.set_index("Mês").T.to_dict("list")
+            df["numero"][df["numero"] > max(masquerede["Mês"])] = max(masquerede["Mês"])
+            df["Comissão Bruta"] = (
+                df["numero"]
+                .map(dic)
+                .fillna(method="ffill")
+                .apply(lambda x: numpy.array(x[0], dtype=float))
+            )
+            df["Resultado Bruto"] = (df["Comissão Bruta"] / 100) * df[
+                "Custo do Produto"
+            ]
+            df["Imposto"] = df["Resultado Bruto"] * 0.2
+            df["Receita Líquida"] = df["Resultado Bruto"] - df["Imposto"]
+            df["Resultado do Assessor"] = df["Receita Líquida"] * (roa_reps / 100)
 
-        df["Comissão Bruta"] = df["Comissão Bruta"].apply(
-            lambda x: "{:,.2f}%".format(x)
-        )
+            df["Comissão Bruta"] = df["Comissão Bruta"].apply(
+                lambda x: "{:,.2f}%".format(x)
+            )
+        else:
+            masquerede = face[
+                (face["Empresa"] == empresa)
+                & (face["Categoria"] == categoria)
+                & (face["Produto"] == produto)
+            ][["porcem_repasse", "Mês"]]
+            df["Mês"] = datesRange.iloc[:, 0:1]
+            df["Custo do Produto"] = pl_apl
+            df["numero"] = df.index + 1
+            df["numero"][df["numero"] > max(masquerede["Mês"])] = max(masquerede["Mês"])
+            masquerede = masquerede[masquerede["Mês"].isin(df["numero"])]
+            dic = masquerede.set_index("Mês").T.to_dict("list")
+            df["Comissão Bruta"] = (
+                df["numero"].map(dic).apply(lambda x: numpy.array(x[0], dtype=float))
+            )
+            df["Comissão Bruta"][max(masquerede["Mês"]) :] = roa_rec
+            df["Resultado Bruto"] = (df["Comissão Bruta"] / 100) * df[
+                "Custo do Produto"
+            ]
+            df["Imposto"] = df["Resultado Bruto"] * 0.2
+            df["Receita Líquida"] = df["Resultado Bruto"] - df["Imposto"]
+            df["Resultado do Assessor"] = df["Receita Líquida"] * (roa_reps / 100)
+
+            df["Comissão Bruta"] = df["Comissão Bruta"].apply(
+                lambda x: "{:,.2f}%".format(x)
+            )
 
         st.dataframe(
             df[
@@ -353,10 +410,6 @@ st.markdown(
     img{
     background-color: rgb(14, 17, 23);
     }
-
- .st-h9 {
-    color: rgb(14, 17, 23);
-}
 
 </style>
 """,
