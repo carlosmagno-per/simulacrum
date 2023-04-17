@@ -174,6 +174,16 @@ with prem:
             )
         with situation:
             roa_rec = st.selectbox("Corretagem Vitalícia (%)", [5, 2, 4, 0])
+            if roa_rec == 5:
+                st.write("Valor comum para a empresa Assim")
+            elif roa_rec == 2:
+                st.write(
+                    "Valor comum para as empresas Amil, Bradesco, Sulámerica, Golden Cross OU Intermédica"
+                )
+            elif roa_rec == 4:
+                st.write("Valor comum para a empresa Porto Seguro")
+            elif roa_rec == 0:
+                st.write("Valor comum para as empresas Unimed OU Omint")
     else:
         roa_reps = st.number_input(
             "Repasse Assessor (%): ",

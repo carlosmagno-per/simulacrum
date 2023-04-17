@@ -443,15 +443,26 @@ ano1_avg.metric(
     ),
 )
 
-ano2_avg.metric(
-    f"Retorno Médio Esperado ano {DT.datetime.now().year+1}",
-    "R$ "
-    + locale.currency(
-        avrg_year2,
-        grouping=True,
-        symbol=None,
-    ),
-)
+if np.isnan(avrg_year2):
+    ano2_avg.metric(
+        f"Retorno Médio Esperado ano {DT.datetime.now().year+1}",
+        "R$ "
+        + locale.currency(
+            0,
+            grouping=True,
+            symbol=None,
+        ),
+    )
+else:
+    ano2_avg.metric(
+        f"Retorno Médio Esperado ano {DT.datetime.now().year+1}",
+        "R$ "
+        + locale.currency(
+            avrg_year2,
+            grouping=True,
+            symbol=None,
+        ),
+    )
 
 
 if st.button("Voltar"):

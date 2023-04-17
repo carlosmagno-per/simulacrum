@@ -80,6 +80,7 @@ list_client_id = dark["client_id"].unique()
 list_client_id = list(list_client_id)
 
 fair = pd.read_sql("SELECT * FROM variaveis", con)
+
 fair = fair[fair.client_id.isin(list_client_id)]
 dicio = fair.groupby("client_id")["pl_aplicado"].sum()
 dark["PL Aplicado"] = (
@@ -101,16 +102,21 @@ if fair.pl_aplicado.sum() == 0:
     dark["Qnt. Ativos InvestSmart"] = 0
     dark["Qnt. Produtos BeSmart"] = 0
     dark["PL Aplicado"] = 0
+
 else:
     dark["Qnt. Ativos InvestSmart"] = [
-        fair[fair["client_id"] == x].value_counts("karma")[0]
+        fair[fair["client_id"] == x]
+        .value_counts("karma", dropna=False)
+        .reindex(fair.karma.unique(), fill_value=0)[0]
         if x in fair["client_id"].unique()
         else 0
         for x in dark["client_id"].unique()
     ]
 
     dark["Qnt. Produtos BeSmart"] = [
-        fair[fair["client_id"] == x].value_counts("karma")[1]
+        fair[fair["client_id"] == x]
+        .value_counts("karma", dropna=False)
+        .reindex(fair.karma.unique(), fill_value=0)[1]
         if x in fair["client_id"].unique()
         else 0
         for x in dark["client_id"].unique()
