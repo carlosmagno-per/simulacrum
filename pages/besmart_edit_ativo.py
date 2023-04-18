@@ -187,39 +187,39 @@ with prem:
     else:
         mes = mes
 
-    if produto == "PJ":
-        colrepas, situation = st.columns(2)
-        with colrepas:
-            roa_reps = st.number_input(
-                "Repasse Assessor (%): ",
-                min_value=0.0,
-                format="%f",
-                value=50.0,
-                max_value=100.0,
-                step=1.0,
-            )
-        with situation:
-            roa_rec = st.selectbox("Corretagem Vitalícia (%)", [5, 2, 4, 0])
-            if roa_rec == 5:
-                st.write("Valor comum para a empresa Assim")
-            elif roa_rec == 2:
-                st.write(
-                    "Valor comum para as empresas Amil, Bradesco, Sulámerica, Golden Cross OU Intermédica"
-                )
-            elif roa_rec == 4:
-                st.write("Valor comum para a empresa Porto Seguro")
-            elif roa_rec == 0:
-                st.write("Valor comum para as empresas Unimed OU Omint")
-    else:
-        roa_reps = st.number_input(
-            "Repasse Assessor (%): ",
-            min_value=0.0,
-            format="%f",
-            value=50.0,
-            max_value=100.0,
-            step=1.0,
-        )
-        roa_rec = 0
+    # if produto == "PJ":
+    #     colrepas, situation = st.columns(2)
+    #     with colrepas:
+    #         roa_reps = st.number_input(
+    #             "Repasse Assessor (%): ",
+    #             min_value=0.0,
+    #             format="%f",
+    #             value=50.0,
+    #             max_value=100.0,
+    #             step=1.0,
+    #         )
+    #     with situation:
+    #         roa_rec = st.selectbox("Corretagem Vitalícia (%)", [5, 2, 4, 0])
+    #         if roa_rec == 5:
+    #             st.write("Valor comum para a empresa Assim")
+    #         elif roa_rec == 2:
+    #             st.write(
+    #                 "Valor comum para as empresas Amil, Bradesco, Sulámerica, Golden Cross OU Intermédica"
+    #             )
+    #         elif roa_rec == 4:
+    #             st.write("Valor comum para a empresa Porto Seguro")
+    #         elif roa_rec == 0:
+    #             st.write("Valor comum para as empresas Unimed OU Omint")
+    # else:
+    roa_reps = st.number_input(
+        "Repasse Assessor (%): ",
+        min_value=0.0,
+        format="%f",
+        value=50.0,
+        max_value=100.0,
+        step=1.0,
+    )
+    roa_rec = 0
 
     # colcom_brt, colporrep = st.columns(2)
     # with colcom_brt:
@@ -238,149 +238,178 @@ with prem:
 #     """,
 #     unsafe_allow_html=True,
 # )
-with table:
-    st.header("Visualização do produto por uma tabela")
-
-    if data > data_inicial:
-
-        dias = DT.datetime.strptime(str(data), "%Y-%m-%d") - DT.datetime.strptime(
-            str(data_inicial), "%Y-%m-%d"
+bad_prod = [
+    "GARSON - Antecipação de Recebiveis",
+    "Operações Estruturadas com Garantia Reais(Bens e Recebíveis)",
+    "Ulend - Capital de Giro Clean",
+    "Precato",
+    "LTZ Capital",
+    "Acredite",
+    "EasyPrec",
+    "JEEVES - Capital de Giro Clean",
+    "Planta Consultoria - Agro",
+    "UHY - Crédito PJ",
+    "LISTO - Antecipação de maquininhas CDC Capital de Giro até 24x",
+    "RM2 - Antacipação de Recebiveis",
+    "LOARA - PJ",
+    "BANEFORT - PJ",
+]
+if produto in bad_prod:
+    with table:
+        st.error(
+            "Esse produto apresenta um calculo de dificil simulação ou com uma peculiaridade, por favor busque a ajuda de um dos especialista"
         )
-        mes = round(dias.days / 30)
+else:
+    with table:
+        st.header("Visualização do produto por uma tabela")
 
-        endDate = DT.datetime.strptime(str(data), "%Y-%m-%d")
-        startDate = DT.datetime.strptime(str(data_inicial), "%Y-%m-%d")
+        if data > data_inicial:
 
-        # Getting List of Days using pandas
-        if mes < 1:
-            datesRange = pd.date_range(startDate, periods=1, freq="m")
-            datesRange = list(datesRange)
-        else:
-            datesRange = pd.date_range(startDate, periods=mes + 1, freq="m")
-            datesRange = list(datesRange)
-
-        datesRange = [DT.datetime.strftime(x, "%b-%y") for x in datesRange]
-
-        datesRange = pd.DataFrame(datesRange)
-
-        df = pd.DataFrame()
-        if produto != "PJ":
-            masquerede = face[
-                (face["Empresa"] == empresa)
-                & (face["Categoria"] == categoria)
-                & (face["Produto"] == produto)
-            ][["porcem_repasse", "Mês"]]
-            df["Mês"] = datesRange.iloc[:, 0:1]
-            df["Custo do Produto"] = pl_apl
-            df["numero"] = df.index + 1
-            masquerede = masquerede[masquerede["Mês"].isin(df["numero"])]
-            dic = masquerede.set_index("Mês").T.to_dict("list")
-            df["numero"][df["numero"] > max(masquerede["Mês"])] = max(masquerede["Mês"])
-            df["Comissão Bruta"] = (
-                df["numero"]
-                .map(dic)
-                .fillna(method="ffill")
-                .apply(lambda x: numpy.array(x[0], dtype=float))
+            dias = DT.datetime.strptime(str(data), "%Y-%m-%d") - DT.datetime.strptime(
+                str(data_inicial), "%Y-%m-%d"
             )
-            df["Resultado Bruto"] = (df["Comissão Bruta"] / 100) * df[
-                "Custo do Produto"
-            ]
-            df["Imposto"] = df["Resultado Bruto"] * 0.2
-            df["Receita Líquida"] = df["Resultado Bruto"] - df["Imposto"]
-            df["Resultado do Assessor"] = df["Receita Líquida"] * (roa_reps / 100)
+            mes = round(dias.days / 30)
 
-            df["Comissão Bruta"] = df["Comissão Bruta"].apply(
-                lambda x: "{:,.2f}%".format(x)
-            )
-        else:
-            masquerede = face[
-                (face["Empresa"] == empresa)
-                & (face["Categoria"] == categoria)
-                & (face["Produto"] == produto)
-            ][["porcem_repasse", "Mês"]]
-            df["Mês"] = datesRange.iloc[:, 0:1]
-            df["Custo do Produto"] = pl_apl
-            df["numero"] = df.index + 1
-            df["numero"][df["numero"] > max(masquerede["Mês"])] = max(masquerede["Mês"])
-            masquerede = masquerede[masquerede["Mês"].isin(df["numero"])]
-            dic = masquerede.set_index("Mês").T.to_dict("list")
-            df["Comissão Bruta"] = (
-                df["numero"].map(dic).apply(lambda x: numpy.array(x[0], dtype=float))
-            )
-            df["Comissão Bruta"][max(masquerede["Mês"]) :] = roa_rec
-            df["Resultado Bruto"] = (df["Comissão Bruta"] / 100) * df[
-                "Custo do Produto"
-            ]
-            df["Imposto"] = df["Resultado Bruto"] * 0.2
-            df["Receita Líquida"] = df["Resultado Bruto"] - df["Imposto"]
-            df["Resultado do Assessor"] = df["Receita Líquida"] * (roa_reps / 100)
+            endDate = DT.datetime.strptime(str(data), "%Y-%m-%d")
+            startDate = DT.datetime.strptime(str(data_inicial), "%Y-%m-%d")
 
-            df["Comissão Bruta"] = df["Comissão Bruta"].apply(
-                lambda x: "{:,.2f}%".format(x)
-            )
+            # Getting List of Days using pandas
+            if mes < 1:
+                datesRange = pd.date_range(startDate, periods=1, freq="m")
+                datesRange = list(datesRange)
+            else:
+                datesRange = pd.date_range(startDate, periods=mes + 1, freq="m")
+                datesRange = list(datesRange)
 
-        st.dataframe(
-            df[
-                [
-                    "Mês",
-                    "Custo do Produto",
-                    "Comissão Bruta",
-                    "Resultado Bruto",
-                    "Receita Líquida",
-                    "Imposto",
-                    "Resultado do Assessor",
+            datesRange = [DT.datetime.strftime(x, "%b-%y") for x in datesRange]
+
+            datesRange = pd.DataFrame(datesRange)
+
+            df = pd.DataFrame()
+            if produto != "PJ":
+                masquerede = face[
+                    (face["Empresa"] == empresa)
+                    & (face["Categoria"] == categoria)
+                    & (face["Produto"] == produto)
+                ][["porcem_repasse", "Mês"]]
+                df["Mês"] = datesRange.iloc[:, 0:1]
+                df["Custo do Produto"] = pl_apl
+                df["numero"] = df.index + 1
+                masquerede = masquerede[masquerede["Mês"].isin(df["numero"])]
+                dic = masquerede.set_index("Mês").T.to_dict("list")
+                df["numero"][df["numero"] > max(masquerede["Mês"])] = max(
+                    masquerede["Mês"]
+                )
+                df["Comissão Bruta"] = (
+                    df["numero"]
+                    .map(dic)
+                    .fillna(method="ffill")
+                    .apply(lambda x: numpy.array(x[0], dtype=float))
+                )
+                df["Resultado Bruto"] = (df["Comissão Bruta"] / 100) * df[
+                    "Custo do Produto"
                 ]
-            ]
-        )
+                df["Imposto"] = df["Resultado Bruto"] * 0.2
+                df["Receita Líquida"] = df["Resultado Bruto"] - df["Imposto"]
+                df["Resultado do Assessor"] = df["Receita Líquida"] * (roa_reps / 100)
 
-        hide_dataframe_row_index = """
-                    <style>
-                    .row_heading.level0 {display:none}
-                    .blank {display:none}
-                    </style>
-                    """
+                df["Comissão Bruta"] = df["Comissão Bruta"].apply(
+                    lambda x: "{:,.2f}%".format(x)
+                )
+            else:
+                masquerede = face[
+                    (face["Empresa"] == empresa)
+                    & (face["Categoria"] == categoria)
+                    & (face["Produto"] == produto)
+                ][["porcem_repasse", "Mês"]]
+                df["Mês"] = datesRange.iloc[:, 0:1]
+                df["Custo do Produto"] = pl_apl
+                df["numero"] = df.index + 1
+                df["numero"][df["numero"] > max(masquerede["Mês"])] = max(
+                    masquerede["Mês"]
+                )
+                masquerede = masquerede[masquerede["Mês"].isin(df["numero"])]
+                dic = masquerede.set_index("Mês").T.to_dict("list")
+                df["Comissão Bruta"] = (
+                    df["numero"]
+                    .map(dic)
+                    .apply(lambda x: numpy.array(x[0], dtype=float))
+                )
+                df["Comissão Bruta"][max(masquerede["Mês"]) :] = roa_rec
+                df["Resultado Bruto"] = (df["Comissão Bruta"] / 100) * df[
+                    "Custo do Produto"
+                ]
+                df["Imposto"] = df["Resultado Bruto"] * 0.2
+                df["Receita Líquida"] = df["Resultado Bruto"] - df["Imposto"]
+                df["Resultado do Assessor"] = df["Receita Líquida"] * (roa_reps / 100)
 
-        # Inject CSS with Markdown
-        st.markdown(hide_dataframe_row_index, unsafe_allow_html=True)
+                df["Comissão Bruta"] = df["Comissão Bruta"].apply(
+                    lambda x: "{:,.2f}%".format(x)
+                )
 
-        sql = """UPDATE variaveis 
-                SET categoria = ? ,
-                ativo = ? ,
-                empresa = ? ,
-                data_venc = ? ,
-                pl_aplicado = ? ,
-                retorno = ? ,
-                repasse = ? ,
-                roa_head = ? ,
-                roa_rec = ?,
-                data_ativo = ?
-                WHERE ativo_id = ?"""
-
-        if st.button("Salvar"):
-            cursor.execute(
-                sql,
-                (
-                    categoria,
-                    produto,
-                    empresa,
-                    data,
-                    pl_apl,
-                    0,
-                    roa_reps,
-                    0,
-                    0,
-                    data_inicial,
-                    v4,
-                ),
+            st.dataframe(
+                df[
+                    [
+                        "Mês",
+                        "Custo do Produto",
+                        "Comissão Bruta",
+                        "Resultado Bruto",
+                        "Receita Líquida",
+                        "Imposto",
+                        "Resultado do Assessor",
+                    ]
+                ]
             )
-            con.commit()
-            st.success("O ativo foi editado com sucesso")
-            tm.sleep(1)
-            with st.spinner("Redirecionando o Assessor para a Página de Ativos"):
+
+            hide_dataframe_row_index = """
+                        <style>
+                        .row_heading.level0 {display:none}
+                        .blank {display:none}
+                        </style>
+                        """
+
+            # Inject CSS with Markdown
+            st.markdown(hide_dataframe_row_index, unsafe_allow_html=True)
+
+            sql = """UPDATE variaveis 
+                    SET categoria = ? ,
+                    ativo = ? ,
+                    empresa = ? ,
+                    data_venc = ? ,
+                    pl_aplicado = ? ,
+                    retorno = ? ,
+                    repasse = ? ,
+                    roa_head = ? ,
+                    roa_rec = ?,
+                    data_ativo = ?
+                    WHERE ativo_id = ?"""
+
+            if st.button("Salvar"):
+                cursor.execute(
+                    sql,
+                    (
+                        categoria,
+                        produto,
+                        empresa,
+                        data,
+                        pl_apl,
+                        0,
+                        roa_reps,
+                        0,
+                        0,
+                        data_inicial,
+                        v4,
+                    ),
+                )
+                con.commit()
+                st.success("O ativo foi editado com sucesso")
                 tm.sleep(1)
-            nav_page("cliente_wide")
-    else:
-        st.error("Data de vencimento menor que a data de Início.")
+                with st.spinner("Redirecionando o Assessor para a Página de Ativos"):
+                    tm.sleep(1)
+                nav_page("cliente_wide")
+        else:
+            st.error("Data de vencimento menor que a data de Início.")
+
 
 st.markdown(
     """<hr style="height:1px;border:none;color:#9966ff;background-color:#9966ff;" /> """,
