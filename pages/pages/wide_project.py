@@ -110,7 +110,13 @@ else:
     ]
 
     dark["Qnt. Produtos BeSmart"] = [
-        fair[fair["client_id"] == x].value_counts("karma")[1]
+        fair[fair["client_id"] == x]
+        .value_counts("karma")
+        .reindex(fair.karma.unique(), fill_value=0)
+        .sum()
+        - fair[fair["client_id"] == x]
+        .value_counts("karma")
+        .reindex(fair.karma.unique(), fill_value=0)[0]
         if x in fair["client_id"].unique()
         else 0
         for x in dark["client_id"].unique()
