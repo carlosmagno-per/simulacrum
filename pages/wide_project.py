@@ -273,7 +273,7 @@ with cliente:
     dta = AgGrid(
         dark,
         gridOptions=gb,
-        height=300,
+        height=290,
         allow_unsafe_jscode=True,
         theme=AgGridTheme.ALPINE,
         update_mode=GridUpdateMode.SELECTION_CHANGED,
