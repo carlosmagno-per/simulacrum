@@ -398,6 +398,8 @@ with chart1:
             x="Mês",
             y="Resultado assessor",
             color="Produtos",
+            width=1000,
+            height=425,
             text_auto='.2s',
             title=f"Comissão Total Mensal",
             color_discrete_sequence=px.colors.sequential.Viridis,
