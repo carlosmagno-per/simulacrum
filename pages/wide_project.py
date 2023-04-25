@@ -88,7 +88,7 @@ dark["PL Aplicado"] = (
     .map(dicio)
     .apply(lambda x: locale.currency(x, grouping=True, symbol=True))
 )
-dark["PL Aplicado"] = dark["PL Aplicado"].replace("R$ nan", "R$ 0")
+dark["PL Aplicado"] = dark["PL Aplicado"].replace("R$ nan", "R$ 0,00")
 
 fair["karma"] = [
     "InvestSmart" if x == "INVESTSMART" else "BeSmart" for x in fair["empresa"]
@@ -186,18 +186,17 @@ for i in fair["ativo_id"].unique():
     smart = smart.append(grasph_df)
 smart["Mês"] = smart["Mês"].apply(lambda x: DT.datetime.strptime(x, "%b-%y"))
 smart["Mês"] = smart["Mês"].apply(lambda x: DT.datetime.strftime(x, "%m-%y"))
-Besmart = smart[smart['PL Retido'].notna()]
-Besmart = (Besmart[["Mês", "Resultado assessor"]]
-    .groupby(Besmart["Mês"])["Resultado assessor"]
-    .sum()
-    .reset_index())
-Invest = smart[smart['Custo do Produto'].notna()]
+Invest = smart[smart['PL Retido'].notna()]
 Invest = (Invest[["Mês", "Resultado assessor"]]
     .groupby(Invest["Mês"])["Resultado assessor"]
     .sum()
     .reset_index())
+Besmart = smart[smart['Custo do Produto'].notna()]
+Besmart = (Besmart[["Mês", "Resultado assessor"]]
+    .groupby(Besmart["Mês"])["Resultado assessor"]
+    .sum()
+    .reset_index())
 
-#st.dataframe(Invest)
 final = (
     smart[["Mês", "Resultado assessor"]]
     .groupby(smart["Mês"])["Resultado assessor"]
@@ -226,12 +225,12 @@ final["ano"] = final["Mês"].astype("datetime64").dt.year
 final["mes"] = final["Mês"].astype("datetime64").dt.month
 final["Mês"] = final["Mês"].apply(lambda x: DT.datetime.strftime(x, "%b-%y"))
 final = final.sort_values(["ano", "mes"]).reset_index(drop=True)
-#st.dataframe(super_smart)
-result_month = final["Resultado assessor"][final["mes"] == DT.datetime.now().month]
-avrg_year1 = final["Resultado assessor"][final["ano"] == DT.datetime.now().year].mean()
-avrg_year2 = final["Resultado assessor"][
+#st.dataframe(final)
+result_month = final["Resultado assessor"][(final["mes"] == DT.datetime.now().month)& (final["ano"] == DT.datetime.now().year)]
+avrg_year1 = (final["Resultado assessor"][final["ano"] == DT.datetime.now().year].sum())
+avrg_year2 = (final["Resultado assessor"][
     final["ano"] == DT.datetime.now().year + 1
-].mean()
+].sum())
 try:
     retorno.metric(
         "Comissão Esperada para esse mês",
@@ -254,7 +253,7 @@ except:
     )
 
 ano1_avg.metric(
-    f"Comissão Média Esperado {DT.datetime.now().year}",
+    f"Comissão Esperada de {DT.datetime.now().year}",
     "R$ "
     + locale.currency(
         avrg_year1,
@@ -264,7 +263,7 @@ ano1_avg.metric(
 )
 
 ano2_avg.metric(
-    f"Comissão Média Esperado ano {DT.datetime.now().year+1}",
+    f"Comissão Esperada de {DT.datetime.now().year+1}",
     "R$ "
     + locale.currency(
         avrg_year2,
@@ -283,18 +282,22 @@ metrics["mes"] = metrics["Mês"].astype("datetime64").dt.month
 metrics["Mês"] = metrics["Mês"].apply(lambda x: DT.datetime.strftime(x, "%b-%y"))
 metrics = metrics.sort_values(["ano", "mes"]).reset_index(drop=True)
 
-dark["Comissão media esse ano"] =[
-    locale.currency(metrics[["ano", "Resultado assessor","id"]][(metrics["ano"] == DT.datetime.now().year) & (metrics["id"] == i)]["Resultado assessor"]
-    .mean()) for i in dark["client_id"]
+dark[f"Comissão esperada {DT.datetime.now().year}"] =[
+    locale.currency(metrics[["ano", "Resultado assessor","id","mes"]][(metrics["ano"] == DT.datetime.now().year) & (metrics["id"] == i)].groupby("mes").sum()["Resultado assessor"].sum(), grouping=True) for i in dark["client_id"]
 ]
 
-dark["Comissão media daqui a um ano"] =[
-    locale.currency(metrics[["ano", "Resultado assessor","id"]][(metrics["ano"] == DT.datetime.now().year+1) & (metrics["id"] == i)]["Resultado assessor"]
-    .sum()) for i in dark["client_id"]
+dark[f"Comissão esperada {DT.datetime.now().year+1}"] =[
+   locale.currency(metrics[["ano", "Resultado assessor","id","mes"]][(metrics["ano"] == DT.datetime.now().year+1) & (metrics["id"] == i)].groupby("mes").sum()["Resultado assessor"].sum(), grouping=True) for i in dark["client_id"]
 ]
 
-# st.dataframe(dark)
+
+dark["Portifólio Cliente"] = dark["Portifólio Cliente"].apply(lambda x: x[:-3])
+dark[f"Comissão esperada {DT.datetime.now().year}"] = dark[f"Comissão esperada {DT.datetime.now().year}"].apply(lambda x: x[:-3])
+dark[f"Comissão esperada {DT.datetime.now().year+1}"] = dark[f"Comissão esperada {DT.datetime.now().year+1}"].apply(lambda x: x[:-3])
+
+#st.dataframe(dark)
 # st.dataframe(result_month)
+dark = dark.replace("R$ nan", "R$ 0")
 
 
 #######################################################################################
@@ -312,7 +315,7 @@ st.markdown(
 
 vacuo, botao_1, botao_2, botao_3, vacuo_2 = st.columns([4,3,3,3,3])
 
-vazio1, cliente, vazio2 = st.columns([3, 9, 3])
+vazio1, cliente, vazio2 = st.columns([1, 13, 1])
 
 #######################################################################################
 ############################### TABLES CLIENTE E ATIVOS ###############################
@@ -320,7 +323,7 @@ vazio1, cliente, vazio2 = st.columns([3, 9, 3])
 
 with cliente:
     # dark["PL Aplicado"] = dark["PL Aplicado"].apply(lambda x: "R$ " + str(x))
-    htmlstr = f"<p style='background-color: #9966ff; color: #000000; font-size: 16px; border-radius: 7px; padding-left: 8px; text-align: center'>Portifólios Cadastrados</style></p>"
+    htmlstr = f"<p style='background-color: #9966ff; color: #000000; font-size: 16px; border-radius: 7px; padding-left: 8px; text-align: center'>Carteira de Clientes</style></p>"
     st.markdown(htmlstr, unsafe_allow_html=True)
 
     gridOptions = GridOptionsBuilder.from_dataframe(
@@ -331,6 +334,8 @@ with cliente:
                 "Portifólio Cliente",
                 "Qnt. Ativos InvestSmart",
                 "Qnt. Produtos BeSmart",
+                f"Comissão esperada {DT.datetime.now().year}",
+                f"Comissão esperada {DT.datetime.now().year+1}"
             ]
         ]
     )
@@ -502,7 +507,6 @@ st.markdown(
 with chart2:
     try:
 
-
         df_categ = fair.groupby("categoria")["pl_aplicado"].sum().reset_index()
         df_categ['label'] = df_categ["pl_aplicado"].apply(lambda x: locale.currency(x, grouping=True)[:-3])
         df_categ = df_categ.sort_values(by="pl_aplicado", ascending=False)
@@ -528,12 +532,11 @@ with chart2:
             uniformtext_minsize=8,
             uniformtext_mode="hide",
         )
+        fig.update_traces(textposition='auto',insidetextanchor = "middle")
         fig.update_yaxes(showgrid=False)
         fig.update_xaxes(showgrid=False)
         fig.data[0].marker.color = "#9966ff"
         fig.data[0].textfont.color = "white"
-        fig.data[0].textposition = "auto"
-        fig.data[0].insidetextanchor = "middle"
         st.plotly_chart(fig)
     except:
         st.error("Você não possui um Portifólio nesta ferramenta")
@@ -547,6 +550,7 @@ with chart1:
     else:
         # tab1, tab2 = st.tabs(["Grafico Geral", "Grafico Geral por Cliente"])
         # with tab1:
+        
         fig = px.bar(
                 super_smart,
                 x="Mês",
