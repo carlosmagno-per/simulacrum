@@ -200,7 +200,7 @@ with chart1:
     ):
 
         st.text("")
-        st.error("Esse Cliente não tem Portifolio")
+        st.error("Esse Cliente não tem Portifólio")
     else:
         tab1, tab2 = st.tabs(["Grafico Geral", "Grafico por Ativo Selecionado"])
         with tab2:
@@ -345,7 +345,7 @@ with chart2:
     ):
 
         st.text("")
-        st.error("Esse Cliente não tem Portifolio")
+        st.error("Esse Cliente não tem Portifólio")
     else:
         # try:
         st.text("")
@@ -396,10 +396,10 @@ st.markdown(
 )
 
 pl.metric(
-    "PL Aplicado",
+    "Total do Portifólio",
     "R$ " + locale.currency(df_ativo["PL Aplicado"].sum(), grouping=True, symbol=None),
 )
-# st.dataframe(final)
+#st.dataframe(final)
 try:
     result_month = final["Resultado assessor"][final["mes"] == DT.datetime.now().month]
     avrg_year1 = final["Resultado assessor"][

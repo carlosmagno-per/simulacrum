@@ -143,7 +143,7 @@ def base_df(
 
 
 def besmart_base(
-    data, data_inicial, face, empresa, categoria, produto, pl_apl, roa_reps, roa_rec=0
+    data, data_inicial, face, empresa, categoria, produto, pl_apl, roa_reps, roa_rec=0,impost=0.2, corretag=0
 ):
 
     dias = DT.datetime.strptime(str(data), "%Y-%m-%d") - DT.datetime.strptime(
@@ -167,55 +167,48 @@ def besmart_base(
     datesRange = pd.DataFrame(datesRange)
 
     df = pd.DataFrame()
-    if produto != "PJ":
-        masquerede = face[
-            (face["Empresa"] == empresa)
-            & (face["Categoria"] == categoria)
-            & (face["Produto"] == produto)
-        ][["porcem_repasse", "Mês"]]
-        df["Mês"] = datesRange.iloc[:, 0:1]
-        df["Custo do Produto"] = pl_apl
-        df["numero"] = df.index + 1
-        masquerede = masquerede[masquerede["Mês"].isin(df["numero"])]
-        dic = masquerede.set_index("Mês").T.to_dict("list")
-        df["numero"][df["numero"] > max(masquerede["Mês"])] = max(masquerede["Mês"])
-        df["Comissão Bruta"] = (
-            df["numero"]
-            .map(dic)
-            .fillna(method="ffill")
-            .apply(lambda x: numpy.array(x[0], dtype=float))
-        )
-        df["Resultado Bruto"] = (df["Comissão Bruta"] / 100) * df["Custo do Produto"]
-        df["Imposto"] = df["Resultado Bruto"] * 0.2
-        df["Receita Líquida"] = df["Resultado Bruto"] - df["Imposto"]
-        df["Resultado assessor"] = df["Receita Líquida"] * (roa_reps / 100)
-
+   
+    masquerede = face[
+        (face["Empresa"] == empresa)
+        & (face["Categoria"] == categoria)
+        & (face["Produto"] == produto)
+    ][["porcem_repasse", "Mês"]]
+    df["Mês"] = datesRange.iloc[:, 0:1]
+    df["Custo do Produto"] = pl_apl
+    df["Corretagem"] = df["Custo do Produto"]*corretag
+    df["numero"] = df.index + 1
+    masquerede = masquerede[masquerede["Mês"].isin(df["numero"])]
+    dic = masquerede.set_index("Mês").T.to_dict("list")
+    df["numero"][df["numero"] > max(masquerede["Mês"])] = max(masquerede["Mês"])
+    df["Comissão Bruta"] = (
+        df["numero"]
+        .map(dic)
+        .fillna(method="ffill")
+        .apply(lambda x: numpy.array(x[0], dtype=float))
+    )
+    if df["Corretagem"].iloc[0] != 0:
+        df["Corretagem Bruta"] = 0
+        df["Corretagem Bruta"].iloc[0] = corretag*100
+        df["Resultado Bruto"] = df["Corretagem"] 
+        df["Imposto"] = df["Resultado Bruto"] * impost
+        df["Corretagem Líquida"] = df["Resultado Bruto"] - df["Imposto"]
+        df["Resultado assessor"] = (df["Comissão Bruta"] / 100) * df["Corretagem Líquida"]
         df["Comissão Bruta"] = df["Comissão Bruta"].apply(
             lambda x: "{:,.2f}%".format(x)
         )
-        return df
+        df["Corretagem Bruta"] = df["Corretagem Bruta"].apply(
+            lambda x: "{:,.2f}%".format(x)
+        )
     else:
-        masquerede = face[
-            (face["Empresa"] == empresa)
-            & (face["Categoria"] == categoria)
-            & (face["Produto"] == produto)
-        ][["porcem_repasse", "Mês"]]
-        df["Mês"] = datesRange.iloc[:, 0:1]
-        df["Custo do Produto"] = pl_apl
-        df["numero"] = df.index + 1
-        df["numero"][df["numero"] > max(masquerede["Mês"])] = max(masquerede["Mês"])
-        masquerede = masquerede[masquerede["Mês"].isin(df["numero"])]
-        dic = masquerede.set_index("Mês").T.to_dict("list")
-        df["Comissão Bruta"] = (
-            df["numero"].map(dic).apply(lambda x: numpy.array(x[0], dtype=float))
-        )
-        df["Comissão Bruta"][max(masquerede["Mês"]) :] = roa_rec
         df["Resultado Bruto"] = (df["Comissão Bruta"] / 100) * df["Custo do Produto"]
-        df["Imposto"] = df["Resultado Bruto"] * 0.2
+    
+        df["Imposto"] = df["Resultado Bruto"] * impost
+        
         df["Receita Líquida"] = df["Resultado Bruto"] - df["Imposto"]
         df["Resultado assessor"] = df["Receita Líquida"] * (roa_reps / 100)
 
         df["Comissão Bruta"] = df["Comissão Bruta"].apply(
             lambda x: "{:,.2f}%".format(x)
         )
-        return df
+    return df
+

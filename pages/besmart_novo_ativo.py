@@ -109,7 +109,7 @@ with prem:
                 "Valor do Produto (R$): ",
                 min_value=0.0,
                 format="%f",
-                value=10000.0,
+                value=25000.0,
                 step=1000.0,
             )
         st.text("R$" + locale.currency(pl_apl, grouping=True, symbol=None))
@@ -185,14 +185,17 @@ with prem:
     #         elif roa_rec == 0:
     #             st.write("Valor comum para as empresas Unimed OU Omint")
     # else:
-    roa_reps = st.number_input(
-        "Repasse Assessor (%): ",
-        min_value=0.0,
-        format="%f",
-        value=50.0,
-        max_value=100.0,
-        step=1.0,
-    )
+    if empresa != "Imóveis":
+        roa_reps = st.number_input(
+            "Repasse Assessor (%): ",
+            min_value=0.0,
+            format="%f",
+            value=50.0,
+            max_value=100.0,
+            step=1.0,
+        )
+    else:
+        roa_reps = 100
     roa_rec = 0
 
 # ((valor * com_brut) - 0.2 * (valor * com_brut)) * repas_asse
@@ -241,17 +244,73 @@ else:
     with table:
         st.subheader("**Visualização do ativo por uma tabela**")
         if data > data_inicial:
-            df = besmart_base(
-                data,
-                data_inicial,
-                face,
-                empresa,
-                categoria,
-                produto,
-                pl_apl,
-                roa_reps,
-                roa_rec,
-            )
+            if produto == "Lançamento":
+                df = besmart_base(
+                    data,
+                    data_inicial,
+                    face,
+                    empresa,
+                    categoria,
+                    produto,
+                    pl_apl,
+                    roa_reps,
+                    roa_rec,
+                    corretag=0.04
+                )
+                
+            elif produto == "Consultoria e Incorporação":
+                df = besmart_base(
+                    data,
+                    data_inicial,
+                    face,
+                    empresa,
+                    categoria,
+                    produto,
+                    pl_apl,
+                    roa_reps,
+                    roa_rec,
+                    corretag=0.04
+                )
+            
+            elif produto == "Avaliação":
+                df = besmart_base(
+                    data,
+                    data_inicial,
+                    face,
+                    empresa,
+                    categoria,
+                    produto,
+                    pl_apl,
+                    roa_reps,
+                    roa_rec,
+                    impost=0
+                )
+            elif categoria == "Imóveis Prontos":
+                df = besmart_base(
+                    data,
+                    data_inicial,
+                    face,
+                    empresa,
+                    categoria,
+                    produto,
+                    pl_apl,
+                    roa_reps,
+                    roa_rec,
+                    corretag=0.05
+                )
+            
+            else:
+                df = besmart_base(
+                    data,
+                    data_inicial,
+                    face,
+                    empresa,
+                    categoria,
+                    produto,
+                    pl_apl,
+                    roa_reps,
+                    roa_rec,
+                )
 
             # dias = DT.datetime.strptime(str(data), "%Y-%m-%d") - DT.datetime.strptime(
             #     str(data_inicial), "%Y-%m-%d"
@@ -294,20 +353,35 @@ else:
             # df["Resultado do Assessor"] = df["Receita Líquida"] * (roa_reps / 100)
 
             # df["Comissão Bruta"] = df["Comissão Bruta"].apply(lambda x: "{:,.2f}%".format(x))
-
-            st.dataframe(
-                df[
-                    [
-                        "Mês",
-                        "Custo do Produto",
-                        "Comissão Bruta",
-                        "Resultado Bruto",
-                        "Receita Líquida",
-                        "Imposto",
-                        "Resultado assessor",
+            try:
+                st.dataframe(
+                    df[
+                        [
+                            "Mês",
+                            "Custo do Produto",
+                            "Comissão Bruta",
+                            "Resultado Bruto",
+                            "Receita Líquida",
+                            "Imposto",
+                            "Resultado assessor",
+                        ]
                     ]
-                ]
-            )
+                )
+            except:
+                st.dataframe(
+                    df[
+                        [
+                            "Mês",
+                            "Custo do Produto",
+                            "Corretagem Bruta",
+                            "Resultado Bruto",
+                            "Imposto",
+                            "Corretagem Líquida",
+                            "Comissão Bruta",
+                            "Resultado assessor",
+                        ]
+                    ]
+                )
             # st.dataframe(masquerede)
 
             sql = "INSERT INTO variaveis (client_id, empresa, categoria, ativo, data_venc, pl_aplicado, retorno, repasse, roa_head, roa_rec, data_ativo) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?)"

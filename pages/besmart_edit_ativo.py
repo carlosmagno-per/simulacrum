@@ -9,7 +9,7 @@ import time as tm
 from func.redirect import nav_page
 import pymysql
 from sqlalchemy import create_engine
-from database import con, cursor, moeda, base_df
+from database import con, cursor, moeda, base_df, besmart_base
 import locale
 
 locale.setlocale(locale.LC_ALL, "pt_BR.UTF-8")
@@ -211,14 +211,17 @@ with prem:
     #         elif roa_rec == 0:
     #             st.write("Valor comum para as empresas Unimed OU Omint")
     # else:
-    roa_reps = st.number_input(
-        "Repasse Assessor (%): ",
-        min_value=0.0,
-        format="%f",
-        value=50.0,
-        max_value=100.0,
-        step=1.0,
-    )
+    if empresa != "Imóveis":
+        roa_reps = st.number_input(
+            "Repasse Assessor (%): ",
+            min_value=0.0,
+            format="%f",
+            value=50.0,
+            max_value=100.0,
+            step=1.0,
+        )
+    else:
+        roa_reps = 100
     roa_rec = 0
 
     # colcom_brt, colporrep = st.columns(2)
@@ -256,6 +259,18 @@ bad_prod = [
 ]
 if produto in bad_prod:
     with table:
+        st.text("")
+        st.text("")
+        st.text("")
+        st.text("")
+        st.text("")
+        st.text("")
+        st.text("")
+        st.text("")
+        st.text("")
+        st.text("")
+        st.text("")
+        st.text("")
         st.error(
             "Esse produto apresenta um calculo de dificil simulação ou com uma peculiaridade, por favor busque a ajuda de um dos especialista"
         )
@@ -264,102 +279,158 @@ else:
         st.header("Visualização do produto por uma tabela")
 
         if data > data_inicial:
-
-            dias = DT.datetime.strptime(str(data), "%Y-%m-%d") - DT.datetime.strptime(
-                str(data_inicial), "%Y-%m-%d"
-            )
-            mes = round(dias.days / 30)
-
-            endDate = DT.datetime.strptime(str(data), "%Y-%m-%d")
-            startDate = DT.datetime.strptime(str(data_inicial), "%Y-%m-%d")
-
-            # Getting List of Days using pandas
-            if mes < 1:
-                datesRange = pd.date_range(startDate, periods=1, freq="m")
-                datesRange = list(datesRange)
+            
+            if produto == "Lançamento":
+                df = besmart_base(
+                    data,
+                    data_inicial,
+                    face,
+                    empresa,
+                    categoria,
+                    produto,
+                    pl_apl,
+                    roa_reps,
+                    roa_rec,
+                    corretag=0.04
+                )
+                
+            elif produto == "Consultoria e Incorporação":
+                df = besmart_base(
+                    data,
+                    data_inicial,
+                    face,
+                    empresa,
+                    categoria,
+                    produto,
+                    pl_apl,
+                    roa_reps,
+                    roa_rec,
+                    corretag=0.04
+                )
+            
+            elif produto == "Avaliação":
+                df = besmart_base(
+                    data,
+                    data_inicial,
+                    face,
+                    empresa,
+                    categoria,
+                    produto,
+                    pl_apl,
+                    roa_reps,
+                    roa_rec,
+                    impost=0
+                )
+            elif categoria == "Imóveis Prontos":
+                df = besmart_base(
+                    data,
+                    data_inicial,
+                    face,
+                    empresa,
+                    categoria,
+                    produto,
+                    pl_apl,
+                    roa_reps,
+                    roa_rec,
+                    corretag=0.05
+                )
+            
             else:
-                datesRange = pd.date_range(startDate, periods=mes + 1, freq="m")
-                datesRange = list(datesRange)
-
-            datesRange = [DT.datetime.strftime(x, "%b-%y") for x in datesRange]
-
-            datesRange = pd.DataFrame(datesRange)
-
-            df = pd.DataFrame()
-            if produto != "PJ":
-                masquerede = face[
-                    (face["Empresa"] == empresa)
-                    & (face["Categoria"] == categoria)
-                    & (face["Produto"] == produto)
-                ][["porcem_repasse", "Mês"]]
-                df["Mês"] = datesRange.iloc[:, 0:1]
-                df["Custo do Produto"] = pl_apl
-                df["numero"] = df.index + 1
-                masquerede = masquerede[masquerede["Mês"].isin(df["numero"])]
-                dic = masquerede.set_index("Mês").T.to_dict("list")
-                df["numero"][df["numero"] > max(masquerede["Mês"])] = max(
-                    masquerede["Mês"]
+                df = besmart_base(
+                    data,
+                    data_inicial,
+                    face,
+                    empresa,
+                    categoria,
+                    produto,
+                    pl_apl,
+                    roa_reps,
+                    roa_rec,
                 )
-                df["Comissão Bruta"] = (
-                    df["numero"]
-                    .map(dic)
-                    .fillna(method="ffill")
-                    .apply(lambda x: numpy.array(x[0], dtype=float))
-                )
-                df["Resultado Bruto"] = (df["Comissão Bruta"] / 100) * df[
-                    "Custo do Produto"
-                ]
-                df["Imposto"] = df["Resultado Bruto"] * 0.2
-                df["Receita Líquida"] = df["Resultado Bruto"] - df["Imposto"]
-                df["Resultado do Assessor"] = df["Receita Líquida"] * (roa_reps / 100)
+            
 
-                df["Comissão Bruta"] = df["Comissão Bruta"].apply(
-                    lambda x: "{:,.2f}%".format(x)
-                )
-            else:
-                masquerede = face[
-                    (face["Empresa"] == empresa)
-                    & (face["Categoria"] == categoria)
-                    & (face["Produto"] == produto)
-                ][["porcem_repasse", "Mês"]]
-                df["Mês"] = datesRange.iloc[:, 0:1]
-                df["Custo do Produto"] = pl_apl
-                df["numero"] = df.index + 1
-                df["numero"][df["numero"] > max(masquerede["Mês"])] = max(
-                    masquerede["Mês"]
-                )
-                masquerede = masquerede[masquerede["Mês"].isin(df["numero"])]
-                dic = masquerede.set_index("Mês").T.to_dict("list")
-                df["Comissão Bruta"] = (
-                    df["numero"]
-                    .map(dic)
-                    .apply(lambda x: numpy.array(x[0], dtype=float))
-                )
-                df["Comissão Bruta"][max(masquerede["Mês"]) :] = roa_rec
-                df["Resultado Bruto"] = (df["Comissão Bruta"] / 100) * df[
-                    "Custo do Produto"
-                ]
-                df["Imposto"] = df["Resultado Bruto"] * 0.2
-                df["Receita Líquida"] = df["Resultado Bruto"] - df["Imposto"]
-                df["Resultado do Assessor"] = df["Receita Líquida"] * (roa_reps / 100)
+            # dias = DT.datetime.strptime(str(data), "%Y-%m-%d") - DT.datetime.strptime(
+            #     str(data_inicial), "%Y-%m-%d"
+            # )
+            # mes = round(dias.days / 30)
 
-                df["Comissão Bruta"] = df["Comissão Bruta"].apply(
-                    lambda x: "{:,.2f}%".format(x)
-                )
+            # endDate = DT.datetime.strptime(str(data), "%Y-%m-%d")
+            # startDate = DT.datetime.strptime(str(data_inicial), "%Y-%m-%d")
 
-            st.dataframe(
-                df[
-                    [
-                        "Mês",
-                        "Custo do Produto",
-                        "Comissão Bruta",
-                        "Resultado Bruto",
-                        "Receita Líquida",
-                        "Imposto",
-                        "Resultado do Assessor",
+            # # Getting List of Days using pandas
+            # if mes < 1:
+            #     datesRange = pd.date_range(startDate, periods=1, freq="m")
+            #     datesRange = list(datesRange)
+            # else:
+            #     datesRange = pd.date_range(startDate, periods=mes + 1, freq="m")
+            #     datesRange = list(datesRange)
+
+            # datesRange = [DT.datetime.strftime(x, "%b-%y") for x in datesRange]
+
+            # datesRange = pd.DataFrame(datesRange)
+
+            # df = pd.DataFrame()
+            
+            # masquerede = face[
+            #     (face["Empresa"] == empresa)
+            #     & (face["Categoria"] == categoria)
+            #     & (face["Produto"] == produto)
+            # ][["porcem_repasse", "Mês"]]
+            # df["Mês"] = datesRange.iloc[:, 0:1]
+            # df["Custo do Produto"] = pl_apl
+            # df["numero"] = df.index + 1
+            # masquerede = masquerede[masquerede["Mês"].isin(df["numero"])]
+            # dic = masquerede.set_index("Mês").T.to_dict("list")
+            # df["numero"][df["numero"] > max(masquerede["Mês"])] = max(
+            #     masquerede["Mês"]
+            # )
+            # df["Comissão Bruta"] = (
+            #     df["numero"]
+            #     .map(dic)
+            #     .fillna(method="ffill")
+            #     .apply(lambda x: numpy.array(x[0], dtype=float))
+            # )
+            # df["Resultado Bruto"] = (df["Comissão Bruta"] / 100) * df[
+            #     "Custo do Produto"
+            # ]
+            # df["Imposto"] = df["Resultado Bruto"] * 0.2
+            # df["Receita Líquida"] = df["Resultado Bruto"] - df["Imposto"]
+            # df["Resultado do Assessor"] = df["Receita Líquida"] * (roa_reps / 100)
+
+            # df["Comissão Bruta"] = df["Comissão Bruta"].apply(
+            #     lambda x: "{:,.2f}%".format(x)
+            # )
+            
+
+            try:
+                st.dataframe(
+                    df[
+                        [
+                            "Mês",
+                            "Custo do Produto",
+                            "Comissão Bruta",
+                            "Resultado Bruto",
+                            "Receita Líquida",
+                            "Imposto",
+                            "Resultado assessor",
+                        ]
                     ]
-                ]
-            )
+                )
+            except:
+                st.dataframe(
+                    df[
+                        [
+                            "Mês",
+                            "Custo do Produto",
+                            "Corretagem Bruta",
+                            "Resultado Bruto",
+                            "Imposto",
+                            "Corretagem Líquida",
+                            "Comissão Bruta",
+                            "Resultado assessor",
+                        ]
+                    ]
+                )
 
             hide_dataframe_row_index = """
                         <style>
