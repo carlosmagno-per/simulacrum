@@ -437,10 +437,10 @@ with chart2:
         st.error("Esse Cliente não tem Portifólio")
     else:
         # try:
-        st.text("")
-        st.text("")
-        st.text("")
-        st.text("")
+#         st.text("")
+#         st.text("")
+#         st.text("")
+#         st.text("")
         # st.dataframe(dark)
         # st.dataframe(df_ativo)
         df_categ = df_ativo.groupby("Ativo")["PL Aplicado"].sum().reset_index()
