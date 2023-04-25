@@ -140,6 +140,7 @@ with tab1:
                 update_mode=GridUpdateMode.SELECTION_CHANGED,
                 columns_auto_size_mode=ColumnsAutoSizeMode.FIT_ALL_COLUMNS_TO_VIEW,
                 reload_data=True,
+                key="investsnart"
             )
 with tab2:
     vazio1, cliente, vazio2 = st.columns([1, 9, 1])
@@ -364,6 +365,7 @@ with chart1:
                 grasph_df["ativo_id"] = i
             # st.dataframe(grasph_df)
             smart = smart.append(grasph_df)
+            
         smart["Mês"] = smart["Mês"].apply(
             lambda x: DT.datetime.strptime(x, "%b-%y")
         )
@@ -403,7 +405,7 @@ with chart1:
             text_auto='.2s',
             title=f"Comissão Total Mensal",
             color_discrete_sequence=px.colors.sequential.Viridis,
-            labels = {"Resultado assessor":"Comissão do Assessor"}
+            labels = {"Resultado assessor":"Comissão do Assessor (R$)"}
         )
         fig.update_layout(
             #showlegend=False,
@@ -437,22 +439,19 @@ with chart2:
         st.error("Esse Cliente não tem Portifólio")
     else:
         # try:
-#         st.text("")
-#         st.text("")
-#         st.text("")
-#         st.text("")
         # st.dataframe(dark)
         # st.dataframe(df_ativo)
         df_categ = df_ativo.groupby("Ativo")["PL Aplicado"].sum().reset_index()
-        # st.dataframe(df_categ)
+        df_categ["Valor"] = df_categ["PL Aplicado"].astype(str).apply( lambda x: x[:-2])
+        #st.dataframe(df_categ)
         fig = px.bar(
             df_categ.sort_values(by="PL Aplicado", ascending=False),
             x="PL Aplicado",
             y="Ativo",
             width=700,
-            height=500,
+            # height=500,
             text="R$ "
-            + round(df_categ["PL Aplicado"].sort_values(ascending=False), 2).astype(
+            + df_categ["Valor"].sort_values(ascending=False).astype(
                 str
             ),
             color="Ativo",
@@ -485,7 +484,7 @@ st.markdown(
 
 pl.metric(
     "Total do Portifólio",
-    "R$ " + locale.currency(df_ativo["PL Aplicado"].sum(), grouping=True, symbol=None),
+    "R$ " + locale.currency(df_ativo["PL Aplicado"].sum(), grouping=True, symbol=None)[:-3],
 )
     
 
@@ -510,7 +509,7 @@ try:
             result_month,
             grouping=True,
             symbol=None,
-        ),
+        )[:-3],
     )
 except:
     retorno.metric(
@@ -520,7 +519,7 @@ except:
             0,
             grouping=True,
             symbol=None,
-        ),
+        )[:-3],
     )
 
 ano1_avg.metric(
@@ -530,7 +529,7 @@ ano1_avg.metric(
         avrg_year1,
         grouping=True,
         symbol=None,
-    ),
+    )[:-3],
 )
 
 if np.isnan(avrg_year2):
@@ -541,7 +540,7 @@ if np.isnan(avrg_year2):
             0,
             grouping=True,
             symbol=None,
-        ),
+        )[:-3],
     )
 else:
     ano2_avg.metric(
@@ -551,7 +550,7 @@ else:
             avrg_year2,
             grouping=True,
             symbol=None,
-        ),
+        )[:-3],
     )
 
 

@@ -76,6 +76,7 @@ st.markdown(
 #######################################################################################
 
 pl, retorno, ano1_avg, ano2_avg  = st.columns([5, 5, 5, 3])
+#container = st.container()
 list_client_id = dark["client_id"].unique()
 list_client_id = list(list_client_id)
 
@@ -504,8 +505,14 @@ st.markdown(
 )
 
 # chart1, chart2 = st.columns([6, 4])
+super_smart["data"] = super_smart["Mês"].apply(lambda x: DT.datetime.strptime(x,"%b-%y"))
+super_smart["data"] = super_smart["data"].apply(lambda x: DT.datetime.strftime(x, "%m/%Y"))
+st.dataframe(super_smart["data"].unique())
+distancia = list(super_smart["data"].unique())
+
 with chart2:
     try:
+        
 
         df_categ = fair.groupby("categoria")["pl_aplicado"].sum().reset_index()
         df_categ['label'] = df_categ["pl_aplicado"].apply(lambda x: locale.currency(x, grouping=True)[:-3])
@@ -515,7 +522,7 @@ with chart2:
             df_categ,
             x="pl_aplicado",
             y="categoria",
-            width=700,
+            #width=700,
             # height=500,
             text=df_categ.label,
             color="categoria",
@@ -550,7 +557,7 @@ with chart1:
     else:
         # tab1, tab2 = st.tabs(["Grafico Geral", "Grafico Geral por Cliente"])
         # with tab1:
-        
+        inc, end = st.select_slider("Período de tempo do Grafico",options = distancia,value=(distancia[0],distancia[-1]))
         fig = px.bar(
                 super_smart,
                 x="Mês",
@@ -561,7 +568,7 @@ with chart1:
                 text_auto='.2s',
                 title=f"Comissão Total Mensal",
                 color_discrete_sequence=px.colors.sequential.Viridis,
-                labels = {"label":"Empresa","Resultado assessor":"Comissão do Assessor"}
+                labels = {"label":"Empresa","Resultado assessor":"Comissão do Assessor (R$)"}
             )
         fig.update_layout(
             #showlegend=False,
