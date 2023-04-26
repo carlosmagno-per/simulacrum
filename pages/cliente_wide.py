@@ -74,6 +74,8 @@ st.markdown(
 
 pl, retorno, ano1_avg, ano2_avg = st.columns([5, 5, 5, 3])
 
+container1 = st.container()
+
 chart1, chart2 = st.columns([6, 4])
 
 st.markdown(
@@ -395,39 +397,81 @@ with chart1:
         )
         final = final.sort_values(["ano", "mes"]).reset_index(drop=True)
         #st.dataframe(final)
-        fig = px.bar(
-            final,
-            x="Mês",
-            y="Resultado assessor",
-            color="Produtos",
-            width=1000,
-            height=425,
-            text_auto='.2s',
-            title=f"Comissão Total Mensal",
-            color_discrete_sequence=px.colors.sequential.Viridis,
-            labels = {"Resultado assessor":"Comissão do Assessor (R$)"}
-        )
-        fig.update_layout(
-            #showlegend=False,
-            legend_title= None,
-            uniformtext_minsize=8,
-            uniformtext_mode="hide",
-            legend=dict(
-            orientation="h",
-            yanchor="bottom",
-            y=1.02,
-            xanchor="right",
-            x=1
+        final["data"] = final["Mês"].apply(lambda x: DT.datetime.strptime(x,"%b-%y"))
+        final["data"] = final["data"].apply(lambda x: DT.datetime.strftime(x, "%Y/%m"))
+        #st.dataframe(super_smart["data"].unique())
+        distancia = list(final["data"].unique())
+        with container1:
+            inc1, end1 = st.select_slider("Período de tempo do Grafico",options = distancia,value=(distancia[0],distancia[-1]))
+        
+        try:
+            fig = px.bar(
+                final[(final["data"]>= inc1) & (final["data"]<= end1)],
+                x="Mês",
+                y="Resultado assessor",
+                color="Produtos",
+                width=1000,
+                height=425,
+                text_auto='.2s',
+                title=f"Comissão Total Mensal",
+                color_discrete_sequence=px.colors.sequential.Viridis,
+                labels = {"Resultado assessor":"Comissão do Assessor (R$)"}
             )
+            fig.update_layout(
+                #showlegend=False,
+                legend_title= None,
+                uniformtext_minsize=8,
+                uniformtext_mode="hide",
+                legend=dict(
+                orientation="h",
+                yanchor="bottom",
+                y=1.02,
+                xanchor="right",
+                x=1
+                )
+                )
+            fig.update_traces(textfont_size=25)
+            fig.data[0].textfont.color = "white"
+            fig.data[0].marker.color = "#9966ff"
+            fig.data[1].marker.color = "#482878"
+            fig.update_xaxes(showgrid=False)
+            fig.update_yaxes(title=None)
+            #fig.update_traces(textposition="top center")
+            st.plotly_chart(fig)
+        except:
+            fig = px.bar(
+                final[(final["data"]>= inc1) & (final["data"]<= end1)],
+                x="Mês",
+                y="Resultado assessor",
+                #color="Produtos",
+                width=1000,
+                height=425,
+                text_auto='.2s',
+                title=f"Comissão Total Mensal",
+                color_discrete_sequence=px.colors.sequential.Viridis,
+                labels = {"Resultado assessor":"Comissão do Assessor (R$)"}
             )
-        fig.update_traces(textfont_size=25)
-        fig.data[0].textfont.color = "white"
-        fig.data[0].marker.color = "#9966ff"
-        fig.data[1].marker.color = "#482878"
-        fig.update_xaxes(showgrid=False)
-        fig.update_yaxes(title=None)
-        #fig.update_traces(textposition="top center")
-        st.plotly_chart(fig)
+            fig.update_layout(
+                #showlegend=False,
+                legend_title= None,
+                uniformtext_minsize=8,
+                uniformtext_mode="hide",
+                legend=dict(
+                orientation="h",
+                yanchor="bottom",
+                y=1.02,
+                xanchor="right",
+                x=1
+                )
+                )
+            fig.update_traces(textfont_size=25)
+            fig.data[0].textfont.color = "white"
+            fig.data[0].marker.color = "#9966ff"
+            #fig.data[1].marker.color = "#482878"
+            fig.update_xaxes(showgrid=False)
+            fig.update_yaxes(title=None)
+            #fig.update_traces(textposition="top center")
+            st.plotly_chart(fig)
 with chart2:
     if (
         st.session_state["df_cliente"]["Qnt. Ativos InvestSmart"].iloc[0]

@@ -76,7 +76,7 @@ st.markdown(
 #######################################################################################
 
 pl, retorno, ano1_avg, ano2_avg  = st.columns([5, 5, 5, 3])
-#container = st.container()
+container = st.container()
 list_client_id = dark["client_id"].unique()
 list_client_id = list(list_client_id)
 
@@ -272,6 +272,8 @@ ano2_avg.metric(
         symbol=None,
     )[:-3],
 )
+
+
 
 #######################################################################################
 ################################ COMISSÃO POR CLIENTE #################################
@@ -506,9 +508,12 @@ st.markdown(
 
 # chart1, chart2 = st.columns([6, 4])
 super_smart["data"] = super_smart["Mês"].apply(lambda x: DT.datetime.strptime(x,"%b-%y"))
-super_smart["data"] = super_smart["data"].apply(lambda x: DT.datetime.strftime(x, "%m/%Y"))
-st.dataframe(super_smart["data"].unique())
+super_smart["data"] = super_smart["data"].apply(lambda x: DT.datetime.strftime(x, "%Y/%m"))
+#st.dataframe(super_smart["data"].unique())
 distancia = list(super_smart["data"].unique())
+with container:
+    inc, end = st.select_slider("Período de tempo do Grafico",options = distancia,value=(distancia[0],distancia[-1]))
+
 
 with chart2:
     try:
@@ -557,40 +562,75 @@ with chart1:
     else:
         # tab1, tab2 = st.tabs(["Grafico Geral", "Grafico Geral por Cliente"])
         # with tab1:
-        inc, end = st.select_slider("Período de tempo do Grafico",options = distancia,value=(distancia[0],distancia[-1]))
-        fig = px.bar(
-                super_smart,
-                x="Mês",
-                y="Resultado assessor",
-                color="label",
-                width=1000,
-                height=425,
-                text_auto='.2s',
-                title=f"Comissão Total Mensal",
-                color_discrete_sequence=px.colors.sequential.Viridis,
-                labels = {"label":"Empresa","Resultado assessor":"Comissão do Assessor (R$)"}
-            )
-        fig.update_layout(
-            #showlegend=False,
-            legend_title= None,
-            uniformtext_minsize=8,
-            uniformtext_mode="hide",
-            legend=dict(
-            orientation="h",
-            yanchor="bottom",
-            y=1.02,
-            xanchor="right",
-            x=1
-            )
-            )
-        fig.update_traces(textfont_size=25)
-        fig.data[0].textfont.color = "white"
-        fig.data[0].marker.color = "#9966ff"
-        fig.data[1].marker.color = "#482878"
-        fig.update_xaxes(showgrid=False)
-        fig.update_yaxes(title=None)
-        #fig.update_traces(textposition="top center")
-        st.plotly_chart(fig)
+        #st.dataframe(super_smart)
+        try:
+            fig = px.bar(
+                    super_smart[(super_smart["data"]>= inc) & (super_smart["data"]<= end)],
+                    x="Mês",
+                    y="Resultado assessor",
+                    color="label",
+                    width=1000,
+                    height=425,
+                    text_auto='.2s',
+                    title=f"Comissão Total Mensal",
+                    color_discrete_sequence=px.colors.sequential.Viridis,
+                    labels = {"label":"Empresa","Resultado assessor":"Comissão do Assessor (R$)"}
+                )
+            fig.update_layout(
+                #showlegend=False,
+                legend_title= None,
+                uniformtext_minsize=8,
+                uniformtext_mode="hide",
+                legend=dict(
+                orientation="h",
+                yanchor="bottom",
+                y=1.02,
+                xanchor="right",
+                x=1
+                )
+                )
+            fig.update_traces(textfont_size=25)
+            fig.data[0].textfont.color = "white"
+            fig.data[0].marker.color = "#9966ff"
+            fig.data[1].marker.color = "#482878"
+            fig.update_xaxes(showgrid=False,range=[inc,end])
+            fig.update_yaxes(title=None)
+            #fig.update_traces(textposition="top center")
+            st.plotly_chart(fig)
+        except:
+            fig = px.bar(
+                    super_smart[(super_smart["data"]>= inc) & (super_smart["data"]<= end)],
+                    x="Mês",
+                    y="Resultado assessor",
+                    #color="label",
+                    width=1000,
+                    height=425,
+                    text_auto='.2s',
+                    title=f"Comissão Total Mensal",
+                    color_discrete_sequence=px.colors.sequential.Viridis,
+                    labels = {"label":"Empresa","Resultado assessor":"Comissão do Assessor (R$)"}
+                )
+            fig.update_layout(
+                #showlegend=False,
+                legend_title= None,
+                uniformtext_minsize=8,
+                uniformtext_mode="hide",
+                legend=dict(
+                orientation="h",
+                yanchor="bottom",
+                y=1.02,
+                xanchor="right",
+                x=1
+                )
+                )
+            fig.update_traces(textfont_size=25)
+            fig.data[0].textfont.color = "white"
+            fig.data[0].marker.color = "#482878"
+            #fig.data[1].marker.color = "#482878"
+            fig.update_xaxes(showgrid=False,range=[inc,end])
+            fig.update_yaxes(title=None)
+            #fig.update_traces(textposition="top center")
+            st.plotly_chart(fig)
             # fig = px.line(
             #     final,
             #     x="Mês",
