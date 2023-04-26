@@ -89,14 +89,23 @@ dark["PL Aplicado"] = (
     .map(dicio)
     .apply(lambda x: locale.currency(x, grouping=True, symbol=True))
 )
+#st.dataframe(dark)
 dark["PL Aplicado"] = dark["PL Aplicado"].replace("R$ nan", "R$ 0,00")
+
+dark["Investimentos"] = (
+    df["client_id"]
+    .map(fair[fair.empresa=='INVESTSMART'].groupby("client_id")["pl_aplicado"].sum())
+    .apply(lambda x: locale.currency(x, grouping=True, symbol=True))
+)
+dark["Investimentos"] = dark["Investimentos"].replace("R$ nan", "R$ 0,00")
 
 fair["karma"] = [
     "InvestSmart" if x == "INVESTSMART" else "BeSmart" for x in fair["empresa"]
 ]
+#st.dataframe(fair)
 pl.metric(
     "Total do Portifólio",
-    "R$ " + locale.currency(fair.pl_aplicado.sum(), grouping=True, symbol=None)[:-3],
+    "R$ " + locale.currency(fair[fair.empresa=='INVESTSMART'].pl_aplicado.sum(), grouping=True, symbol=None)[:-3],
 )
 
 if fair.pl_aplicado.sum() == 0:
@@ -143,10 +152,10 @@ else:
             else 0
             for x in dark["client_id"].unique()
         ]
-dark["Portifólio Cliente"] = dark["PL Aplicado"]
+
 
 smart = pd.DataFrame(columns=["Mês", "Resultado assessor"])
-# st.dataframe(fair)
+
 
 face = pd.read_excel("base_besmart_v2.xlsx")
 face["Categoria"] = face["Categoria"].apply(lambda x: x.replace("_", " "))
@@ -187,17 +196,58 @@ for i in fair["ativo_id"].unique():
     smart = smart.append(grasph_df)
 smart["Mês"] = smart["Mês"].apply(lambda x: DT.datetime.strptime(x, "%b-%y"))
 smart["Mês"] = smart["Mês"].apply(lambda x: DT.datetime.strftime(x, "%m-%y"))
-Invest = smart[smart['PL Retido'].notna()]
-Invest = (Invest[["Mês", "Resultado assessor"]]
-    .groupby(Invest["Mês"])["Resultado assessor"]
-    .sum()
-    .reset_index())
-Besmart = smart[smart['Custo do Produto'].notna()]
-Besmart = (Besmart[["Mês", "Resultado assessor"]]
-    .groupby(Besmart["Mês"])["Resultado assessor"]
-    .sum()
-    .reset_index())
+try:
+    Invest = smart[smart['PL Retido'].notna()]
+    Invest = (Invest[["Mês", "Resultado assessor"]]
+        .groupby(Invest["Mês"])["Resultado assessor"]
+        .sum()
+        .reset_index())
+    Invest["Mês"] = Invest["Mês"].apply(lambda x: DT.datetime.strptime(x, "%m-%y"))
+    Invest["ano"] = Invest["Mês"].astype("datetime64").dt.year
+    Invest["mes"] = Invest["Mês"].astype("datetime64").dt.month
+    Invest["Mês"] = Invest["Mês"].apply(lambda x: DT.datetime.strftime(x, "%b-%y"))
+    Invest = Invest.sort_values(["ano", "mes"]).reset_index(drop=True)
+    Invest["label"]= "InvestSmart"
 
+except:
+    Invest = pd.DataFrame(columns={
+        "Mês",
+        "Resultado assessor",
+        "ano",
+        "mes",
+        "label"
+    })
+try:
+    Besmart = smart[smart['Custo do Produto'].notna()]
+    Besmart = (Besmart[["Mês", "Resultado assessor"]]
+        .groupby(Besmart["Mês"])["Resultado assessor"]
+        .sum()
+        .reset_index())
+    Besmart["Mês"] = Besmart["Mês"].apply(lambda x: DT.datetime.strptime(x, "%m-%y"))
+    Besmart["ano"] = Besmart["Mês"].astype("datetime64").dt.year
+    Besmart["mes"] = Besmart["Mês"].astype("datetime64").dt.month
+    Besmart["Mês"] = Besmart["Mês"].apply(lambda x: DT.datetime.strftime(x, "%b-%y"))
+    Besmart["label"]= "BeSmart"
+except:
+    Besmart = pd.DataFrame(columns={
+        "Mês",
+        "Resultado assessor",
+        "ano",
+        "mes",
+        "label"
+    })
+try:
+    super_smart = Besmart.append(Invest)
+    super_smart = super_smart.sort_values(["ano", "mes"]).reset_index(drop=True)
+   
+except:
+    super_smart = pd.DataFrame(columns={
+        "Mês",
+        "Resultado assessor",
+        "ano",
+        "mes",
+        "label"
+    })
 final = (
     smart[["Mês", "Resultado assessor"]]
     .groupby(smart["Mês"])["Resultado assessor"]
@@ -205,21 +255,6 @@ final = (
     .reset_index()
 )
 
-Invest["Mês"] = Invest["Mês"].apply(lambda x: DT.datetime.strptime(x, "%m-%y"))
-Invest["ano"] = Invest["Mês"].astype("datetime64").dt.year
-Invest["mes"] = Invest["Mês"].astype("datetime64").dt.month
-Invest["Mês"] = Invest["Mês"].apply(lambda x: DT.datetime.strftime(x, "%b-%y"))
-Invest = Invest.sort_values(["ano", "mes"]).reset_index(drop=True)
-Invest["label"]= "InvestSmart"
-
-Besmart["Mês"] = Besmart["Mês"].apply(lambda x: DT.datetime.strptime(x, "%m-%y"))
-Besmart["ano"] = Besmart["Mês"].astype("datetime64").dt.year
-Besmart["mes"] = Besmart["Mês"].astype("datetime64").dt.month
-Besmart["Mês"] = Besmart["Mês"].apply(lambda x: DT.datetime.strftime(x, "%b-%y"))
-Besmart["label"]= "BeSmart"
-
-super_smart = Besmart.append(Invest)
-super_smart = super_smart.sort_values(["ano", "mes"]).reset_index(drop=True)
 
 final["Mês"] = final["Mês"].apply(lambda x: DT.datetime.strptime(x, "%m-%y"))
 final["ano"] = final["Mês"].astype("datetime64").dt.year
@@ -284,19 +319,29 @@ metrics["ano"] = metrics["Mês"].astype("datetime64").dt.year
 metrics["mes"] = metrics["Mês"].astype("datetime64").dt.month
 metrics["Mês"] = metrics["Mês"].apply(lambda x: DT.datetime.strftime(x, "%b-%y"))
 metrics = metrics.sort_values(["ano", "mes"]).reset_index(drop=True)
+#st.dataframe(metrics)
 
-dark[f"Comissão esperada {DT.datetime.now().year}"] =[
+dark[f"Comissão esperada {DT.datetime.now().year}"] =[0 if metrics.empty else
     locale.currency(metrics[["ano", "Resultado assessor","id","mes"]][(metrics["ano"] == DT.datetime.now().year) & (metrics["id"] == i)].groupby("mes").sum()["Resultado assessor"].sum(), grouping=True) for i in dark["client_id"]
 ]
 
-dark[f"Comissão esperada {DT.datetime.now().year+1}"] =[
+dark[f"Comissão esperada {DT.datetime.now().year+1}"] =[0 if metrics.empty else
    locale.currency(metrics[["ano", "Resultado assessor","id","mes"]][(metrics["ano"] == DT.datetime.now().year+1) & (metrics["id"] == i)].groupby("mes").sum()["Resultado assessor"].sum(), grouping=True) for i in dark["client_id"]
 ]
 
-
-dark["Portifólio Cliente"] = dark["Portifólio Cliente"].apply(lambda x: x[:-3])
-dark[f"Comissão esperada {DT.datetime.now().year}"] = dark[f"Comissão esperada {DT.datetime.now().year}"].apply(lambda x: x[:-3])
-dark[f"Comissão esperada {DT.datetime.now().year+1}"] = dark[f"Comissão esperada {DT.datetime.now().year+1}"].apply(lambda x: x[:-3])
+try:
+    dark["Investimentos"] = dark["Investimentos"].apply(lambda x: x[:-3])
+except:
+    pass
+try:
+    dark[f"Comissão esperada {DT.datetime.now().year}"] = dark[f"Comissão esperada {DT.datetime.now().year}"].apply(lambda x: x[:-3])
+except:
+    dark[f"Comissão esperada {DT.datetime.now().year}"] = 0
+try:
+    dark[f"Comissão esperada {DT.datetime.now().year+1}"] = dark[f"Comissão esperada {DT.datetime.now().year+1}"].apply(lambda x: x[:-3])
+except:
+    
+    dark[f"Comissão esperada {DT.datetime.now().year+1}"] = 0
 
 #st.dataframe(dark)
 # st.dataframe(result_month)
@@ -318,7 +363,7 @@ st.markdown(
 
 vacuo, botao_1, botao_2, botao_3, vacuo_2 = st.columns([4,3,3,3,3])
 
-vazio1, cliente, vazio2 = st.columns([1, 13, 1])
+vazio1, cliente, vazio2 = st.columns([0.1, 15, 0.1])
 
 #######################################################################################
 ############################### TABLES CLIENTE E ATIVOS ###############################
@@ -334,7 +379,7 @@ with cliente:
             [
                 "Nome do Cliente",
                 "Data de Cadastro",
-                "Portifólio Cliente",
+                "Investimentos",
                 "Qnt. Ativos InvestSmart",
                 "Qnt. Produtos BeSmart",
                 f"Comissão esperada {DT.datetime.now().year}",
@@ -512,13 +557,13 @@ super_smart["data"] = super_smart["data"].apply(lambda x: DT.datetime.strftime(x
 #st.dataframe(super_smart["data"].unique())
 distancia = list(super_smart["data"].unique())
 with container:
-    inc, end = st.select_slider("Período de tempo do Grafico",options = distancia,value=(distancia[0],distancia[-1]))
-
+    try:
+        inc, end = st.select_slider("Período de tempo do Grafico",options = distancia,value=(distancia[0],distancia[-1]))
+    except:
+        pass
 
 with chart2:
     try:
-        
-
         df_categ = fair.groupby("categoria")["pl_aplicado"].sum().reset_index()
         df_categ['label'] = df_categ["pl_aplicado"].apply(lambda x: locale.currency(x, grouping=True)[:-3])
         df_categ = df_categ.sort_values(by="pl_aplicado", ascending=False)
@@ -535,7 +580,7 @@ with chart2:
             title="Total do Portifólio por Categoria",
         )
         fig.update_layout(
-            font=dict(family="Arial", size=18, color="White"),
+            font=dict(family="Arial", size=12, color="White"),
             # paper_bgcolor="rgba(0,0,0,0)",
             # plot_bgcolor="rgba(0,0,0,0)",
             xaxis=dict(title="", tickvals=[], ticktext=[]),
@@ -553,11 +598,8 @@ with chart2:
     except:
         st.error("Você não possui um Portifólio nesta ferramenta")
 with chart1:
-    if final.empty:
-        st.text("")
-        st.text("")
-        st.text("")
-        st.text("")
+    if super_smart.empty:
+
         st.error("Você não possui um Portifólio nesta ferramenta")
     else:
         # tab1, tab2 = st.tabs(["Grafico Geral", "Grafico Geral por Cliente"])
@@ -589,11 +631,11 @@ with chart1:
                 x=1
                 )
                 )
-            fig.update_traces(textfont_size=25)
+            fig.update_traces(textfont_size=12)
             fig.data[0].textfont.color = "white"
             fig.data[0].marker.color = "#9966ff"
             fig.data[1].marker.color = "#482878"
-            fig.update_xaxes(showgrid=False,range=[inc,end])
+            fig.update_xaxes(showgrid=False)
             fig.update_yaxes(title=None)
             #fig.update_traces(textposition="top center")
             st.plotly_chart(fig)
@@ -615,19 +657,22 @@ with chart1:
                 legend_title= None,
                 uniformtext_minsize=8,
                 uniformtext_mode="hide",
+                showlegend=True,
                 legend=dict(
                 orientation="h",
                 yanchor="bottom",
                 y=1.02,
                 xanchor="right",
-                x=1
+                x=1,
                 )
                 )
-            fig.update_traces(textfont_size=25)
+            fig.update_traces(textfont_size=12)
             fig.data[0].textfont.color = "white"
             fig.data[0].marker.color = "#482878"
+            fig.data[0]['showlegend']=True
+            fig['data'][0]['name']=super_smart[(super_smart["data"]>= inc) & (super_smart["data"]<= end)]['label'].iloc[0]
             #fig.data[1].marker.color = "#482878"
-            fig.update_xaxes(showgrid=False,range=[inc,end])
+            fig.update_xaxes(showgrid=False)
             fig.update_yaxes(title=None)
             #fig.update_traces(textposition="top center")
             st.plotly_chart(fig)

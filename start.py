@@ -9,7 +9,7 @@ from func.redirect import nav_page
 import sqlite3
 
 
-df = pd.read_excel("sigla.xlsx")
+df = pd.read_excel("sigla_v2.xlsx")
 
 sigla = df["SIGLA"].unique()
 

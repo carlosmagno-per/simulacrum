@@ -37,7 +37,7 @@ prem, table = st.columns(2)
 with prem:
     st.subheader("**Premissas**")
 
-    face = pd.read_excel("base_besmart_v2.xlsx")
+    face = pd.read_excel("base_besmart_v3.xlsx")
     face["Categoria"] = face["Categoria"].apply(lambda x: x.replace("_", " "))
     face["Produto"] = face["Produto"].apply(lambda x: x.replace("_", " "))
     face["porcem_repasse"] = face["porcem_repasse"] * 100.0

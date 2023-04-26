@@ -26,7 +26,7 @@ st.set_page_config(
 
 col1, mid, col2 = st.columns([20, 2, 4])
 with col1:
-    st.header("Editando um Ativo")
+    st.header("Visualizando um Ativo")
 with col2:
     st.image("BeSmart_Logos_AF_horizontal__branco.png", width=270)
 
@@ -58,7 +58,7 @@ prem, table = st.columns(2)
 with prem:
     st.subheader("**Premissas**")
 
-    face = pd.read_excel("base_besmart_v2.xlsx")
+    face = pd.read_excel("base_besmart_v3.xlsx")
     face["Categoria"] = face["Categoria"].apply(lambda x: x.replace("_", " "))
     face["Produto"] = face["Produto"].apply(lambda x: x.replace("_", " "))
     face["porcem_repasse"] = face["porcem_repasse"] * 100.0

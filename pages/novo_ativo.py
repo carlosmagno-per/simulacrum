@@ -39,7 +39,7 @@ prem, table = st.columns(2)
 with prem:
     st.subheader("**Premissas**")
 
-    face = pd.read_excel("bd_base_v2.xlsx")
+    face = pd.read_excel("bd_base_v3.xlsx")
     face["Categoria"] = face["Categoria"].apply(lambda x: x.replace("_", " "))
     face["ROA Cabeça"] = face["ROA Cabeça"] * 100.0
     face["Roa Recorrente"] = face["Roa Recorrente"] * 100.0
