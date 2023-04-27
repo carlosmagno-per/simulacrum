@@ -10,6 +10,7 @@ from sqlalchemy import create_engine
 from database import con, cursor, moeda, base_df
 import locale
 import streamlit.components.v1 as components
+import plotly.express as px
 
 
 locale.setlocale(locale.LC_ALL, "pt_BR.UTF-8")
@@ -48,16 +49,159 @@ with prem:
 
     # st.write(v3)
     # st.write(name_v1)
+    good_categ = ["Fundos","Previdencia"]
+    
 
     colNome1, colValue1 = st.columns(2)
 
     with colNome1:
         categoria = st.selectbox(
             "Categoria: ",
-            face.Categoria.unique(),
+            face.sort_values(by="Categoria").Categoria.unique(),
         )
+    if categoria in good_categ:
+        with colValue1:
+            subcategoria = st.selectbox(
+                "Subcategoria: ",
+                face.sort_values(by="Subcategoria").Subcategoria[face["Categoria"] == categoria].unique(),
+            )  
+            
 
-    with colValue1:
+        colNome2, colValue2 = st.columns(2)
+
+        with colNome2:
+            ativo = st.selectbox(
+                    "Ativo: ", list(face.sort_values(by="PRODUTOS").PRODUTOS[(face["Categoria"] == categoria) & (face["Subcategoria"] == subcategoria)].unique())
+                )
+            
+
+        with colValue2:
+            pl_apl = st.number_input(
+                "PL Aplicado (R$): ",
+                min_value=0.0,
+                format="%f",
+                value=3000000.0,
+                step=1000.0,
+            )
+            st.text("R$" + locale.currency(pl_apl, grouping=True, symbol=None))
+            # retorno = st.number_input(
+            #     "Retorno Esperado a.a. (%): ",
+            #     min_value=0.0,
+            #     max_value=100.0,
+            #     value=12.0,
+            #     format="%f",
+            #     step=1.0,
+            # )
+
+        colNome3, colValue3 = st.columns(2)
+        with colNome3:
+            data_inicial = st.date_input("Data de Início: ", min_value=DT.date.today())
+
+        with colValue3:
+            data = st.date_input("Data de Vencimento: ", min_value=DT.date.today())
+
+        colroa_head, colRoa_rec = st.columns(2)
+        #colroa_head, colRoa_rec, colRepasse = st.columns(3)
+
+        with colRoa_rec:
+            roa_rec = st.number_input(
+                "ROA Recorrente (%): ",
+                min_value=0.0,
+                format="%.2f",
+                value=float(face["Roa Recorrente"][face["PRODUTOS"] == ativo]),
+                max_value=100.0,
+                step=0.1,
+            )
+
+        with colroa_head:
+            roa_head = st.number_input(
+                "ROA Cabeça (%): ",
+                min_value=0.0,
+                max_value=100.0,
+                value=float(face["ROA Cabeça"][face["PRODUTOS"] == ativo]),
+                format="%.2f",
+                step=0.01,
+            )
+
+        # with colRepasse:
+        #     roa_reps = st.number_input(
+        #         "Repasse Assessor (%): ",
+        #         min_value=0.0,
+        #         format="%f",
+        #         value=50.0,
+        #         max_value=100.0,
+        #         step=1.0,
+        #     )
+        roa_reps = 50.0
+        retorno= 0.0
+        
+    elif categoria == "Renda Fixa":
+        with colValue1:
+            ativo = st.selectbox(
+                    "Ativo: ", list(face.sort_values(by="PRODUTOS").PRODUTOS[(face["Categoria"] == categoria)].unique())
+                )
+            
+
+        colNome2, colValue2 = st.columns(2)
+
+        with colNome2:
+            pl_apl = st.number_input(
+                "PL Aplicado (R$): ",
+                min_value=0.0,
+                format="%f",
+                value=3000000.0,
+                step=1000.0,
+            )
+            st.text("R$" + locale.currency(pl_apl, grouping=True, symbol=None))
+            
+            
+
+        with colValue2:
+            retorno = st.number_input(
+                "Retorno Esperado a.a. (%): ",
+                min_value=0.0,
+                max_value=100.0,
+                value=12.0,
+                format="%f",
+                step=1.0,
+            )
+
+        colNome3, colValue3 = st.columns(2)
+        with colNome3:
+            data_inicial = st.date_input("Data de Início: ", min_value=DT.date.today())
+
+        with colValue3:
+            data = st.date_input("Data de Vencimento: ", min_value=DT.date.today())
+
+        colroa_head, colRoa_rec = st.columns(2)
+        #colroa_head, colRoa_rec, colRepasse = st.columns(3)
+
+        with colRoa_rec:
+            roa_rec = st.number_input(
+                "ROA Recorrente (%): ",
+                min_value=0.0,
+                format="%.2f",
+                value=float(face["Roa Recorrente"][face["PRODUTOS"] == ativo]),
+                max_value=100.0,
+                step=0.1,
+            )
+
+        with colroa_head:
+            roa_head = st.number_input(
+                "ROA Cabeça (%): ",
+                min_value=0.0,
+                max_value=100.0,
+                value=float(face["ROA Cabeça"][face["PRODUTOS"] == ativo]),
+                format="%.2f",
+                step=0.01,
+            )
+        roa_reps = 50
+    else:
+        with colValue1:
+            ativo = st.selectbox(
+                    "Ativo: ", list(face.sort_values(by="PRODUTOS").PRODUTOS[(face["Categoria"] == categoria)].unique())
+                )
+            
         pl_apl = st.number_input(
             "PL Aplicado (R$): ",
             min_value=0.0,
@@ -67,62 +211,37 @@ with prem:
         )
         st.text("R$" + locale.currency(pl_apl, grouping=True, symbol=None))
 
-    colNome2, colValue2 = st.columns(2)
+        colNome3, colValue3 = st.columns(2)
+        with colNome3:
+            data_inicial = st.date_input("Data de Início: ", min_value=DT.date.today())
 
-    with colNome2:
-        ativo = st.selectbox(
-            "Ativo: ", list(face.PRODUTOS[face["Categoria"] == categoria].unique())
-        )
+        with colValue3:
+            data = st.date_input("Data de Vencimento: ", min_value=DT.date.today())
 
-    with colValue2:
-        retorno = st.number_input(
-            "Retorno Esperado a.a. (%): ",
-            min_value=0.0,
-            max_value=100.0,
-            value=12.0,
-            format="%f",
-            step=1.0,
-        )
+        colroa_head, colRoa_rec = st.columns(2)
+        #colroa_head, colRoa_rec, colRepasse = st.columns(3)
 
-    colNome3, colValue3 = st.columns(2)
-    with colNome3:
-        data_inicial = st.date_input("Data de Início: ", min_value=DT.date.today())
+        with colRoa_rec:
+            roa_rec = st.number_input(
+                "ROA Recorrente (%): ",
+                min_value=0.0,
+                format="%.2f",
+                value=float(face["Roa Recorrente"][face["PRODUTOS"] == ativo]),
+                max_value=100.0,
+                step=0.1,
+            )
 
-    with colValue3:
-        data = st.date_input("Data de Vencimento: ", min_value=DT.date.today())
-
-    # colRoa_rec, colRepasse = st.columns(2)
-    colRoa_rec, colroa_head, colRepasse = st.columns(3)
-
-    with colRoa_rec:
-        roa_rec = st.number_input(
-            "ROA Recorrente (%): ",
-            min_value=0.0,
-            format="%.2f",
-            value=float(face["Roa Recorrente"][face["PRODUTOS"] == ativo]),
-            max_value=100.0,
-            step=0.1,
-        )
-
-    with colroa_head:
-        roa_head = st.number_input(
-            "ROA Cabeça (%): ",
-            min_value=0.0,
-            max_value=100.0,
-            value=float(face["ROA Cabeça"][face["PRODUTOS"] == ativo]),
-            format="%.2f",
-            step=0.01,
-        )
-
-    with colRepasse:
-        roa_reps = st.number_input(
-            "Repasse Assessor (%): ",
-            min_value=0.0,
-            format="%f",
-            value=50.0,
-            max_value=100.0,
-            step=1.0,
-        )
+        with colroa_head:
+            roa_head = st.number_input(
+                "ROA Cabeça (%): ",
+                min_value=0.0,
+                max_value=100.0,
+                value=float(face["ROA Cabeça"][face["PRODUTOS"] == ativo]),
+                format="%.2f",
+                step=0.01,
+            )
+        roa_reps = 50.0
+        retorno= 0.0
 
 # st.markdown(
 #     """<hr style="height:1px;border:none;color:#9966ff;background-color:#9966ff;" />

@@ -64,6 +64,8 @@ with col1:
     if st.button("Voltar a visão Geral do Assessor"):
         nav_page("wide_project")
 with col2:
+    st.text("")
+    st.text("")
     st.image("investsmart_endosso_horizontal_fundopreto.png", width=270)
 
 
@@ -101,6 +103,8 @@ st.markdown(
 # st.table(dark)
 
 with tab1:
+    
+        
     vazio1, cliente, vazio2 = st.columns([1, 9, 1])
     dark["PL Aplicado"] = dark["PL Aplicado"].apply(
         lambda x: locale.currency(x, grouping=True, symbol=True)
@@ -155,6 +159,8 @@ with tab1:
     chart3, chart2= st.columns([6,4])
         
 with tab2:
+    
+        
     vazio1, cliente, vazio2 = st.columns([1, 9, 1])
     with cliente:
         dark3 = dark[dark["Empresa"]!="INVESTSMART"]
@@ -208,6 +214,8 @@ with tab2:
           
 
 with geral:
+    
+        
     vazio1, cliente, vazio2 = st.columns([1, 9, 1])
     with cliente:
         dark["Ativo ou Produto"] = dark["Ativo"]

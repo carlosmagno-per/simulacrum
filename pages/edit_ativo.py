@@ -52,7 +52,7 @@ st.markdown(
     """<hr style="height:1px;border:none;color:#9966ff;background-color:#9966ff;" /> """,
     unsafe_allow_html=True,
 )
-
+roa_reps = float(v1_repasse)
 prem, table = st.columns(2)
 with prem:
     st.subheader("**Premissas**")
@@ -60,8 +60,7 @@ with prem:
     
     if "disabled" not in st.session_state:
         st.session_state["disabled"] = True
-    else:
-        st.session_state["disabled"] = True
+    
         
     face = pd.read_excel("bd_base_v3.xlsx")
     face["Categoria"] = face["Categoria"].apply(lambda x: x.replace("_", " "))
@@ -69,35 +68,19 @@ with prem:
     face["Roa Recorrente"] = face["Roa Recorrente"] * 100.0
 
     categoria_list = list(face.Categoria.unique())
-
+    good_categ = ["Fundos","Previdencia"]
     colNome1, colValue1 = st.columns(2)
 
     with colNome1:
         categoria = st.selectbox(
-            "Categoria: ", face.Categoria.unique(), index=categoria_list.index(v1_categ),disabled=st.session_state.disabled, 
-         
+            "Categoria: ", face.Categoria.unique(), index=categoria_list.index(v1_categ),disabled=st.session_state["disabled"],  
         )
-
-    with colValue1:
-        pl_apl = st.number_input(
-            "PL Aplicado (R$): ",
-            min_value=0.0,
-            format="%f",
-            value=float(v1_pl_apl),
-            step=1000.0,
-            disabled=st.session_state.disabled, 
-             
-        )
-        st.text("R$" + locale.currency(pl_apl, grouping=True, symbol=None))
-
-    colNome2, colValue2 = st.columns(2)
-
     try:
         ind = list(face.PRODUTOS[face["Categoria"] == categoria].unique()).index(
             v1_ativo
         )
 
-        with colNome2:
+        with colValue1:
             ativo = st.selectbox(
                 "Ativo: ",
                 list(face.PRODUTOS[face["Categoria"] == categoria].unique()),
@@ -106,25 +89,51 @@ with prem:
                  
             )
     except:
-        with colNome2:
+        with colValue1:
             ativo = st.selectbox(
                 "Ativo: ",
                 list(face.PRODUTOS[face["Categoria"] == categoria].unique()),
                 disabled=st.session_state.disabled, 
                  
             )
+        
+############################################################################################        
+#####################################LORD OF THE GAME#######################################
+############################################################################################
+    # colNome2, colValue2 = st.columns(2)
 
-    with colValue2:
-        retorno = st.number_input(
-            "Retorno Esperado a.a. (%): ",
-            min_value=0.0,
-            max_value=100.0,
-            value=float(v1_retorno),
-            format="%f",
-            step=1.0,
+
+    # with colNome2:
+    pl_apl = st.number_input(
+        "PL Aplicado (R$): ",
+        min_value=0.0,
+        format="%f",
+        value=float(v1_pl_apl),
+        step=1000.0,
+        disabled=st.session_state.disabled, 
+            
+    )
+    st.text("R$" + locale.currency(pl_apl, grouping=True, symbol=None))
+
+
+    if categoria in good_categ:
+        subcategoria = st.selectbox(
+            "Subcategoria: ",
+            face.sort_values(by="Subcategoria").Subcategoria[face["Categoria"] == categoria].unique(),
             disabled=st.session_state.disabled, 
-             
         )
+
+    # with colValue2:
+        # retorno = st.number_input(
+        #     "Retorno Esperado a.a. (%): ",
+        #     min_value=0.0,
+        #     max_value=100.0,
+        #     value=float(v1_retorno),
+        #     format="%f",
+        #     step=1.0,
+        #     disabled=st.session_state.disabled, 
+             
+        # )
 
     colNome3, colValue3 = st.columns(2)
     with colNome3:
@@ -145,7 +154,8 @@ with prem:
              
         )
 
-    colRoa_rec, colroa_head, colRepasse = st.columns(3)
+    # colRoa_rec, colroa_head, colRepasse = st.columns(3)
+    colRoa_rec, colroa_head= st.columns(2)
 
     with colRoa_rec:
         roa_rec = st.number_input(
@@ -170,18 +180,31 @@ with prem:
             disabled=st.session_state.disabled, 
              
         )
+    if categoria == "Renda Fixa":
+        retorno = st.number_input(
+        "Retorno Esperado a.a. (%): ",
+        min_value=0.0,
+        max_value=100.0,
+        value=float(v1_retorno),
+        format="%f",
+        step=1.0,
+        disabled=st.session_state.disabled, 
+            
+    )
+    else:
+        retorno = 0
 
-    with colRepasse:
-        roa_reps = st.number_input(
-            "Repasse Assessor (%): ",
-            min_value=0.0,
-            format="%f",
-            value=float(v1_repasse),
-            max_value=100.0,
-            step=1.0,
-            disabled=st.session_state.disabled, 
+    # with colRepasse:
+    #     roa_reps = st.number_input(
+    #         "Repasse Assessor (%): ",
+    #         min_value=0.0,
+    #         format="%f",
+    #         value=float(v1_repasse),
+    #         max_value=100.0,
+    #         step=1.0,
+    #         disabled=st.session_state.disabled, 
              
-        )
+    #     )
     if st.button("Editar"):
         st.session_state["disabled"] = not st.session_state["disabled"] 
 # st.markdown(
@@ -252,6 +275,7 @@ st.markdown(
     """<hr style="height:1px;border:none;color:#9966ff;background-color:#9966ff;" /> """,
     unsafe_allow_html=True,
 )
+
 
 # if st.button("Voltar"):
 #     nav_page("cliente_ativo")

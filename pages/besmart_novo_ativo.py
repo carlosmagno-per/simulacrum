@@ -52,13 +52,13 @@ with prem:
     with colNome1:
         empresa = st.selectbox(
             "Empresa, Be.Smart: ",
-            face.Empresa.unique(),
+            face.sort_values(by="Empresa").Empresa.unique(),
         )
 
     with colValue1:
         categoria = st.selectbox(
             "Categoria: ",
-            list(face.Categoria[face["Empresa"] == empresa].unique()),
+            list(face.sort_values(by="Categoria").Categoria[face["Empresa"] == empresa].unique()),
         )
 
     colvalor, colpain = st.columns(2)
@@ -66,7 +66,7 @@ with prem:
     with colpain:
         produto = st.selectbox(
             "Produto: ",
-            list(face.Produto[(face["Empresa"] == empresa)&(face["Categoria"] == categoria)].unique()),
+            list(face.sort_values(by="Produto").Produto[(face["Empresa"] == empresa)&(face["Categoria"] == categoria)].unique()),
         )
     with colvalor:
         if produto == "Icatu (até R$299,99)":
