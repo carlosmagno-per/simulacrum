@@ -564,7 +564,8 @@ with container:
 
 with chart2:
     try:
-        df_categ = fair.groupby("categoria")["pl_aplicado"].sum().reset_index()
+        #st.dataframe(fair)
+        df_categ = fair[fair["empresa"]=="INVESTSMART"].groupby("categoria")["pl_aplicado"].sum().reset_index()
         df_categ['label'] = df_categ["pl_aplicado"].apply(lambda x: locale.currency(x, grouping=True)[:-3])
         df_categ = df_categ.sort_values(by="pl_aplicado", ascending=False)
         #st.dataframe(df_categ)

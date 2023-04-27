@@ -61,7 +61,7 @@ with col1:
         fr'<p style="font-size:30px;">Portifólios</p>',
         unsafe_allow_html=True,
     )
-    if st.button("Voltar a visão Geral"):
+    if st.button("Voltar a visão Geral do Assessor"):
         nav_page("wide_project")
 with col2:
     st.image("investsmart_endosso_horizontal_fundopreto.png", width=270)
@@ -143,7 +143,7 @@ with tab1:
                 update_mode=GridUpdateMode.SELECTION_CHANGED,
                 columns_auto_size_mode=ColumnsAutoSizeMode.FIT_ALL_COLUMNS_TO_VIEW,
                 reload_data=True,
-                key="investsnart"
+                key="investsmart_grid"
             )
         st.markdown(
             """
@@ -158,14 +158,15 @@ with tab2:
     vazio1, cliente, vazio2 = st.columns([1, 9, 1])
     with cliente:
         dark3 = dark[dark["Empresa"]!="INVESTSMART"]
+        dark3 = dark3.rename(columns = {"Ativo":"Produto","PL Aplicado":"Valor do Produto"})
         gridOptions = GridOptionsBuilder.from_dataframe(
             dark3[
                 [
                     # "client_id",
                     "Empresa",
                     "Categoria",
-                    "Ativo",
-                    "PL Aplicado",
+                    "Produto",
+                    "Valor do Produto",
                     "Data de Início",
                     "Data de Vencimento",
                     # "shelf_id",
@@ -194,6 +195,7 @@ with tab2:
                 update_mode=GridUpdateMode.SELECTION_CHANGED,
                 columns_auto_size_mode=ColumnsAutoSizeMode.FIT_ALL_COLUMNS_TO_VIEW,
                 reload_data=True,
+                key="besmart_grid"
             )
         st.markdown(
             """
@@ -208,15 +210,16 @@ with tab2:
 with geral:
     vazio1, cliente, vazio2 = st.columns([1, 9, 1])
     with cliente:
-        dark3 = dark[dark["Empresa"]!="INVESTSMART"]
+        dark["Ativo ou Produto"] = dark["Ativo"]
+        dark["PL Aplicado ou Valor do Produto"] = dark["PL Aplicado"]  
         gridOptions = GridOptionsBuilder.from_dataframe(
-            dark3[
+            dark[
                 [
                     # "client_id",
                     "Empresa",
                     "Categoria",
-                    "Ativo",
-                    "PL Aplicado",
+                    "Ativo ou Produto",
+                    "PL Aplicado ou Valor do Produto",
                     "Data de Início",
                     "Data de Vencimento",
                     # "shelf_id",
@@ -498,7 +501,7 @@ with chart1:
                 yanchor="bottom",
                 y=1.02,
                 xanchor="right",
-                x=0.47
+                x=0.3
                 )
                 )
             fig.update_traces(textfont_size=25)
@@ -573,7 +576,7 @@ with chart2:
             ),
             color="Ativo",
             color_discrete_sequence=px.colors.sequential.Viridis,
-            title="Pl aplicado por Ativos, todos clientes",
+            title="PL aplicado por Ativos",
         )
         fig.update_layout(
             font=dict(family="Arial", size=18, color="White"),
@@ -693,7 +696,7 @@ with chart3:
                 width=1000,
                 #height=425,
                 text_auto='.2s',
-                title=f"Comissão Total Mensal",
+                title=f"Comissão InvestSmart Mensal",
                 color_discrete_sequence=px.colors.sequential.Viridis,
                 labels = {"Resultado assessor":"Comissão do Assessor (R$)"}
             )
@@ -707,7 +710,7 @@ with chart3:
                 yanchor="bottom",
                 y=1.02,
                 xanchor="right",
-                x=0.47
+                x=0.1
                 )
                 )
             fig.update_traces(textfont_size=25)
@@ -727,7 +730,7 @@ with chart3:
                 width=1000,
                 #height=425,
                 text_auto='.2s',
-                title=f"Comissão Total Mensal",
+                title=f"Comissão InvestSmart Mensal",
                 color_discrete_sequence=px.colors.sequential.Viridis,
                 labels = {"Resultado assessor":"Comissão do Assessor (R$)"}
             )
@@ -741,7 +744,7 @@ with chart3:
                 yanchor="bottom",
                 y=1.02,
                 xanchor="right",
-                x=1
+                x=0.22
                 )
                 )
             fig.update_traces(textfont_size=25)
@@ -854,7 +857,7 @@ with chart4:
                 width=1700,
                 #height=425,
                 text_auto='.2s',
-                title=f"Comissão Total Mensal",
+                title=f"Comissão Be.Smart Mensal",
                 color_discrete_sequence=px.colors.sequential.Viridis,
                 labels = {"Resultado assessor":"Comissão do Assessor (R$)"}
             )
@@ -868,7 +871,7 @@ with chart4:
                 yanchor="bottom",
                 y=1.02,
                 xanchor="right",
-                x=0.47
+                x=0.2
                 )
                 )
             fig.update_traces(textfont_size=25)
@@ -888,7 +891,7 @@ with chart4:
                 width=4000,
                 #height=425,
                 text_auto='.2s',
-                title=f"Comissão Total Mensal",
+                title=f"Comissão Be.Smart Mensal",
                 color_discrete_sequence=px.colors.sequential.Viridis,
                 labels = {"Resultado assessor":"Comissão do Assessor (R$)"}
             )
@@ -902,7 +905,7 @@ with chart4:
                 yanchor="bottom",
                 y=1.02,
                 xanchor="right",
-                x=1
+                x=0.2
                 )
                 )
             fig.update_traces(textfont_size=25)

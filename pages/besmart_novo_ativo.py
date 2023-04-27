@@ -66,7 +66,7 @@ with prem:
     with colpain:
         produto = st.selectbox(
             "Produto: ",
-            list(face.Produto[face["Categoria"] == categoria].unique()),
+            list(face.Produto[(face["Empresa"] == empresa)&(face["Categoria"] == categoria)].unique()),
         )
     with colvalor:
         if produto == "Icatu (até R$299,99)":
