@@ -101,7 +101,7 @@ st.markdown(
 # st.table(dark)
 
 with tab1:
-    vazio1, cliente, vazio2 = st.columns([0.1, 11, 0.1])
+    vazio1, cliente, vazio2 = st.columns([1, 9, 1])
     dark["PL Aplicado"] = dark["PL Aplicado"].apply(
         lambda x: locale.currency(x, grouping=True, symbol=True)
     )
@@ -130,7 +130,7 @@ with tab1:
 
         mycntnr = st.container()
         with mycntnr:
-            htmlstr = f"<p style='background-color: #9966ff; color: #000000; font-size: 16px; border-radius: 7px; padding-left: 8px; text-align: center'>Tabela de Produtos</style></p>"
+            htmlstr = f"<p style='background-color: #9966ff; color: #000000; font-size: 16px; border-radius: 7px; padding-left: 8px; text-align: center'>Tabela de Ativos</style></p>"
             st.markdown(htmlstr, unsafe_allow_html=True)
 
             dta = AgGrid(
@@ -151,8 +151,8 @@ with tab1:
             """,
             unsafe_allow_html=True,
         )
-        container = st.container()
-        chart3, chart2= st.columns([6,4])
+    container = st.container()
+    chart3, chart2= st.columns([6,4])
         
 with tab2:
     vazio1, cliente, vazio2 = st.columns([1, 9, 1])
@@ -235,7 +235,7 @@ with geral:
 
         mycntnr = st.container()
         with mycntnr:
-            htmlstr = f"<p style='background-color: #9966ff; color: #000000; font-size: 16px; border-radius: 7px; padding-left: 8px; text-align: center'>Tabela de Produtos</style></p>"
+            htmlstr = f"<p style='background-color: #9966ff; color: #000000; font-size: 16px; border-radius: 7px; padding-left: 8px; text-align: center'>Tabela de Ativos e Produtos</style></p>"
             st.markdown(htmlstr, unsafe_allow_html=True)
 
             dta = AgGrid(
@@ -485,7 +485,7 @@ with chart1:
                 y="Resultado assessor",
                 color="Produtos",
                 width=1700,
-                #height=425,
+                height=600,
                 text_auto='.2s',
                 title=f"Comissão Total Mensal",
                 color_discrete_sequence=px.colors.sequential.Viridis,
@@ -519,7 +519,7 @@ with chart1:
                 y="Resultado assessor",
                 #color="Produtos",
                 width=4000,
-                #height=425,
+                height=600,
                 text_auto='.2s',
                 title=f"Comissão Total Mensal",
                 color_discrete_sequence=px.colors.sequential.Viridis,
@@ -694,7 +694,7 @@ with chart3:
                 y="Resultado assessor",
                 color="Produtos",
                 width=1000,
-                #height=425,
+                height=600,
                 text_auto='.2s',
                 title=f"Comissão InvestSmart Mensal",
                 color_discrete_sequence=px.colors.sequential.Viridis,
@@ -728,7 +728,7 @@ with chart3:
                 y="Resultado assessor",
                 #color="Produtos",
                 width=1000,
-                #height=425,
+                height=600,
                 text_auto='.2s',
                 title=f"Comissão InvestSmart Mensal",
                 color_discrete_sequence=px.colors.sequential.Viridis,
@@ -855,7 +855,7 @@ with chart4:
                 y="Resultado assessor",
                 color="Produtos",
                 width=1700,
-                #height=425,
+                height=600,
                 text_auto='.2s',
                 title=f"Comissão Be.Smart Mensal",
                 color_discrete_sequence=px.colors.sequential.Viridis,
@@ -888,8 +888,8 @@ with chart4:
                 x="Mês",
                 y="Resultado assessor",
                 #color="Produtos",
-                width=4000,
-                #height=425,
+                width=1000,
+                height=600,
                 text_auto='.2s',
                 title=f"Comissão Be.Smart Mensal",
                 color_discrete_sequence=px.colors.sequential.Viridis,

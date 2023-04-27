@@ -57,6 +57,12 @@ prem, table = st.columns(2)
 with prem:
     st.subheader("**Premissas**")
 
+    
+    if "disabled" not in st.session_state:
+        st.session_state["disabled"] = True
+    else:
+        st.session_state["disabled"] = True
+        
     face = pd.read_excel("bd_base_v3.xlsx")
     face["Categoria"] = face["Categoria"].apply(lambda x: x.replace("_", " "))
     face["ROA Cabeça"] = face["ROA Cabeça"] * 100.0
@@ -68,7 +74,8 @@ with prem:
 
     with colNome1:
         categoria = st.selectbox(
-            "Categoria: ", face.Categoria.unique(), index=categoria_list.index(v1_categ)
+            "Categoria: ", face.Categoria.unique(), index=categoria_list.index(v1_categ),disabled=st.session_state.disabled, 
+         
         )
 
     with colValue1:
@@ -78,6 +85,8 @@ with prem:
             format="%f",
             value=float(v1_pl_apl),
             step=1000.0,
+            disabled=st.session_state.disabled, 
+             
         )
         st.text("R$" + locale.currency(pl_apl, grouping=True, symbol=None))
 
@@ -93,12 +102,16 @@ with prem:
                 "Ativo: ",
                 list(face.PRODUTOS[face["Categoria"] == categoria].unique()),
                 index=ind,
+                disabled=st.session_state.disabled, 
+                 
             )
     except:
         with colNome2:
             ativo = st.selectbox(
                 "Ativo: ",
                 list(face.PRODUTOS[face["Categoria"] == categoria].unique()),
+                disabled=st.session_state.disabled, 
+                 
             )
 
     with colValue2:
@@ -109,6 +122,8 @@ with prem:
             value=float(v1_retorno),
             format="%f",
             step=1.0,
+            disabled=st.session_state.disabled, 
+             
         )
 
     colNome3, colValue3 = st.columns(2)
@@ -117,6 +132,8 @@ with prem:
             "Data de Início: ",
             # min_value=DT.date.today(),
             value=DT.datetime.strptime(v1_data_inicio[:10], "%Y-%m-%d"),
+            disabled=st.session_state.disabled, 
+             
         )
 
     with colValue3:
@@ -124,6 +141,8 @@ with prem:
             "Data de Vencimento: ",
             # min_value=DT.date.today(),
             value=DT.datetime.strptime(v1_data[:10], "%Y-%m-%d"),
+            disabled=st.session_state.disabled, 
+             
         )
 
     colRoa_rec, colroa_head, colRepasse = st.columns(3)
@@ -136,6 +155,8 @@ with prem:
             value=float(v1_roa_rec),
             max_value=100.0,
             step=0.1,
+            disabled=st.session_state.disabled, 
+             
         )
 
     with colroa_head:
@@ -146,6 +167,8 @@ with prem:
             value=float(v1_roa_head),
             format="%.2f",
             step=0.01,
+            disabled=st.session_state.disabled, 
+             
         )
 
     with colRepasse:
@@ -156,8 +179,11 @@ with prem:
             value=float(v1_repasse),
             max_value=100.0,
             step=1.0,
+            disabled=st.session_state.disabled, 
+             
         )
-
+    if st.button("Editar"):
+        st.session_state["disabled"] = not st.session_state["disabled"] 
 # st.markdown(
 #     """<hr style="height:1px;border:none;color:#9966ff;background-color:#9966ff;" />
 #     <p > Visualização do ativo por uma tabela </p>

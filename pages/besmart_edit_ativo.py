@@ -26,7 +26,7 @@ st.set_page_config(
 
 col1, mid, col2 = st.columns([20, 2, 4])
 with col1:
-    st.header("Visualizando um Ativo")
+    st.header("Visualizando um Produto")
 with col2:
     st.image("BeSmart_Logos_AF_horizontal__branco.png", width=270)
 
@@ -57,6 +57,11 @@ st.markdown(
 prem, table = st.columns(2)
 with prem:
     st.subheader("**Premissas**")
+    
+    if "disabled" not in st.session_state:
+        st.session_state["disabled"] = True
+    else:
+        st.session_state["disabled"] = True
 
     face = pd.read_excel("base_besmart_v3.xlsx")
     face["Categoria"] = face["Categoria"].apply(lambda x: x.replace("_", " "))
@@ -74,7 +79,7 @@ with prem:
 
     with colNome1:
         empresa = st.selectbox(
-            "Empresa, Be.Smart: ", face.Empresa.unique(), empresa_list.index(v1_empresa)
+            "Empresa, Be.Smart: ", face.Empresa.unique(), empresa_list.index(v1_empresa),disabled=st.session_state.disabled,
         )
 
     try:
@@ -84,11 +89,13 @@ with prem:
                 "Categoria: ",
                 list(face.Categoria[face["Empresa"] == empresa].unique()),
                 index=ind,
+                disabled=st.session_state.disabled,
             )
     except:
         with colValue1:
             categoria = st.selectbox(
-                "Categoria: ", list(face.Categoria[face["Empresa"] == empresa].unique())
+                "Categoria: ", list(face.Categoria[face["Empresa"] == empresa].unique()),
+                disabled=st.session_state.disabled,
             )
 
     colvalor, colpain = st.columns(2)
@@ -101,12 +108,14 @@ with prem:
                 "Produto: ",
                 list(face.Produto[face["Categoria"] == categoria].unique()),
                 index=ind_2,
+                disabled=st.session_state.disabled,
             )
     except:
         with colpain:
             produto = st.selectbox(
                 "Produto: ",
                 list(face.Produto[face["Categoria"] == categoria].unique()),
+                disabled=st.session_state.disabled,
             )
     with colvalor:
         if produto == "Icatu (até R$299,99)":
@@ -117,6 +126,7 @@ with prem:
                 format="%f",
                 value=float(v1_pl_apl),
                 step=100.0,
+                disabled=st.session_state.disabled,
             )
         elif produto == "Icatu (R$300,00 - R$599,99)":
             pl_apl = st.number_input(
@@ -126,6 +136,7 @@ with prem:
                 format="%f",
                 value=float(v1_pl_apl),
                 step=100.0,
+                disabled=st.session_state.disabled,
             )
         elif produto == "Icatu (apartir de R$600,00)":
             pl_apl = st.number_input(
@@ -134,6 +145,7 @@ with prem:
                 format="%f",
                 value=float(v1_pl_apl),
                 step=100.0,
+                disabled=st.session_state.disabled,
             )
         elif produto == "Sulamérica Prestige (até R$5000,00)":
             pl_apl = st.number_input(
@@ -143,6 +155,7 @@ with prem:
                 format="%f",
                 value=float(v1_pl_apl),
                 step=100.0,
+                disabled=st.session_state.disabled,
             )
         else:
             pl_apl = st.number_input(
@@ -151,6 +164,7 @@ with prem:
                 format="%f",
                 value=float(v1_pl_apl),
                 step=1000.0,
+                disabled=st.session_state.disabled,
             )
         st.text("R$" + locale.currency(pl_apl, grouping=True, symbol=None))
 
@@ -160,6 +174,7 @@ with prem:
             "Data de Início: ",
             # min_value=DT.date.today()
             value=DT.datetime.strptime(v1_data_inicio[:10], "%Y-%m-%d"),
+            disabled=st.session_state.disabled,
         )
 
     with colValue3:
@@ -169,12 +184,14 @@ with prem:
                 min_value=data_inicial,
                 max_value=data_inicial + DT.timedelta(days=15),
                 value=data_inicial + DT.timedelta(days=15),
+                disabled=st.session_state.disabled,
             )
         else:
             data = st.date_input(
                 "Data de Vencimento: ",
                 # min_value=DT.date.today()
                 value=DT.datetime.strptime(v1_data[:10], "%Y-%m-%d"),
+                disabled=st.session_state.disabled,
             )
 
     dias = DT.datetime.strptime(str(data), "%Y-%m-%d") - DT.datetime.strptime(
@@ -219,10 +236,13 @@ with prem:
             value=50.0,
             max_value=100.0,
             step=1.0,
+            disabled=st.session_state.disabled,
         )
     else:
         roa_reps = 100
     roa_rec = 0
+    if st.button("Editar"):
+        st.session_state["disabled"] = not st.session_state["disabled"]
 
     # colcom_brt, colporrep = st.columns(2)
     # with colcom_brt:

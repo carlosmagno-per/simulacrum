@@ -581,7 +581,7 @@ with chart2:
             title="Total do Portifólio por Categoria",
         )
         fig.update_layout(
-            font=dict(family="Arial", size=12, color="White"),
+            font=dict(family="Arial", size=15, color="White"),
             # paper_bgcolor="rgba(0,0,0,0)",
             # plot_bgcolor="rgba(0,0,0,0)",
             xaxis=dict(title="", tickvals=[], ticktext=[]),
