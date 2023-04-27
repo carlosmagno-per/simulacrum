@@ -60,8 +60,6 @@ with prem:
     
     if "disabled" not in st.session_state:
         st.session_state["disabled"] = True
-    else:
-        st.session_state["disabled"] = True
 
     face = pd.read_excel("base_besmart_v3.xlsx")
     face["Categoria"] = face["Categoria"].apply(lambda x: x.replace("_", " "))
