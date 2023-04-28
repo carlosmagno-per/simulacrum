@@ -47,7 +47,7 @@ st.set_page_config(
 )
 
 
-col1, mid, col2 = st.columns([12, 8, 5])
+col1, mid = st.columns([12, 8])
 with col1:
     st.write(
         fr'<p style="font-size:30px;">Nome do Cliente: {name_v1}</p>',
@@ -63,10 +63,7 @@ with col1:
     )
     if st.button("Voltar a visão Geral do Assessor"):
         nav_page("wide_project")
-with col2:
-    st.text("")
-    st.text("")
-    st.image("investsmart_endosso_horizontal_fundopreto.png", width=270)
+
 
 
 st.markdown(
@@ -76,11 +73,7 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-pl, retorno, ano1_avg, ano2_avg = st.columns([5, 5, 5, 3])
 
-st.write("")
-st.write("")
-vacuo, botao1, botao2, botao3, botao4, vacuo2 = st.columns([7, 5, 5, 5, 5, 7])
 font_css = """
 <style>
 button[data-baseweb="tab"] > div[data-testid="stMarkdownContainer"] > p {
@@ -103,8 +96,19 @@ st.markdown(
 # st.table(dark)
 
 with tab1:
-    
+    nulo1, nulo2, col2 = st.columns([12, 8, 5])
+    with col2:
+        st.text("")
+        st.text("")
+        st.image("investsmart_endosso_horizontal_fundopreto.png", width=270)
         
+        
+    pl1, retorno1, ano1_avg1, ano2_avg1 = st.columns([5, 5, 5, 3])
+
+    st.write("")
+    st.write("")
+    vacuo, botao11, botao31, botao41, vacuo2 = st.columns([7, 5, 5, 5, 7])
+    
     vazio1, cliente, vazio2 = st.columns([1, 9, 1])
     dark["PL Aplicado"] = dark["PL Aplicado"].apply(
         lambda x: locale.currency(x, grouping=True, symbol=True)
@@ -158,10 +162,52 @@ with tab1:
         )
     container = st.container()
     chart3, chart2= st.columns([6,4])
+
+    with botao11:
+        if st.button("Incluir Ativo InvestSmart",key=1):
+            nav_page("besmart_novo_ativo")
+    
+    with botao31:
+        if st.button("Visualizar Ativo InvestSmart"):
+            nav_page("besmart_edit_ativo")
+    if "button441" not in st.session_state:
+            st.session_state["button441"] = False
+    with botao41:
+        if st.button("Deletar o Ativo Selecionado",key=21):
+            st.session_state["button441"] = not st.session_state["button441"]
+        if st.session_state["button441"]:
+            disco = st.write("Tem Certeza ?")
+            sim, nao = st.columns(2)
+            with sim:
+                if st.button("Sim",key=221):
+                    if st.session_state["df_ativo"].empty:
+                        st.error("Não foi selecionado um Cliente")
+                    else:
+                        vers = int(st.session_state.df_ativo.ativo_id[0])
+                        cursor.execute("DELETE FROM variaveis WHERE ativo_id = ?", (vers,))
+                        con.commit()
+                        st.success("O ativo foi deletado com sucesso")
+                        tm.sleep(1)
+                        st._rerun()
+            with nao:
+                if st.button("Não",key=231):
+                    st.session_state["button441"] = False
         
 with tab2:
     
+    nulo12, nulo22, col22 = st.columns([12, 8, 5])
+    with col22:
+        st.text("")
+        st.text("")
+        st.image("BeSmart_Logos_AF_horizontal__branco.png", width=270)
         
+    retorno2, ano1_avg2, ano2_avg2 = st.columns([ 5, 5, 3])
+
+    st.write("")
+    st.write("")
+    vacuo,  botao22, botao32, botao42, vacuo = st.columns([7,  5, 5, 5, 7])
+            
+            
     vazio1, cliente, vazio2 = st.columns([1, 9, 1])
     with cliente:
         dark3 = dark[dark["Empresa"]!="INVESTSMART"]
@@ -213,9 +259,50 @@ with tab2:
         )
     container3 = st.container() 
     chart4= st.container()
-          
+    
+    with botao22:
+        if st.button("Incluir Produto BeSmart"):
+            nav_page("besmart_novo_ativo")
+    
+    with botao32:
+        if st.button("Visualizar Produto BeSmart"):
+            nav_page("besmart_edit_ativo")
+    if "button442" not in st.session_state:
+            st.session_state["button442"] = False
+    with botao42:
+        if st.button("Deletar o Produto Selecionado",key=2):
+            st.session_state["button442"] = not st.session_state["button442"]
+        if st.session_state["button442"]:
+            disco = st.write("Tem Certeza ?")
+            sim, nao = st.columns(2)
+            with sim:
+                if st.button("Sim",key=22):
+                    if st.session_state["df_ativo"].empty:
+                        st.error("Não foi selecionado um Cliente")
+                    else:
+                        vers = int(st.session_state.df_ativo.ativo_id[0])
+                        cursor.execute("DELETE FROM variaveis WHERE ativo_id = ?", (vers,))
+                        con.commit()
+                        st.success("O ativo foi deletado com sucesso")
+                        tm.sleep(1)
+                        st._rerun()
+            with nao:
+                if st.button("Não",key=23):
+                    st.session_state["button442"] = False
+        
 
 with geral:
+    nulo13, nulo23, col23 = st.columns([12, 8, 5])
+    with col23:
+        st.text("")
+        st.text("")
+        st.image("investsmart_endosso_horizontal_fundopreto.png", width=270)
+    
+    pl, retorno, ano1_avg, ano2_avg = st.columns([5, 5, 5, 3])
+
+    st.write("")
+    st.write("")
+    vacuo, botao1, botao2, botao3, botao4, vacuo2 = st.columns([7, 5, 5, 5, 5, 7])
     
         
     vazio1, cliente, vazio2 = st.columns([1, 9, 1])
@@ -281,7 +368,7 @@ with botao1:
     if st.button("Incluir Ativo InvestSmart"):
         nav_page("novo_ativo")
 with botao2:
-    if st.button("Incluir Serviço Be.Smart"):
+    if st.button("Incluir Produto Be.Smart"):
         #         st.session_state["button1"] = not st.session_state["button1"]
         # if st.session_state["button1"]:
         # checks = st.radio(
@@ -297,49 +384,14 @@ with botao2:
         # )
         # if st.button("Incluir esse tipo de ativo"):
         nav_page("besmart_novo_ativo")
-with botao3:
-    if st.button("Visualizar o Ativo Selecionado"):
-        if st.session_state["df_ativo"].empty:
-            st.error("Não foi selecionado um ativo")
-        else:
-            if st.session_state.df_ativo.Empresa.iloc[0] == "INVESTSMART":
-                nav_page("edit_ativo")
-            else:
-                nav_page("besmart_edit_ativo")
-with botao4:
-    if "button44" not in st.session_state:
-        st.session_state["button44"] = False
-    if st.button("Deletar o Ativo Selecionado"):
-        st.session_state["button44"] = not st.session_state["button44"]
-
-    if st.session_state["button44"]:
-        disco = st.write("Tem Certeza ?")
-        sim, nao = st.columns(2)
-        with sim:
-            if st.button("Sim"):
-                if st.session_state["df_ativo"].empty:
-                    st.error("Não foi selecionado um Cliente")
-                else:
-                    vers = int(st.session_state.df_ativo.ativo_id[0])
-                    cursor.execute("DELETE FROM variaveis WHERE ativo_id = ?", (vers,))
-                    con.commit()
-                    st.success("O ativo foi deletado com sucesso")
-                    tm.sleep(1)
-                    st._rerun()
-        with nao:
-            if st.button("Não"):
-                st.session_state["button44"] = False
-        # if st.session_state["df_ativo"].empty:
-        #     st.error("Não foi selecionado um ativo")
-        # else:
-        #
 
 
-face_v2 = pd.read_excel("base_besmart_v2.xlsx")
+face_v2 = pd.read_excel("base_besmart_v3.xlsx")
 face_v2["Categoria"] = face_v2["Categoria"].apply(lambda x: x.replace("_", " "))
 face_v2["Produto"] = face_v2["Produto"].apply(lambda x: x.replace("_", " "))
 face_v2["porcem_repasse"] = face_v2["porcem_repasse"] * 100.0
 
+invest_prod = pd.read_excel("bd_base_v3.xlsx")
 
 
 with chart1:
@@ -709,7 +761,7 @@ with chart3:
                 i_n_v = distancia_df1[distancia_df1["ano"] == DT.datetime.now().year + 2].reset_index().iloc[-1]["index"]
                 inc2, end2 = st.select_slider("Período de tempo do Grafico",options = distancia1,value=(distancia1[0],distancia1[i_n_v]),key="slider2")
             except:
-                inc2, end2 = st.select_slider("Período de tempo do Grafico",options = distancia1,value=(distancia1[0],distancia1[-1]),key="slider2")
+                inc2, end2 = st.select_slider("Período de tempo do Grafico",options = distancia1,value=(distancia1[0],distancia1[-1]),key="slider21")
         try:
             fig = px.bar(
                 final1[(final1["data"]>= inc2) & (final1["data"]<= end2)],
@@ -948,7 +1000,45 @@ with chart4:
             #fig.update_traces(textposition="top center")
             st.plotly_chart(fig,use_container_width=True)
     
-    
+
+with botao3:
+    if st.button("Visualizar o Ativo Selecionado"):
+        if st.session_state["df_ativo"].empty:
+            st.error("Não foi selecionado um ativo")
+        else:
+            if st.session_state.df_ativo.Empresa.iloc[0] == "INVESTSMART":
+                nav_page("edit_ativo")
+            else:
+                nav_page("besmart_edit_ativo")
+with botao4:
+    if "button44" not in st.session_state:
+        st.session_state["button44"] = False
+    if st.button("Deletar o Ativo Selecionado"):
+        st.session_state["button44"] = not st.session_state["button44"]
+
+    if st.session_state["button44"]:
+        disco = st.write("Tem Certeza ?")
+        sim, nao = st.columns(2)
+        with sim:
+            if st.button("Sim"):
+                if st.session_state["df_ativo"].empty:
+                    st.error("Não foi selecionado um Cliente")
+                else:
+                    vers = int(st.session_state.df_ativo.ativo_id[0])
+                    cursor.execute("DELETE FROM variaveis WHERE ativo_id = ?", (vers,))
+                    con.commit()
+                    st.success("O ativo foi deletado com sucesso")
+                    tm.sleep(1)
+                    st._rerun()
+        with nao:
+            if st.button("Não"):
+                st.session_state["button44"] = False
+        # if st.session_state["df_ativo"].empty:
+        #     st.error("Não foi selecionado um ativo")
+        # else:
+        #
+
+  
 #st.dataframe(df_ativo)
 pl.metric(
     "Total do Portifólio",
@@ -1021,6 +1111,161 @@ else:
             symbol=None,
         )[:-3],
     )
+
+###################################################################################################
+#######################################METRICS TAB1###############################################
+##################################################################################################
+
+
+pl1.metric(
+    "Total do Portifólio",
+    "R$ " + locale.currency(df_ativo[df_ativo.Empresa=='INVESTSMART']["PL Aplicado"].sum(), grouping=True, symbol=None)[:-3],
+)
+    
+final_invest = final[final["Produtos"].isin(invest_prod["PRODUTOS"])]
+
+try:
+    result_month1 = final_invest["Resultado assessor"][(final_invest["mes"] == DT.datetime.now().month)& (final_invest["ano"] == DT.datetime.now().year)].sum() 
+    
+    avrg_year11 = (final_invest["Resultado assessor"][
+        final_invest["ano"] == DT.datetime.now().year
+    ].sum())
+    avrg_year21 = (final_invest["Resultado assessor"][
+        final_invest["ano"] == DT.datetime.now().year + 1
+    ].sum())
+except:
+    result_month1 = 0
+    avrg_year11 = 0
+    avrg_year21 = 0
+try:
+    retorno1.metric(
+        "Comissão Esperada para esse mês",
+        "R$ "
+        + locale.currency(
+            result_month1,
+            grouping=True,
+            symbol=None,
+        )[:-3],
+    )
+except:
+    retorno1.metric(
+        "Comissão Esperada para esse mês",
+        "R$ "
+        + locale.currency(
+            0,
+            grouping=True,
+            symbol=None,
+        )[:-3],
+    )
+
+ano1_avg1.metric(
+    f"Comissão Esperada {DT.datetime.now().year}",
+    "R$ "
+    + locale.currency(
+        avrg_year11,
+        grouping=True,
+        symbol=None,
+    )[:-3],
+)
+
+if np.isnan(avrg_year2):
+    ano2_avg1.metric(
+        f"Comissão Esperada {DT.datetime.now().year+1}",
+        "R$ "
+        + locale.currency(
+            0,
+            grouping=True,
+            symbol=None,
+        )[:-3],
+    )
+else:
+    ano2_avg1.metric(
+        f"Comissão Esperada {DT.datetime.now().year+1}",
+        "R$ "
+        + locale.currency(
+            avrg_year21,
+            grouping=True,
+            symbol=None,
+        )[:-3],
+    )
+
+###################################################################################################
+#######################################METRICS TAB2###############################################
+##################################################################################################
+    
+
+final_besm = final[final["Produtos"].isin(face_v2["Produto"])]
+#st.dataframe(final_besm)
+try:
+    
+    result_month2 = final_besm["Resultado assessor"][(final_besm["mes"] == DT.datetime.now().month)& (final_besm["ano"] == DT.datetime.now().year)].sum() 
+    
+    avrg_year12 = (final_besm["Resultado assessor"][
+        final_besm["ano"] == DT.datetime.now().year
+    ].sum())
+    avrg_year22 = (final_besm["Resultado assessor"][
+        final_besm["ano"] == DT.datetime.now().year + 1
+    ].sum())
+except:
+    result_month2 = 0
+    avrg_year12 = 0
+    avrg_year22 = 0
+try:
+    retorno2.metric(
+        "Comissão Esperada para esse mês",
+        "R$ "
+        + locale.currency(
+            result_month2,
+            grouping=True,
+            symbol=None,
+        )[:-3],
+    )
+except:
+    retorno2.metric(
+        "Comissão Esperada para esse mês",
+        "R$ "
+        + locale.currency(
+            0,
+            grouping=True,
+            symbol=None,
+        )[:-3],
+    )
+
+ano1_avg2.metric(
+    f"Comissão Esperada {DT.datetime.now().year}",
+    "R$ "
+    + locale.currency(
+        avrg_year12,
+        grouping=True,
+        symbol=None,
+    )[:-3],
+)
+
+if np.isnan(avrg_year2):
+    ano2_avg2.metric(
+        f"Comissão Esperada {DT.datetime.now().year+1}",
+        "R$ "
+        + locale.currency(
+            0,
+            grouping=True,
+            symbol=None,
+        )[:-3],
+    )
+else:
+    ano2_avg2.metric(
+        f"Comissão Esperada {DT.datetime.now().year+1}",
+        "R$ "
+        + locale.currency(
+            avrg_year22,
+            grouping=True,
+            symbol=None,
+        )[:-3],
+    )
+
+
+
+
+
 
 
 if st.button("Voltar"):
