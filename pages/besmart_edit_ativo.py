@@ -58,8 +58,11 @@ prem, table = st.columns(2)
 with prem:
     st.subheader("**Premissas**")
     
+    def disable():
+        st.session_state.disabled = False
+    
     if "disabled" not in st.session_state:
-        st.session_state["disabled"] = True
+        st.session_state.disabled = True
 
     face = pd.read_excel("base_besmart_v3.xlsx")
     face["Categoria"] = face["Categoria"].apply(lambda x: x.replace("_", " "))
@@ -77,7 +80,9 @@ with prem:
 
     with colNome1:
         empresa = st.selectbox(
-            "Empresa, Be.Smart: ", face.Empresa.unique(), empresa_list.index(v1_empresa),disabled=st.session_state.disabled,
+            "Empresa, Be.Smart: ", face.Empresa.unique(), empresa_list.index(v1_empresa),
+            on_change=disable,
+            disabled=st.session_state.disabled,
         )
 
     try:
@@ -87,12 +92,14 @@ with prem:
                 "Categoria: ",
                 list(face.Categoria[face["Empresa"] == empresa].unique()),
                 index=ind,
+                on_change = disable,
                 disabled=st.session_state.disabled,
             )
     except:
         with colValue1:
             categoria = st.selectbox(
                 "Categoria: ", list(face.Categoria[face["Empresa"] == empresa].unique()),
+                on_change=disable,
                 disabled=st.session_state.disabled,
             )
 
@@ -106,6 +113,7 @@ with prem:
                 "Produto: ",
                 list(face.Produto[face["Categoria"] == categoria].unique()),
                 index=ind_2,
+                on_change=disable,
                 disabled=st.session_state.disabled,
             )
     except:
@@ -113,6 +121,7 @@ with prem:
             produto = st.selectbox(
                 "Produto: ",
                 list(face.Produto[face["Categoria"] == categoria].unique()),
+                on_change=disable,
                 disabled=st.session_state.disabled,
             )
     with colvalor:
@@ -124,6 +133,7 @@ with prem:
                 format="%f",
                 value=float(v1_pl_apl),
                 step=100.0,
+                on_change=disable,
                 disabled=st.session_state.disabled,
             )
         elif produto == "Icatu (R$300,00 - R$599,99)":
@@ -134,6 +144,7 @@ with prem:
                 format="%f",
                 value=float(v1_pl_apl),
                 step=100.0,
+                on_change=disable,
                 disabled=st.session_state.disabled,
             )
         elif produto == "Icatu (apartir de R$600,00)":
@@ -143,6 +154,7 @@ with prem:
                 format="%f",
                 value=float(v1_pl_apl),
                 step=100.0,
+                on_change=disable,
                 disabled=st.session_state.disabled,
             )
         elif produto == "Sulamérica Prestige (até R$5000,00)":
@@ -153,6 +165,7 @@ with prem:
                 format="%f",
                 value=float(v1_pl_apl),
                 step=100.0,
+                on_change=disable,
                 disabled=st.session_state.disabled,
             )
         else:
@@ -162,6 +175,7 @@ with prem:
                 format="%f",
                 value=float(v1_pl_apl),
                 step=1000.0,
+                on_change=disable,
                 disabled=st.session_state.disabled,
             )
         st.text("R$" + locale.currency(pl_apl, grouping=True, symbol=None))
@@ -172,6 +186,7 @@ with prem:
             "Data de Início: ",
             # min_value=DT.date.today()
             value=DT.datetime.strptime(v1_data_inicio[:10], "%Y-%m-%d"),
+            on_change=disable,
             disabled=st.session_state.disabled,
         )
 
@@ -182,6 +197,7 @@ with prem:
                 min_value=data_inicial,
                 max_value=data_inicial + DT.timedelta(days=15),
                 value=data_inicial + DT.timedelta(days=15),
+                on_change=disable,
                 disabled=st.session_state.disabled,
             )
         else:
@@ -189,6 +205,7 @@ with prem:
                 "Data de Vencimento: ",
                 # min_value=DT.date.today()
                 value=DT.datetime.strptime(v1_data[:10], "%Y-%m-%d"),
+                on_change=disable,
                 disabled=st.session_state.disabled,
             )
 
@@ -234,13 +251,16 @@ with prem:
             value=50.0,
             max_value=100.0,
             step=1.0,
+            on_change=disable,
             disabled=st.session_state.disabled,
         )
     else:
         roa_reps = 100
     roa_rec = 0
-    if st.button("Editar"):
-        st.session_state["disabled"] = not st.session_state["disabled"]
+    edit, salve_v2, espaco_10= st.columns([5,5,15])
+    with edit:
+        if st.button("Editar"):
+            st.session_state["disabled"] = not st.session_state["disabled"]
 
     # colcom_brt, colporrep = st.columns(2)
     # with colcom_brt:
@@ -275,6 +295,7 @@ bad_prod = [
     "LOARA - PJ",
     "BANEFORT - PJ",
 ]
+        
 if produto in bad_prod:
     with table:
         st.text("")
@@ -294,7 +315,7 @@ if produto in bad_prod:
         )
 else:
     with table:
-        st.header("Visualização do produto por uma tabela")
+        st.header("Fluxo de Comissão")
 
         if data > data_inicial:
             
@@ -472,30 +493,30 @@ else:
                     roa_rec = ?,
                     data_ativo = ?
                     WHERE ativo_id = ?"""
-
-            if st.button("Salvar"):
-                cursor.execute(
-                    sql,
-                    (
-                        categoria,
-                        produto,
-                        empresa,
-                        data,
-                        pl_apl,
-                        0,
-                        roa_reps,
-                        0,
-                        0,
-                        data_inicial,
-                        v4,
-                    ),
-                )
-                con.commit()
-                st.success("O ativo foi editado com sucesso")
-                tm.sleep(1)
-                with st.spinner("Redirecionando o Assessor para a Página de Ativos"):
+            with salve_v2:
+                if st.button("Salvar"):
+                    cursor.execute(
+                        sql,
+                        (
+                            categoria,
+                            produto,
+                            empresa,
+                            data,
+                            pl_apl,
+                            0,
+                            roa_reps,
+                            0,
+                            0,
+                            data_inicial,
+                            v4,
+                        ),
+                    )
+                    con.commit()
+                    st.success("O ativo foi editado com sucesso")
                     tm.sleep(1)
-                nav_page("cliente_wide")
+                    with st.spinner("Redirecionando o Assessor para a Página de Ativos"):
+                        tm.sleep(1)
+                    nav_page("cliente_wide")
         else:
             st.error("Data de vencimento menor que a data de Início.")
 
@@ -514,6 +535,9 @@ if st.button("Voltar"):
 st.markdown(
     """
 <style>
+    .st-bw {
+    background-color: rgb(63, 63, 63);
+    }
     [data-testid="collapsedControl"] {
         display: none
     }
@@ -524,9 +548,9 @@ st.markdown(
     background-color: rgb(153, 102, 255);
     transition: none 0s ease 0s;
     outline: none;
-}
+    }
     img{
-    background-color: rgb(14, 17, 23);
+    background-color: rgb(18, 19, 18);
     }
 
 </style>

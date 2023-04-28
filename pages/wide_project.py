@@ -76,7 +76,7 @@ st.markdown(
 #######################################################################################
 
 pl, retorno, ano1_avg, ano2_avg  = st.columns([5, 5, 5, 3])
-container = st.container()
+
 list_client_id = dark["client_id"].unique()
 list_client_id = list(list_client_id)
 
@@ -352,8 +352,6 @@ dark = dark.replace("R$ nan", "R$ 0")
 ################################# LAYOUT DO CONTEÚDO ##################################
 #######################################################################################
 
-chart1, chart2 = st.columns([6, 4])
-
 st.markdown(
     """
     <hr style="height:1px;border:none;color:#9966ff;background-color:#9966ff;" /> 
@@ -364,6 +362,15 @@ st.markdown(
 vacuo, botao_1, botao_2, botao_3, vacuo_2 = st.columns([4,3,3,3,3])
 
 vazio1, cliente, vazio2 = st.columns([0.1, 15, 0.1])
+
+st.markdown(
+    """
+    <hr style="height:1px;border:none;color:#9966ff;background-color:#9966ff;" /> 
+    """,
+    unsafe_allow_html=True,
+)
+container = st.container()
+chart1, chart2 = st.columns([6, 4])
 
 #######################################################################################
 ############################### TABLES CLIENTE E ATIVOS ###############################
@@ -399,6 +406,7 @@ with cliente:
         #height=290,
         allow_unsafe_jscode=True,
         theme=AgGridTheme.ALPINE,
+        fit_columns_on_grid_load =True,
         update_mode=GridUpdateMode.SELECTION_CHANGED,
         columns_auto_size_mode=ColumnsAutoSizeMode.FIT_ALL_COLUMNS_TO_VIEW,
         reload_data=True,
@@ -538,12 +546,9 @@ st.markdown(
         
         [data-testid="collapsedControl"] {display: none}
         footer {visibility: hidden;}
-        
-        div[data-testid="stSidebarNav"] {display: none;}
-        footer {visibility: hidden;}
 
         img{
-        background-color: rgb(14, 17, 23);
+        background-color: rgb(18, 19, 18);
             }
         
     </style>
@@ -555,12 +560,17 @@ st.markdown(
 super_smart["data"] = super_smart["Mês"].apply(lambda x: DT.datetime.strptime(x,"%b-%y"))
 super_smart["data"] = super_smart["data"].apply(lambda x: DT.datetime.strftime(x, "%Y/%m"))
 #st.dataframe(super_smart["data"].unique())
+
 distancia = list(super_smart["data"].unique())
+distancia_df = pd.DataFrame(distancia)
+distancia_df["ano"] = distancia_df[0].astype("datetime64").dt.year
+#st.dataframe(distancia_df)
 with container:
     try:
-        inc, end = st.select_slider("Período de tempo do Grafico",options = distancia,value=(distancia[0],distancia[-1]))
+        i_n_v = distancia_df[distancia_df["ano"] == DT.datetime.now().year + 2].reset_index().iloc[-1]["index"]
+        inc, end = st.select_slider("Período de tempo do Grafico",options = distancia,value=(distancia[0],distancia[i_n_v]))
     except:
-        pass
+        inc, end = st.select_slider("Período de tempo do Grafico",options = distancia,value=(distancia[0],distancia[-1]))
 
 with chart2:
     try:
@@ -595,7 +605,7 @@ with chart2:
         fig.update_xaxes(showgrid=False)
         fig.data[0].marker.color = "#9966ff"
         fig.data[0].textfont.color = "white"
-        st.plotly_chart(fig)
+        st.plotly_chart(fig,use_container_width=True)
     except:
         st.error("Você não possui um Portifólio nesta ferramenta")
 with chart1:
@@ -628,8 +638,8 @@ with chart1:
                 orientation="h",
                 yanchor="bottom",
                 y=1.02,
-                xanchor="right",
-                x=1
+                # xanchor="right",
+                # x=0.2
                 )
                 )
             fig.update_traces(textfont_size=12)
@@ -639,14 +649,14 @@ with chart1:
             fig.update_xaxes(showgrid=False)
             fig.update_yaxes(title=None)
             #fig.update_traces(textposition="top center")
-            st.plotly_chart(fig)
+            st.plotly_chart(fig,use_container_width=True)
         except:
             fig = px.bar(
                     super_smart[(super_smart["data"]>= inc) & (super_smart["data"]<= end)],
                     x="Mês",
                     y="Resultado assessor",
                     #color="label",
-                    width=1000,
+                    #width=1000,
                     height=425,
                     text_auto='.2s',
                     title=f"Comissão Total Mensal",
@@ -663,8 +673,8 @@ with chart1:
                 orientation="h",
                 yanchor="bottom",
                 y=1.02,
-                xanchor="right",
-                x=1,
+                # xanchor="right",
+                # x=0.2,
                 )
                 )
             fig.update_traces(textfont_size=12)
@@ -676,7 +686,7 @@ with chart1:
             fig.update_xaxes(showgrid=False)
             fig.update_yaxes(title=None)
             #fig.update_traces(textposition="top center")
-            st.plotly_chart(fig)
+            st.plotly_chart(fig,use_container_width=True)
             # fig = px.line(
             #     final,
             #     x="Mês",

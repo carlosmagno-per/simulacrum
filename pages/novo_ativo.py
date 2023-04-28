@@ -135,67 +135,7 @@ with prem:
         roa_reps = 50.0
         retorno= 0.0
         
-    elif categoria == "Renda Fixa":
-        with colValue1:
-            ativo = st.selectbox(
-                    "Ativo: ", list(face.sort_values(by="PRODUTOS").PRODUTOS[(face["Categoria"] == categoria)].unique())
-                )
-            
-
-        colNome2, colValue2 = st.columns(2)
-
-        with colNome2:
-            pl_apl = st.number_input(
-                "PL Aplicado (R$): ",
-                min_value=0.0,
-                format="%f",
-                value=3000000.0,
-                step=1000.0,
-            )
-            st.text("R$" + locale.currency(pl_apl, grouping=True, symbol=None))
-            
-            
-
-        with colValue2:
-            retorno = st.number_input(
-                "Retorno Esperado a.a. (%): ",
-                min_value=0.0,
-                max_value=100.0,
-                value=12.0,
-                format="%f",
-                step=1.0,
-            )
-
-        colNome3, colValue3 = st.columns(2)
-        with colNome3:
-            data_inicial = st.date_input("Data de Início: ", min_value=DT.date.today())
-
-        with colValue3:
-            data = st.date_input("Data de Vencimento: ", min_value=DT.date.today())
-
-        colroa_head, colRoa_rec = st.columns(2)
-        #colroa_head, colRoa_rec, colRepasse = st.columns(3)
-
-        with colRoa_rec:
-            roa_rec = st.number_input(
-                "ROA Recorrente (%): ",
-                min_value=0.0,
-                format="%.2f",
-                value=float(face["Roa Recorrente"][face["PRODUTOS"] == ativo]),
-                max_value=100.0,
-                step=0.1,
-            )
-
-        with colroa_head:
-            roa_head = st.number_input(
-                "ROA Cabeça (%): ",
-                min_value=0.0,
-                max_value=100.0,
-                value=float(face["ROA Cabeça"][face["PRODUTOS"] == ativo]),
-                format="%.2f",
-                step=0.01,
-            )
-        roa_reps = 50
+    
     else:
         with colValue1:
             ativo = st.selectbox(
@@ -243,6 +183,15 @@ with prem:
         roa_reps = 50.0
         retorno= 0.0
 
+st.markdown(
+    """<hr style="height:1px;border:none;color:#9966ff;background-color:#9966ff;" /> """,
+    unsafe_allow_html=True,
+)
+
+volte, salve_v2, espaco_10= st.columns([5,5,15])
+with volte:
+    if st.button("Voltar"):
+        nav_page("cliente_wide")
 # st.markdown(
 #     """<hr style="height:1px;border:none;color:#9966ff;background-color:#9966ff;" />
 #     <p > Visualização do ativo por uma tabela </p>
@@ -250,7 +199,7 @@ with prem:
 #     unsafe_allow_html=True,
 # )
 with table:
-    st.subheader("**Visualização do ativo por uma tabela**")
+    st.subheader("**Fluxo de Comissão**")
     if data > data_inicial:
 
         dataframe = base_df(
@@ -261,37 +210,33 @@ with table:
 
         sql = "INSERT INTO variaveis (client_id, empresa, categoria, ativo, data_venc, pl_aplicado, retorno, repasse, roa_head, roa_rec, data_ativo) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?)"
         # today = DT.datetime.strftime(DT.datetime.today(), "%Y-%m-%d")
-
-        if st.button("Salvar"):
-            cursor.execute(
-                sql,
-                (
-                    v3,
-                    "INVESTSMART",
-                    categoria,
-                    ativo,
-                    data,
-                    pl_apl,
-                    retorno,
-                    roa_reps,
-                    roa_head,
-                    roa_rec,
-                    data_inicial,
-                ),
-            )
-            con.commit()
-            st.success("O ativo foi editado com sucesso")
-            tm.sleep(1)
-            with st.spinner("Redirecionando o Assessor para a Página de Ativos"):
+        with salve_v2:
+            if st.button("Salvar"):
+                cursor.execute(
+                    sql,
+                    (
+                        v3,
+                        "INVESTSMART",
+                        categoria,
+                        ativo,
+                        data,
+                        pl_apl,
+                        retorno,
+                        roa_reps,
+                        roa_head,
+                        roa_rec,
+                        data_inicial,
+                    ),
+                )
+                con.commit()
+                st.success("O ativo foi editado com sucesso")
                 tm.sleep(1)
-            nav_page("cliente_wide")
+                with st.spinner("Redirecionando o Assessor para a Página de Ativos"):
+                    tm.sleep(1)
+                nav_page("cliente_wide")
     else:
         st.error("Data de vencimento tem que ser maior que a data de Início.")
 
-st.markdown(
-    """<hr style="height:1px;border:none;color:#9966ff;background-color:#9966ff;" /> """,
-    unsafe_allow_html=True,
-)
 
 # if st.button("Voltar"):
 #     nav_page("cliente_ativo")
@@ -300,13 +245,15 @@ st.markdown(
 
 # st.markdown("[Pula lá para cima](#hyper_v1)", unsafe_allow_html=True)
 
-if st.button("Voltar"):
-    nav_page("cliente_wide")
 
 
 st.markdown(
     """
 <style>
+    .st-bw {
+    background-color: rgb(63, 63, 63);
+    }
+    
     [data-testid="collapsedControl"] {
         display: none
     }
@@ -319,9 +266,9 @@ st.markdown(
     outline: none;
 }
     img {
-    background-color: rgb(14, 17, 23);
+    background-color: rgb(18, 19, 18);
     }
-    
+
 
 </style>
 """,

@@ -144,6 +144,7 @@ with tab1:
                 # width=5000,
                 allow_unsafe_jscode=True,
                 theme=AgGridTheme.ALPINE,
+                fit_columns_on_grid_load =True,
                 update_mode=GridUpdateMode.SELECTION_CHANGED,
                 columns_auto_size_mode=ColumnsAutoSizeMode.FIT_ALL_COLUMNS_TO_VIEW,
                 reload_data=True,
@@ -198,6 +199,7 @@ with tab2:
                 # width=5000,
                 allow_unsafe_jscode=True,
                 theme=AgGridTheme.ALPINE,
+                fit_columns_on_grid_load =True,
                 update_mode=GridUpdateMode.SELECTION_CHANGED,
                 columns_auto_size_mode=ColumnsAutoSizeMode.FIT_ALL_COLUMNS_TO_VIEW,
                 reload_data=True,
@@ -253,6 +255,7 @@ with geral:
                 # width=5000,
                 allow_unsafe_jscode=True,
                 theme=AgGridTheme.ALPINE,
+                fit_columns_on_grid_load =True,
                 update_mode=GridUpdateMode.SELECTION_CHANGED,
                 columns_auto_size_mode=ColumnsAutoSizeMode.FIT_ALL_COLUMNS_TO_VIEW,
                 reload_data=True,
@@ -484,16 +487,22 @@ with chart1:
         final["data"] = final["data"].apply(lambda x: DT.datetime.strftime(x, "%Y/%m"))
         #st.dataframe(super_smart["data"].unique())
         distancia = list(final["data"].unique())
+        distancia_df = pd.DataFrame(distancia)
+        distancia_df["ano"] = distancia_df[0].astype("datetime64").dt.year
         with container1:
-            inc1, end1 = st.select_slider("Período de tempo do Grafico",options = distancia,value=(distancia[0],distancia[-1]))
+            try:
+                i_n_v = distancia_df[distancia_df["ano"] == DT.datetime.now().year + 2].reset_index().iloc[-1]["index"]
+                inc1, end1 = st.select_slider("Período de tempo do Grafico",options = distancia,value=(distancia[0],distancia[i_n_v]))
+            except:
+                inc1, end1 = st.select_slider("Período de tempo do Grafico",options = distancia,value=(distancia[0],distancia[-1]))
         try:
             fig = px.bar(
                 final[(final["data"]>= inc1) & (final["data"]<= end1)],
                 x="Mês",
                 y="Resultado assessor",
                 color="Produtos",
-                width=1700,
-                height=600,
+                #width=1700,
+                #height=600,
                 text_auto='.2s',
                 title=f"Comissão Total Mensal",
                 color_discrete_sequence=px.colors.sequential.Viridis,
@@ -508,8 +517,8 @@ with chart1:
                 orientation="h",
                 yanchor="bottom",
                 y=1.02,
-                xanchor="right",
-                x=0.3
+                #xanchor="left",
+                #x=1
                 )
                 )
             fig.update_traces(textfont_size=25)
@@ -519,15 +528,15 @@ with chart1:
             fig.update_xaxes(showgrid=False)
             fig.update_yaxes(title=None)
             #fig.update_traces(textposition="top center")
-            st.plotly_chart(fig)
+            st.plotly_chart(fig,use_container_width=True)
         except:
             fig = px.bar(
                 final[(final["data"]>= inc1) & (final["data"]<= end1)],
                 x="Mês",
                 y="Resultado assessor",
                 #color="Produtos",
-                width=4000,
-                height=600,
+                #width=4000,
+                #height=600,
                 text_auto='.2s',
                 title=f"Comissão Total Mensal",
                 color_discrete_sequence=px.colors.sequential.Viridis,
@@ -542,8 +551,8 @@ with chart1:
                 orientation="h",
                 yanchor="bottom",
                 y=1.02,
-                xanchor="right",
-                x=1
+                #xanchor="left",
+                #x=1
                 )
                 )
             fig.update_traces(textfont_size=25)
@@ -555,7 +564,7 @@ with chart1:
             fig.update_xaxes(showgrid=False)
             fig.update_yaxes(title=None)
             #fig.update_traces(textposition="top center")
-            st.plotly_chart(fig)
+            st.plotly_chart(fig,use_container_width=True)
 with chart2:
     if (
         st.session_state["df_cliente"]["Qnt. Ativos InvestSmart"].iloc[0]
@@ -576,7 +585,7 @@ with chart2:
             df_categ.sort_values(by="PL Aplicado", ascending=False),
             x="PL Aplicado",
             y="Ativo",
-            width=700,
+            #width=700,
             # height=500,
             text="R$ "
             + df_categ["Valor"].sort_values(ascending=False).astype(
@@ -601,7 +610,7 @@ with chart2:
         fig.update_xaxes(showgrid=False)
         fig.data[0].marker.color = "#9966ff"
         fig.data[0].textfont.color = "white"
-        st.plotly_chart(fig)
+        st.plotly_chart(fig,use_container_width=True)
         # except:
         #     st.error("Você não possui um Portifolio nesta ferramenta")
 with chart3:
@@ -693,16 +702,22 @@ with chart3:
         final1["data"] = final1["data"].apply(lambda x: DT.datetime.strftime(x, "%Y/%m"))
         #st.dataframe(super_smart["data"].unique())
         distancia1 = list(final1["data"].unique())
+        distancia_df1 = pd.DataFrame(distancia)
+        distancia_df1["ano"] = distancia_df1[0].astype("datetime64").dt.year
         with container:
-            inc2, end2 = st.select_slider("Período de tempo do Grafico",options = distancia1,value=(distancia1[0],distancia1[-1]),key="slider2")
+            try:
+                i_n_v = distancia_df1[distancia_df1["ano"] == DT.datetime.now().year + 2].reset_index().iloc[-1]["index"]
+                inc2, end2 = st.select_slider("Período de tempo do Grafico",options = distancia1,value=(distancia1[0],distancia1[i_n_v]),key="slider2")
+            except:
+                inc2, end2 = st.select_slider("Período de tempo do Grafico",options = distancia1,value=(distancia1[0],distancia1[-1]),key="slider2")
         try:
             fig = px.bar(
                 final1[(final1["data"]>= inc2) & (final1["data"]<= end2)],
                 x="Mês",
                 y="Resultado assessor",
                 color="Produtos",
-                width=1000,
-                height=600,
+                #width=1000,
+                #height=600,
                 text_auto='.2s',
                 title=f"Comissão InvestSmart Mensal",
                 color_discrete_sequence=px.colors.sequential.Viridis,
@@ -717,8 +732,8 @@ with chart3:
                 orientation="h",
                 yanchor="bottom",
                 y=1.02,
-                xanchor="right",
-                x=0.1
+                #xanchor="right",
+                #x=1
                 )
                 )
             fig.update_traces(textfont_size=25)
@@ -728,15 +743,15 @@ with chart3:
             fig.update_xaxes(showgrid=False)
             fig.update_yaxes(title=None)
             #fig.update_traces(textposition="top center")
-            st.plotly_chart(fig)
+            st.plotly_chart(fig,use_container_width=True)
         except:
             fig = px.bar(
                 final1[(final1["data"]>= inc2) & (final1["data"]<= end2)],
                 x="Mês",
                 y="Resultado assessor",
                 #color="Produtos",
-                width=1000,
-                height=600,
+                #width=1000,
+                #height=600,
                 text_auto='.2s',
                 title=f"Comissão InvestSmart Mensal",
                 color_discrete_sequence=px.colors.sequential.Viridis,
@@ -751,8 +766,8 @@ with chart3:
                 orientation="h",
                 yanchor="bottom",
                 y=1.02,
-                xanchor="right",
-                x=0.22
+                #xanchor="right",
+                #x=1
                 )
                 )
             fig.update_traces(textfont_size=25)
@@ -764,7 +779,7 @@ with chart3:
             fig.update_xaxes(showgrid=False)
             fig.update_yaxes(title=None)
             #fig.update_traces(textposition="top center")
-            st.plotly_chart(fig)
+            st.plotly_chart(fig,use_container_width=True)
 with chart4:
     if (
         st.session_state["df_cliente"]["Qnt. Ativos InvestSmart"].iloc[0]
@@ -854,16 +869,22 @@ with chart4:
         final2["data"] = final2["data"].apply(lambda x: DT.datetime.strftime(x, "%Y/%m"))
         #st.dataframe(super_smart["data"].unique())
         distancia = list(final2["data"].unique())
+        distancia_df = pd.DataFrame(distancia)
+        distancia_df["ano"] = distancia_df[0].astype("datetime64").dt.year
         with container3:
-            inc1, end1 = st.select_slider("Período de tempo do Grafico",options = distancia,value=(distancia[0],distancia[-1]),key="besmart")
+            try:
+                i_n_v = distancia_df[distancia_df["ano"] == DT.datetime.now().year + 2].reset_index().iloc[-1]["index"]
+                inc1, end1 = st.select_slider("Período de tempo do Grafico",options = distancia,value=(distancia[0],distancia[i_n_v]),key="besmart")
+            except:
+                inc1, end1 = st.select_slider("Período de tempo do Grafico",options = distancia,value=(distancia[0],distancia[-1]),key="besmart")
         try:
             fig = px.bar(
                 final2[(final2["data"]>= inc1) & (final2["data"]<= end1)],
                 x="Mês",
                 y="Resultado assessor",
                 color="Produtos",
-                width=1700,
-                height=600,
+                #width=1700,
+                #height=600,
                 text_auto='.2s',
                 title=f"Comissão Be.Smart Mensal",
                 color_discrete_sequence=px.colors.sequential.Viridis,
@@ -878,8 +899,8 @@ with chart4:
                 orientation="h",
                 yanchor="bottom",
                 y=1.02,
-                xanchor="right",
-                x=0.2
+                #xanchor="right",
+                #x=1
                 )
                 )
             fig.update_traces(textfont_size=25)
@@ -889,15 +910,15 @@ with chart4:
             fig.update_xaxes(showgrid=False)
             fig.update_yaxes(title=None)
             #fig.update_traces(textposition="top center")
-            st.plotly_chart(fig)
+            st.plotly_chart(fig,use_container_width=True)
         except:
             fig = px.bar(
                 final2[(final2["data"]>= inc1) & (final2["data"]<= end1)],
                 x="Mês",
                 y="Resultado assessor",
                 #color="Produtos",
-                width=1000,
-                height=600,
+                #width=1000,
+                #height=600,
                 text_auto='.2s',
                 title=f"Comissão Be.Smart Mensal",
                 color_discrete_sequence=px.colors.sequential.Viridis,
@@ -912,8 +933,8 @@ with chart4:
                 orientation="h",
                 yanchor="bottom",
                 y=1.02,
-                xanchor="right",
-                x=0.2
+                #xanchor="right",
+                #x=1
                 )
                 )
             fig.update_traces(textfont_size=25)
@@ -925,7 +946,7 @@ with chart4:
             fig.update_xaxes(showgrid=False)
             fig.update_yaxes(title=None)
             #fig.update_traces(textposition="top center")
-            st.plotly_chart(fig)
+            st.plotly_chart(fig,use_container_width=True)
     
     
 #st.dataframe(df_ativo)
@@ -1005,17 +1026,20 @@ else:
 if st.button("Voltar"):
     nav_page("wide_project")
 
+
+
+
 st.markdown(
     """
 <style>
-    [data-testid="collapsedControl"] {
-        display: none
-    }
-    footer {visibility: hidden;}
     img{
-    background-color: rgb(14, 17, 23);
+    background-color: rgb(18, 19, 18);
 }
 </style>
 """,
     unsafe_allow_html=True,
 )
+# [data-testid="collapsedControl"] {
+#         display: none
+#     }
+#footer {visibility: hidden;}

@@ -57,10 +57,12 @@ prem, table = st.columns(2)
 with prem:
     st.subheader("**Premissas**")
 
+    def disable():
+        st.session_state.disabled = False
     
     if "disabled" not in st.session_state:
-        st.session_state["disabled"] = True
-    
+        st.session_state.disabled = True
+
         
     face = pd.read_excel("bd_base_v3.xlsx")
     face["Categoria"] = face["Categoria"].apply(lambda x: x.replace("_", " "))
@@ -85,6 +87,7 @@ with prem:
                 "Ativo: ",
                 list(face.PRODUTOS[face["Categoria"] == categoria].unique()),
                 index=ind,
+                on_change=disable,
                 disabled=st.session_state.disabled, 
                  
             )
@@ -93,6 +96,7 @@ with prem:
             ativo = st.selectbox(
                 "Ativo: ",
                 list(face.PRODUTOS[face["Categoria"] == categoria].unique()),
+                on_change=disable,
                 disabled=st.session_state.disabled, 
                  
             )
@@ -110,6 +114,7 @@ with prem:
         format="%f",
         value=float(v1_pl_apl),
         step=1000.0,
+        on_change=disable,
         disabled=st.session_state.disabled, 
             
     )
@@ -120,6 +125,7 @@ with prem:
         subcategoria = st.selectbox(
             "Subcategoria: ",
             face.sort_values(by="Subcategoria").Subcategoria[face["Categoria"] == categoria].unique(),
+            on_change=disable,
             disabled=st.session_state.disabled, 
         )
 
@@ -141,6 +147,7 @@ with prem:
             "Data de Início: ",
             # min_value=DT.date.today(),
             value=DT.datetime.strptime(v1_data_inicio[:10], "%Y-%m-%d"),
+            on_change=disable,
             disabled=st.session_state.disabled, 
              
         )
@@ -150,6 +157,7 @@ with prem:
             "Data de Vencimento: ",
             # min_value=DT.date.today(),
             value=DT.datetime.strptime(v1_data[:10], "%Y-%m-%d"),
+            on_change=disable,
             disabled=st.session_state.disabled, 
              
         )
@@ -165,6 +173,7 @@ with prem:
             value=float(v1_roa_rec),
             max_value=100.0,
             step=0.1,
+            on_change=disable,
             disabled=st.session_state.disabled, 
              
         )
@@ -177,6 +186,7 @@ with prem:
             value=float(v1_roa_head),
             format="%.2f",
             step=0.01,
+            on_change=disable,
             disabled=st.session_state.disabled, 
              
         )
@@ -188,6 +198,7 @@ with prem:
         value=float(v1_retorno),
         format="%f",
         step=1.0,
+        on_change=disable,
         disabled=st.session_state.disabled, 
             
     )
@@ -205,8 +216,10 @@ with prem:
     #         disabled=st.session_state.disabled, 
              
     #     )
-    if st.button("Editar"):
-        st.session_state["disabled"] = not st.session_state["disabled"] 
+    edit, salve_v3, espaco_10= st.columns([5,5,15])
+    with edit:
+        if st.button("Editar"):
+            st.session_state["disabled"] = not st.session_state["disabled"] 
 # st.markdown(
 #     """<hr style="height:1px;border:none;color:#9966ff;background-color:#9966ff;" />
 #     <p > Visualização do ativo por uma tabela </p>
@@ -214,8 +227,11 @@ with prem:
 #     unsafe_allow_html=True,
 # )
 
+
+
+
 with table:
-    st.header("Visualização do ativo por uma tabela")
+    st.header("Fluxo de Comissão")
     if data > data_inicial:
 
         dataframe = base_df(
@@ -245,29 +261,29 @@ with table:
                 roa_rec = ?,
                 data_ativo = ?
                 WHERE ativo_id = ?"""
-
-        if st.button("Salvar"):
-            cursor.execute(
-                sql,
-                (
-                    categoria,
-                    ativo,
-                    data,
-                    pl_apl,
-                    retorno,
-                    roa_reps,
-                    roa_head,
-                    roa_rec,
-                    data_inicial,
-                    v4,
-                ),
-            )
-            con.commit()
-            st.success("O ativo foi editado com sucesso")
-            tm.sleep(1)
-            with st.spinner("Redirecionando o Assessor para a Página de Ativos"):
+        with salve_v3:
+            if st.button("Salvar"):
+                cursor.execute(
+                    sql,
+                    (
+                        categoria,
+                        ativo,
+                        data,
+                        pl_apl,
+                        retorno,
+                        roa_reps,
+                        roa_head,
+                        roa_rec,
+                        data_inicial,
+                        v4,
+                    ),
+                )
+                con.commit()
+                st.success("O ativo foi editado com sucesso")
                 tm.sleep(1)
-            nav_page("cliente_wide")
+                with st.spinner("Redirecionando o Assessor para a Página de Ativos"):
+                    tm.sleep(1)
+                nav_page("cliente_wide")
     else:
         st.error("Data de vencimento menor que a data de Início.")
 
@@ -286,6 +302,9 @@ if st.button("Voltar"):
 st.markdown(
     """
 <style>
+    .st-bw {
+    background-color: rgb(63, 63, 63);
+    }
     [data-testid="collapsedControl"] {
         display: none
     }
@@ -298,7 +317,7 @@ st.markdown(
     outline: none;
 }
     img {
-    background-color: rgb(14, 17, 23);
+    background-color: rgb(18, 19, 18);
     }
 
 </style>

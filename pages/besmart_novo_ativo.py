@@ -186,14 +186,15 @@ with prem:
     #             st.write("Valor comum para as empresas Unimed OU Omint")
     # else:
     if empresa != "Imóveis":
-        roa_reps = st.number_input(
-            "Repasse Assessor (%): ",
-            min_value=0.0,
-            format="%f",
-            value=50.0,
-            max_value=100.0,
-            step=1.0,
-        )
+        # roa_reps = st.number_input(
+        #     "Repasse Assessor (%): ",
+        #     min_value=0.0,
+        #     format="%f",
+        #     value=50.0,
+        #     max_value=100.0,
+        #     step=1.0,
+        # )
+        roa_reps= 50
     else:
         roa_reps = 100
     roa_rec = 0
@@ -223,6 +224,18 @@ bad_prod = [
     "LOARA - PJ",
     "BANEFORT - PJ",
 ]
+
+st.markdown(
+    """<hr style="height:1px;border:none;color:#9966ff;background-color:#9966ff;" /> """,
+    unsafe_allow_html=True,
+)
+
+volte, salve_v2, espaco_10= st.columns([5,5,15])
+with volte:
+    if st.button("Voltar"):
+        nav_page("cliente_wide")
+
+
 if produto in bad_prod:
     with table:
         st.text("")
@@ -242,7 +255,7 @@ if produto in bad_prod:
         )
 else:
     with table:
-        st.subheader("**Visualização do ativo por uma tabela**")
+        st.subheader("**Fluxo de Comissão**")
         if data > data_inicial:
             if produto == "Lançamento":
                 df = besmart_base(
@@ -386,44 +399,41 @@ else:
 
             sql = "INSERT INTO variaveis (client_id, empresa, categoria, ativo, data_venc, pl_aplicado, retorno, repasse, roa_head, roa_rec, data_ativo) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?)"
             # today = DT.datetime.strftime(DT.datetime.today(), "%Y-%m-%d")
-
-            if st.button("Salvar"):
-                cursor.execute(
-                    sql,
-                    (
-                        v3,
-                        empresa,
-                        categoria,
-                        produto,
-                        data,
-                        pl_apl,
-                        0,
-                        roa_reps,
-                        0,
-                        roa_rec,
-                        data_inicial,
-                    ),
-                )
-                con.commit()
-                st.success("O ativo foi editado com sucesso")
-                tm.sleep(1)
-                with st.spinner("Redirecionando o Assessor para a Página de Ativos"):
+            with salve_v2:
+                if st.button("Salvar"):
+                    cursor.execute(
+                        sql,
+                        (
+                            v3,
+                            empresa,
+                            categoria,
+                            produto,
+                            data,
+                            pl_apl,
+                            0,
+                            roa_reps,
+                            0,
+                            roa_rec,
+                            data_inicial,
+                        ),
+                    )
+                    con.commit()
+                    st.success("O ativo foi editado com sucesso")
                     tm.sleep(1)
-                nav_page("cliente_wide")
+                    with st.spinner("Redirecionando o Assessor para a Página de Ativos"):
+                        tm.sleep(1)
+                    nav_page("cliente_wide")
         else:
             st.error("Data de vencimento tem que ser maior que a data de Início.")
 
-st.markdown(
-    """<hr style="height:1px;border:none;color:#9966ff;background-color:#9966ff;" /> """,
-    unsafe_allow_html=True,
-)
+
 
 # if st.button("Voltar"):
 #     nav_page("cliente_ativo")
 # if authenticator.logout("Logout"):
 #     nav_page("Home")
-if st.button("Voltar"):
-    nav_page("cliente_wide")
+# if st.button("Voltar"):
+#     nav_page("cliente_wide")
 
 
 # st.markdown("[Pula lá para cima](#hyper_v1)", unsafe_allow_html=True)
@@ -431,6 +441,9 @@ if st.button("Voltar"):
 st.markdown(
     """
 <style>
+    .st-bw {
+    background-color: rgb(63, 63, 63);
+    }
     [data-testid="collapsedControl"] {
         display: none
     }
@@ -443,7 +456,7 @@ st.markdown(
     outline: none;
 }
     img{
-    background-color: rgb(14, 17, 23);
+    background-color: rgb(18, 19, 18);
     }
 
 </style>
