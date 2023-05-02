@@ -623,7 +623,9 @@ with chart2:
         + st.session_state["df_cliente"]["Qnt. Produtos BeSmart"].iloc[0]
         == 0
     ):
-
+        st.text("")
+        st.error("Esse Cliente não tem Portifólio")
+    elif st.session_state["df_cliente"]["Qnt. Ativos InvestSmart"].iloc[0] ==0:
         st.text("")
         st.error("Esse Cliente não tem Portifólio")
     else:
