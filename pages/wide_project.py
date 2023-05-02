@@ -110,8 +110,27 @@ pl.metric(
 
 if fair.pl_aplicado.sum() == 0:
     dark["Qnt. Ativos InvestSmart"] = 0
-    dark["Qnt. Produtos BeSmart"] = 0
     dark["PL Aplicado"] = 0
+    try:
+        dark["Qnt. Produtos BeSmart"] = [
+                fair[fair["client_id"] == x]
+                .value_counts("karma")
+                .reindex(fair.karma.unique(), fill_value=0)
+                .sum()
+                - fair[fair["client_id"] == x]
+                .value_counts("karma")
+                .reindex(fair.karma.unique(), fill_value=0)["InvestSmart"]
+                if x in fair["client_id"].unique()
+                else 0
+                for x in dark["client_id"].unique()
+            ]
+    except:
+        dark["Qnt. Produtos BeSmart"] = [
+            fair[fair["client_id"] == x].value_counts("karma")["BeSmart"]
+            if x in fair["client_id"].unique()
+            else 0
+            for x in dark["client_id"].unique()
+        ]
 
 else:
     try:
@@ -167,6 +186,11 @@ for i in fair["ativo_id"].unique():
     df = df.reset_index().drop("index", 1)
 
     #st.dataframe(df)
+    masquerede = face[
+        (face["Empresa"] == "Credito")
+        & (face["Categoria"] == 'Colaterizado')
+        & (face["Produto"] == "Crédito XP")]
+    #st.dataframe(masquerede)
     if df.empresa.iloc[0] == "INVESTSMART":
         grasph_df = base_df(
             df.data_venc.iloc[0],
@@ -180,7 +204,6 @@ for i in fair["ativo_id"].unique():
         )
         grasph_df["id"] = df.client_id[0]
     else:
-
         grasph_df = besmart_base(
             df.data_venc.iloc[0],
             df.data_ativo.iloc[0],

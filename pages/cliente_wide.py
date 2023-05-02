@@ -261,7 +261,7 @@ with tab2:
     chart4= st.container()
     
     with botao22:
-        if st.button("Incluir Produto BeSmart"):
+        if st.button("Incluir Produto BeSmart",key="asdf"):
             nav_page("besmart_novo_ativo")
     
     with botao32:
@@ -674,6 +674,9 @@ with chart3:
 
         st.text("")
         st.error("Esse Cliente não tem Portifólio")
+    elif st.session_state["df_cliente"]["Qnt. Ativos InvestSmart"].iloc[0] ==0:
+        st.text("")
+        st.error("Esse Cliente não tem Portifólio Investsmart")
     else:
         smart = pd.DataFrame(columns=["Mês", "Resultado assessor"])
         for i in dark["ativo_id"].unique():
@@ -832,6 +835,7 @@ with chart3:
             fig.update_yaxes(title=None)
             #fig.update_traces(textposition="top center")
             st.plotly_chart(fig,use_container_width=True)
+
 with chart4:
     if (
         st.session_state["df_cliente"]["Qnt. Ativos InvestSmart"].iloc[0]
@@ -841,6 +845,9 @@ with chart4:
 
         st.text("")
         st.error("Esse Cliente não tem Portifólio")
+    elif st.session_state["df_cliente"]["Qnt. Produtos BeSmart"].sum() == 0:
+        st.text("")
+        st.error("Esse Cliente não tem Portifólio Besmart")
     else:
         smart = pd.DataFrame(columns=["Mês", "Resultado assessor"])
         for i in dark["ativo_id"].unique():
@@ -867,7 +874,6 @@ with chart4:
                 )
                 grasph_df["ativo_id"] = i
             else:
-
                 grasph_df = besmart_base(
                     df_v2["Data de Vencimento"].iloc[0],
                     df_v2["Data de Início"].iloc[0],
@@ -1121,10 +1127,10 @@ pl1.metric(
     "Total do Portifólio",
     "R$ " + locale.currency(df_ativo[df_ativo.Empresa=='INVESTSMART']["PL Aplicado"].sum(), grouping=True, symbol=None)[:-3],
 )
-    
-final_invest = final[final["Produtos"].isin(invest_prod["PRODUTOS"])]
+   
 
 try:
+    final_invest = final[final["Produtos"].isin(invest_prod["PRODUTOS"])]
     result_month1 = final_invest["Resultado assessor"][(final_invest["mes"] == DT.datetime.now().month)& (final_invest["ano"] == DT.datetime.now().year)].sum() 
     
     avrg_year11 = (final_invest["Resultado assessor"][
@@ -1194,9 +1200,9 @@ else:
 ##################################################################################################
     
 
-final_besm = final[final["Produtos"].isin(face_v2["Produto"])]
 #st.dataframe(final_besm)
 try:
+    final_besm = final[final["Produtos"].isin(face_v2["Produto"])]
     
     result_month2 = final_besm["Resultado assessor"][(final_besm["mes"] == DT.datetime.now().month)& (final_besm["ano"] == DT.datetime.now().year)].sum() 
     
