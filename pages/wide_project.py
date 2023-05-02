@@ -563,248 +563,252 @@ st.markdown(
 )
 
 # chart1, chart2 = st.columns([6, 4])
-super_smart["data"] = super_smart["Mês"].apply(lambda x: DT.datetime.strptime(x,"%b-%y"))
-super_smart["data"] = super_smart["data"].apply(lambda x: DT.datetime.strftime(x, "%Y/%m"))
-#st.dataframe(super_smart["data"].unique())
+if super_smart.empty:
+    st.text("")
+    st.error("Assessor não tem Portifólio")
+else:    
+    super_smart["data"] = super_smart["Mês"].apply(lambda x: DT.datetime.strptime(x,"%b-%y"))
+    super_smart["data"] = super_smart["data"].apply(lambda x: DT.datetime.strftime(x, "%Y/%m"))
+    #st.dataframe(super_smart["data"].unique())
 
-distancia = list(super_smart["data"].unique())
-distancia_df = pd.DataFrame(distancia)
-distancia_df["ano"] = distancia_df[0].astype("datetime64").dt.year
-#st.dataframe(distancia_df)
-with container:
-    try:
-        i_n_v = distancia_df[distancia_df["ano"] == DT.datetime.now().year + 2].reset_index().iloc[-1]["index"]
-        inc, end = st.select_slider("Período de tempo do Grafico",options = distancia,value=(distancia[0],distancia[i_n_v]))
-    except:
-        inc, end = st.select_slider("Período de tempo do Grafico",options = distancia,value=(distancia[0],distancia[-1]))
-
-with chart2:
-    try:
-        #st.dataframe(fair)
-        df_categ = fair[fair["empresa"]=="INVESTSMART"].groupby("categoria")["pl_aplicado"].sum().reset_index()
-        df_categ['label'] = df_categ["pl_aplicado"].apply(lambda x: locale.currency(x, grouping=True)[:-3])
-        df_categ = df_categ.sort_values(by="pl_aplicado", ascending=False)
-        #st.dataframe(df_categ)
-        fig = px.bar(
-            df_categ,
-            x="pl_aplicado",
-            y="categoria",
-            #width=700,
-            # height=500,
-            text=df_categ.label,
-            color="categoria",
-            color_discrete_sequence=px.colors.sequential.Viridis,
-            title="Total do Portifólio por Categoria",
-        )
-        fig.update_layout(
-            font=dict(family="Arial", size=15, color="White"),
-            # paper_bgcolor="rgba(0,0,0,0)",
-            # plot_bgcolor="rgba(0,0,0,0)",
-            xaxis=dict(title="", tickvals=[], ticktext=[]),
-            yaxis=dict(title=""),
-            showlegend=False,
-            uniformtext_minsize=8,
-            uniformtext_mode="hide",
-        )
-        fig.update_traces(textposition='auto',insidetextanchor = "middle")
-        fig.update_yaxes(showgrid=False)
-        fig.update_xaxes(showgrid=False)
-        fig.data[0].marker.color = "#9966ff"
-        fig.data[0].textfont.color = "white"
-        st.plotly_chart(fig,use_container_width=True)
-    except:
-        st.error("Você não possui um Portifólio nesta ferramenta")
-with chart1:
-    if super_smart.empty:
-
-        st.error("Você não possui um Portifólio nesta ferramenta")
-    else:
-        # tab1, tab2 = st.tabs(["Grafico Geral", "Grafico Geral por Cliente"])
-        # with tab1:
-        #st.dataframe(super_smart)
+    distancia = list(super_smart["data"].unique())
+    distancia_df = pd.DataFrame(distancia)
+    #st.dataframe(distancia_df)
+    distancia_df["ano"] = distancia_df.iloc[0].astype("datetime64").dt.year
+    with container:
         try:
+            i_n_v = distancia_df[distancia_df["ano"] == DT.datetime.now().year + 2].reset_index().iloc[-1]["index"]
+            inc, end = st.select_slider("Período de tempo do Grafico",options = distancia,value=(distancia[0],distancia[i_n_v]))
+        except:
+            inc, end = st.select_slider("Período de tempo do Grafico",options = distancia,value=(distancia[0],distancia[-1]))
+
+    with chart2:
+        try:
+            #st.dataframe(fair)
+            df_categ = fair[fair["empresa"]=="INVESTSMART"].groupby("categoria")["pl_aplicado"].sum().reset_index()
+            df_categ['label'] = df_categ["pl_aplicado"].apply(lambda x: locale.currency(x, grouping=True)[:-3])
+            df_categ = df_categ.sort_values(by="pl_aplicado", ascending=False)
+            #st.dataframe(df_categ)
             fig = px.bar(
-                    super_smart[(super_smart["data"]>= inc) & (super_smart["data"]<= end)],
-                    x="Mês",
-                    y="Resultado assessor",
-                    color="label",
-                    width=1000,
-                    height=425,
-                    text_auto='.2s',
-                    title=f"Comissão Total Mensal",
-                    color_discrete_sequence=px.colors.sequential.Viridis,
-                    labels = {"label":"Empresa","Resultado assessor":"Comissão do Assessor (R$)"}
-                )
+                df_categ,
+                x="pl_aplicado",
+                y="categoria",
+                #width=700,
+                # height=500,
+                text=df_categ.label,
+                color="categoria",
+                color_discrete_sequence=px.colors.sequential.Viridis,
+                title="Total do Portifólio por Categoria",
+            )
             fig.update_layout(
-                #showlegend=False,
-                legend_title= None,
+                font=dict(family="Arial", size=15, color="White"),
+                # paper_bgcolor="rgba(0,0,0,0)",
+                # plot_bgcolor="rgba(0,0,0,0)",
+                xaxis=dict(title="", tickvals=[], ticktext=[]),
+                yaxis=dict(title=""),
+                showlegend=False,
                 uniformtext_minsize=8,
                 uniformtext_mode="hide",
-                legend=dict(
-                orientation="h",
-                yanchor="bottom",
-                y=1.02,
-                # xanchor="right",
-                # x=0.2
-                )
-                )
-            fig.update_traces(textfont_size=12)
-            fig.data[0].textfont.color = "white"
-            fig.data[0].marker.color = "#9966ff"
-            fig.data[1].marker.color = "#482878"
+            )
+            fig.update_traces(textposition='auto',insidetextanchor = "middle")
+            fig.update_yaxes(showgrid=False)
             fig.update_xaxes(showgrid=False)
-            fig.update_yaxes(title=None)
-            #fig.update_traces(textposition="top center")
+            fig.data[0].marker.color = "#9966ff"
+            fig.data[0].textfont.color = "white"
             st.plotly_chart(fig,use_container_width=True)
         except:
-            fig = px.bar(
-                    super_smart[(super_smart["data"]>= inc) & (super_smart["data"]<= end)],
-                    x="Mês",
-                    y="Resultado assessor",
-                    #color="label",
-                    #width=1000,
-                    height=425,
-                    text_auto='.2s',
-                    title=f"Comissão Total Mensal",
-                    color_discrete_sequence=px.colors.sequential.Viridis,
-                    labels = {"label":"Empresa","Resultado assessor":"Comissão do Assessor (R$)"}
-                )
-            fig.update_layout(
-                #showlegend=False,
-                legend_title= None,
-                uniformtext_minsize=8,
-                uniformtext_mode="hide",
-                showlegend=True,
-                legend=dict(
-                orientation="h",
-                yanchor="bottom",
-                y=1.02,
-                # xanchor="right",
-                # x=0.2,
-                )
-                )
-            fig.update_traces(textfont_size=12)
-            fig.data[0].textfont.color = "white"
-            fig.data[0].marker.color = "#482878"
-            fig.data[0]['showlegend']=True
-            fig['data'][0]['name']=super_smart[(super_smart["data"]>= inc) & (super_smart["data"]<= end)]['label'].iloc[0]
-            #fig.data[1].marker.color = "#482878"
-            fig.update_xaxes(showgrid=False)
-            fig.update_yaxes(title=None)
-            #fig.update_traces(textposition="top center")
-            st.plotly_chart(fig,use_container_width=True)
-            # fig = px.line(
-            #     final,
-            #     x="Mês",
-            #     y="Resultado assessor",
-            #     markers=True,
-            #     width=1000,
-            #     text="R$ " + round(final["Resultado assessor"], 2).astype(str),
-            #     title=f"Comissão Total Mensal",
-            # )
-            # fig.update_xaxes(showgrid=False)
-            # fig.update_yaxes(title=None, griddash="dot", rangemode="tozero")
-            # fig.update_traces(textposition="top center")
-            # fig.data[0].line.color = "#9966ff"
-            # st.plotly_chart(fig)
-        # st.dataframe(st.session_state["df_cliente"])
-        # with tab2:
-        #     try:
-        #         if (
-        #             st.session_state["df_cliente"]["Qnt. Ativos InvestSmart"].iloc[0]
-        #             + st.session_state["df_cliente"]["Qnt. Produtos BeSmart"].iloc[0]
-        #             == 0
-        #         ):
-        #             st.error("Esse Cliente não tem Portifólio")
-        #         else:
-        #             if not st.session_state["df_cliente"].empty:
-        #                 fair = fair[
-        #                     fair["client_id"]
-        #                     == st.session_state["df_cliente"].client_id.iloc[0]
-        #                 ]
-        #                 smart_v2 = pd.DataFrame()
-        #                 for i in fair["ativo_id"].unique():
-        #                     df = fair[fair["ativo_id"] == i]
-        #                     df = df.reset_index().drop("index", 1)
+            st.error("Você não possui um Portifólio nesta ferramenta")
+    with chart1:
+        if super_smart.empty:
 
-        #                     # st.dataframe(df)
-        #                     if df.empresa.iloc[0] == "INVESTSMART":
-        #                         grasph_df = base_df(
-        #                             df.data_venc.iloc[0],
-        #                             df.data_ativo.iloc[0],
-        #                             df.pl_aplicado.iloc[0],
-        #                             df.retorno.iloc[0],
-        #                             df.roa_head.iloc[0],
-        #                             df.roa_rec.iloc[0],
-        #                             df.repasse.iloc[0],
-        #                             moeda_real=False,
-        #                         )
-        #                     else:
-        #                         grasph_df = besmart_base(
-        #                             df.data_venc.iloc[0],
-        #                             df.data_ativo.iloc[0],
-        #                             face,
-        #                             df.empresa.iloc[0],
-        #                             df.categoria.iloc[0],
-        #                             df.ativo.iloc[0],
-        #                             df.pl_aplicado.iloc[0],
-        #                             df.repasse.iloc[0],
-        #                         )
-        #                     smart_v2 = smart_v2.append(grasph_df)
-        #                 smart_v2["Mês"] = smart_v2["Mês"].apply(
-        #                     lambda x: DT.datetime.strptime(x, "%b-%y")
-        #                 )
-        #                 smart_v2["Mês"] = smart_v2["Mês"].apply(
-        #                     lambda x: DT.datetime.strftime(x, "%m-%y")
-        #                 )
-        #                 # st.dataframe(smart_v2)
-        #                 final_v2 = (
-        #                     smart_v2[["Mês", "Resultado assessor"]]
-        #                     .groupby(smart_v2["Mês"])["Resultado assessor"]
-        #                     .sum()
-        #                     .reset_index()
-        #                 )
-        #                 final_v2["Mês"] = final_v2["Mês"].apply(
-        #                     lambda x: DT.datetime.strptime(x, "%m-%y")
-        #                 )
-        #                 final_v2["ano"] = final_v2["Mês"].astype("datetime64").dt.year
-        #                 final_v2["mes"] = final_v2["Mês"].astype("datetime64").dt.month
-        #                 final_v2["Mês"] = final_v2["Mês"].apply(
-        #                     lambda x: DT.datetime.strftime(x, "%b-%y")
-        #                 )
-        #                 final_v2 = final_v2.sort_values(["ano", "mes"]).reset_index(
-        #                     drop=True
-        #                 )
-        #                 name_v2 = st.session_state.df_cliente["Nome do Cliente"][0]
-        #                 fig = px.line(
-        #                     final_v2,
-        #                     x="Mês",
-        #                     y="Resultado assessor",
-        #                     width=1000,
-        #                     markers=True,
-        #                     text="R$ "
-        #                     + round(final_v2["Resultado assessor"], 2).astype(str),
-        #                     title=f"Resultado Geral do Assessor por mês de {name_v2}",
-        #                 )
-        #                 fig.update_xaxes(showgrid=False)
-        #                 fig.update_yaxes(
-        #                     title_font_size=24, griddash="dot", rangemode="tozero"
-        #                 )
-        #                 fig.update_traces(textposition="top center")
-        #                 fig.data[0].line.color = "#9966ff"
-        #                 st.plotly_chart(fig)
-        #     except:
-        #         fig = px.line(
-        #             final,
-        #             x="Mês",
-        #             y="Resultado assessor",
-        #             width=1000,
-        #             markers=True,
-        #             text="R$ " + round(final["Resultado assessor"], 2).astype(str),
-        #             title=f"Resultado Geral do Assessor por mês",
-        #         )
-        #         fig.update_xaxes(showgrid=False)
-        #         fig.update_yaxes(griddash="dot", rangemode="tozero")
-        #         fig.update_traces(textposition="top center")
-        #         fig.data[0].line.color = "#9966ff"
-        #         st.plotly_chart(fig)
+            st.error("Você não possui um Portifólio nesta ferramenta")
+        else:
+            # tab1, tab2 = st.tabs(["Grafico Geral", "Grafico Geral por Cliente"])
+            # with tab1:
+            #st.dataframe(super_smart)
+            try:
+                fig = px.bar(
+                        super_smart[(super_smart["data"]>= inc) & (super_smart["data"]<= end)],
+                        x="Mês",
+                        y="Resultado assessor",
+                        color="label",
+                        width=1000,
+                        height=425,
+                        text_auto='.2s',
+                        title=f"Comissão Total Mensal",
+                        color_discrete_sequence=px.colors.sequential.Viridis,
+                        labels = {"label":"Empresa","Resultado assessor":"Comissão do Assessor (R$)"}
+                    )
+                fig.update_layout(
+                    #showlegend=False,
+                    legend_title= None,
+                    uniformtext_minsize=8,
+                    uniformtext_mode="hide",
+                    legend=dict(
+                    orientation="h",
+                    yanchor="bottom",
+                    y=1.02,
+                    # xanchor="right",
+                    # x=0.2
+                    )
+                    )
+                fig.update_traces(textfont_size=12)
+                fig.data[0].textfont.color = "white"
+                fig.data[0].marker.color = "#9966ff"
+                fig.data[1].marker.color = "#482878"
+                fig.update_xaxes(showgrid=False)
+                fig.update_yaxes(title=None)
+                #fig.update_traces(textposition="top center")
+                st.plotly_chart(fig,use_container_width=True)
+            except:
+                fig = px.bar(
+                        super_smart[(super_smart["data"]>= inc) & (super_smart["data"]<= end)],
+                        x="Mês",
+                        y="Resultado assessor",
+                        #color="label",
+                        #width=1000,
+                        height=425,
+                        text_auto='.2s',
+                        title=f"Comissão Total Mensal",
+                        color_discrete_sequence=px.colors.sequential.Viridis,
+                        labels = {"label":"Empresa","Resultado assessor":"Comissão do Assessor (R$)"}
+                    )
+                fig.update_layout(
+                    #showlegend=False,
+                    legend_title= None,
+                    uniformtext_minsize=8,
+                    uniformtext_mode="hide",
+                    showlegend=True,
+                    legend=dict(
+                    orientation="h",
+                    yanchor="bottom",
+                    y=1.02,
+                    # xanchor="right",
+                    # x=0.2,
+                    )
+                    )
+                fig.update_traces(textfont_size=12)
+                fig.data[0].textfont.color = "white"
+                fig.data[0].marker.color = "#482878"
+                fig.data[0]['showlegend']=True
+                fig['data'][0]['name']=super_smart[(super_smart["data"]>= inc) & (super_smart["data"]<= end)]['label'].iloc[0]
+                #fig.data[1].marker.color = "#482878"
+                fig.update_xaxes(showgrid=False)
+                fig.update_yaxes(title=None)
+                #fig.update_traces(textposition="top center")
+                st.plotly_chart(fig,use_container_width=True)
+                # fig = px.line(
+                #     final,
+                #     x="Mês",
+                #     y="Resultado assessor",
+                #     markers=True,
+                #     width=1000,
+                #     text="R$ " + round(final["Resultado assessor"], 2).astype(str),
+                #     title=f"Comissão Total Mensal",
+                # )
+                # fig.update_xaxes(showgrid=False)
+                # fig.update_yaxes(title=None, griddash="dot", rangemode="tozero")
+                # fig.update_traces(textposition="top center")
+                # fig.data[0].line.color = "#9966ff"
+                # st.plotly_chart(fig)
+            # st.dataframe(st.session_state["df_cliente"])
+            # with tab2:
+            #     try:
+            #         if (
+            #             st.session_state["df_cliente"]["Qnt. Ativos InvestSmart"].iloc[0]
+            #             + st.session_state["df_cliente"]["Qnt. Produtos BeSmart"].iloc[0]
+            #             == 0
+            #         ):
+            #             st.error("Esse Cliente não tem Portifólio")
+            #         else:
+            #             if not st.session_state["df_cliente"].empty:
+            #                 fair = fair[
+            #                     fair["client_id"]
+            #                     == st.session_state["df_cliente"].client_id.iloc[0]
+            #                 ]
+            #                 smart_v2 = pd.DataFrame()
+            #                 for i in fair["ativo_id"].unique():
+            #                     df = fair[fair["ativo_id"] == i]
+            #                     df = df.reset_index().drop("index", 1)
+
+            #                     # st.dataframe(df)
+            #                     if df.empresa.iloc[0] == "INVESTSMART":
+            #                         grasph_df = base_df(
+            #                             df.data_venc.iloc[0],
+            #                             df.data_ativo.iloc[0],
+            #                             df.pl_aplicado.iloc[0],
+            #                             df.retorno.iloc[0],
+            #                             df.roa_head.iloc[0],
+            #                             df.roa_rec.iloc[0],
+            #                             df.repasse.iloc[0],
+            #                             moeda_real=False,
+            #                         )
+            #                     else:
+            #                         grasph_df = besmart_base(
+            #                             df.data_venc.iloc[0],
+            #                             df.data_ativo.iloc[0],
+            #                             face,
+            #                             df.empresa.iloc[0],
+            #                             df.categoria.iloc[0],
+            #                             df.ativo.iloc[0],
+            #                             df.pl_aplicado.iloc[0],
+            #                             df.repasse.iloc[0],
+            #                         )
+            #                     smart_v2 = smart_v2.append(grasph_df)
+            #                 smart_v2["Mês"] = smart_v2["Mês"].apply(
+            #                     lambda x: DT.datetime.strptime(x, "%b-%y")
+            #                 )
+            #                 smart_v2["Mês"] = smart_v2["Mês"].apply(
+            #                     lambda x: DT.datetime.strftime(x, "%m-%y")
+            #                 )
+            #                 # st.dataframe(smart_v2)
+            #                 final_v2 = (
+            #                     smart_v2[["Mês", "Resultado assessor"]]
+            #                     .groupby(smart_v2["Mês"])["Resultado assessor"]
+            #                     .sum()
+            #                     .reset_index()
+            #                 )
+            #                 final_v2["Mês"] = final_v2["Mês"].apply(
+            #                     lambda x: DT.datetime.strptime(x, "%m-%y")
+            #                 )
+            #                 final_v2["ano"] = final_v2["Mês"].astype("datetime64").dt.year
+            #                 final_v2["mes"] = final_v2["Mês"].astype("datetime64").dt.month
+            #                 final_v2["Mês"] = final_v2["Mês"].apply(
+            #                     lambda x: DT.datetime.strftime(x, "%b-%y")
+            #                 )
+            #                 final_v2 = final_v2.sort_values(["ano", "mes"]).reset_index(
+            #                     drop=True
+            #                 )
+            #                 name_v2 = st.session_state.df_cliente["Nome do Cliente"][0]
+            #                 fig = px.line(
+            #                     final_v2,
+            #                     x="Mês",
+            #                     y="Resultado assessor",
+            #                     width=1000,
+            #                     markers=True,
+            #                     text="R$ "
+            #                     + round(final_v2["Resultado assessor"], 2).astype(str),
+            #                     title=f"Resultado Geral do Assessor por mês de {name_v2}",
+            #                 )
+            #                 fig.update_xaxes(showgrid=False)
+            #                 fig.update_yaxes(
+            #                     title_font_size=24, griddash="dot", rangemode="tozero"
+            #                 )
+            #                 fig.update_traces(textposition="top center")
+            #                 fig.data[0].line.color = "#9966ff"
+            #                 st.plotly_chart(fig)
+            #     except:
+            #         fig = px.line(
+            #             final,
+            #             x="Mês",
+            #             y="Resultado assessor",
+            #             width=1000,
+            #             markers=True,
+            #             text="R$ " + round(final["Resultado assessor"], 2).astype(str),
+            #             title=f"Resultado Geral do Assessor por mês",
+            #         )
+            #         fig.update_xaxes(showgrid=False)
+            #         fig.update_yaxes(griddash="dot", rangemode="tozero")
+            #         fig.update_traces(textposition="top center")
+            #         fig.data[0].line.color = "#9966ff"
+            #         st.plotly_chart(fig)
