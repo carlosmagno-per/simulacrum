@@ -110,27 +110,9 @@ pl.metric(
 
 if fair.pl_aplicado.sum() == 0:
     dark["Qnt. Ativos InvestSmart"] = 0
+    dark["Qnt. Produtos BeSmart"] = 0
     dark["PL Aplicado"] = 0
-    try:
-        dark["Qnt. Produtos BeSmart"] = [
-            fair[fair["client_id"] == x]
-            .value_counts("karma")
-            .reindex(fair.karma.unique(), fill_value=0)
-            .sum()
-            - fair[fair["client_id"] == x]
-            .value_counts("karma")
-            .reindex(fair.karma.unique(), fill_value=0)["InvestSmart"]
-            if x in fair["client_id"].unique()
-            else 0
-            for x in dark["client_id"].unique()
-        ]
-    except:
-        dark["Qnt. Produtos BeSmart"] = [
-                fair[fair["client_id"] == x].value_counts("karma")["BeSmart"]
-                if x in fair["client_id"].unique()
-                else 0
-                for x in dark["client_id"].unique()
-            ]
+
 else:
     try:
         dark["Qnt. Ativos InvestSmart"] = [
@@ -146,12 +128,18 @@ else:
             .sum()
             - fair[fair["client_id"] == x]
             .value_counts("karma")
-            .reindex(fair.karma.unique(), fill_value=0)["BeSmart"]
+            .reindex(fair.karma.unique(), fill_value=0)["InvestSmart"]
             if x in fair["client_id"].unique()
             else 0
             for x in dark["client_id"].unique()
         ]
     except:
+        dark["Qnt. Produtos BeSmart"] = [
+            fair[fair["client_id"] == x].value_counts("karma").reindex(fair.karma.unique(), fill_value=0)["BeSmart"]
+            if x in fair["client_id"].unique()
+            else 0
+            for x in dark["client_id"].unique()
+        ]
 
         dark["Qnt. Ativos InvestSmart"] = [
             fair[fair["client_id"] == x]
@@ -160,18 +148,12 @@ else:
             .sum()
             - fair[fair["client_id"] == x]
             .value_counts("karma")
-            .reindex(fair.karma.unique(), fill_value=0)["InvestSmart"]
+            .reindex(fair.karma.unique(), fill_value=0)["BeSmart"]
             if x in fair["client_id"].unique()
             else 0
             for x in dark["client_id"].unique()
         ]
-        dark["Qnt. Produtos BeSmart"] = [
-            fair[fair["client_id"] == x].value_counts("karma").iloc[0]
-            if x in fair["client_id"].unique()
-            else 0
-            for x in dark["client_id"].unique()
-        ]
-        
+
 
 
 smart = pd.DataFrame(columns=["Mês", "Resultado assessor"])

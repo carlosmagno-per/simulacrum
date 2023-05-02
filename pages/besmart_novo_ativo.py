@@ -403,8 +403,7 @@ else:
                 if st.button("Salvar"):
                     cursor.execute(
                         sql,
-                        (
-                            v3,
+                        (   v3,
                             empresa,
                             categoria,
                             produto,

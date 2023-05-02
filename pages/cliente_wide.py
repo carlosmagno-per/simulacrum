@@ -625,7 +625,7 @@ with chart2:
     ):
         st.text("")
         st.error("Esse Cliente não tem Portifólio")
-    elif st.session_state["df_cliente"]["Qnt. Ativos InvestSmart"].iloc[0] ==0:
+    elif st.session_state["df_cliente"]["Qnt. Ativos InvestSmart"].sum() ==0:
         st.text("")
         st.error("Esse Cliente não tem Portifólio")
     else:
