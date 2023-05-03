@@ -574,7 +574,7 @@ else:
     distancia = list(super_smart["data"].unique())
     distancia_df = pd.DataFrame(distancia)
     #st.dataframe(distancia_df)
-    distancia_df["ano"] = distancia_df.iloc[0].astype("datetime64").dt.year
+    distancia_df["ano"] = distancia_df[0].astype("datetime64").dt.year
     with container:
         try:
             i_n_v = distancia_df[distancia_df["ano"] == DT.datetime.now().year + 2].reset_index().iloc[-1]["index"]
