@@ -29,24 +29,39 @@ with col1:
 with col2:
     st.image("investsmart_endosso_horizontal_fundopreto.png", width=270)
 
+try:
+    v4 = int(st.session_state.df_ativo.ativo_id[0])
 
-v4 = int(st.session_state.df_ativo.ativo_id[0])
-
-
-v1_categ = st.session_state.df_ativo.Categoria.iloc[0]
-v1_ativo = st.session_state.df_ativo.Ativo.iloc[0]
-v1_data = st.session_state.df_ativo["Data de Vencimento"].iloc[0]
-v1_data_inicio = st.session_state.df_ativo["Data de Início"].iloc[0]
-v1_pl_apl = (
-    st.session_state.df_ativo["PL Aplicado"]
-    .iloc[0][3:]
-    .replace(".", "")
-    .replace(",", ".")
-)
-v1_retorno = st.session_state.df_ativo.retorno.iloc[0]
-v1_repasse = st.session_state.df_ativo.repasse.iloc[0]
-v1_roa_head = st.session_state.df_ativo.roa_head.iloc[0]
-v1_roa_rec = st.session_state.df_ativo.roa_rec.iloc[0]
+    v1_categ = st.session_state.df_ativo.Categoria.iloc[0]
+    v1_ativo = st.session_state.df_ativo.Ativo.iloc[0]
+    v1_data = st.session_state.df_ativo["Data de Vencimento"].iloc[0]
+    v1_data_inicio = st.session_state.df_ativo["Data de Início"].iloc[0]
+    v1_pl_apl = (
+        st.session_state.df_ativo["PL Aplicado"]
+        .iloc[0][3:]
+        .replace(".", "")
+        .replace(",", ".")
+    )
+    v1_retorno = st.session_state.df_ativo.retorno.iloc[0]
+    v1_repasse = st.session_state.df_ativo.repasse.iloc[0]
+    v1_roa_head = st.session_state.df_ativo.roa_head.iloc[0]
+    v1_roa_rec = st.session_state.df_ativo.roa_rec.iloc[0]
+except:
+    v4 = int(st.session_state.df_ativo1.ativo_id[0])
+    v1_categ = st.session_state.df_ativo1.Categoria.iloc[0]
+    v1_ativo = st.session_state.df_ativo1.Ativo.iloc[0]
+    v1_data = st.session_state.df_ativo1["Data de Vencimento"].iloc[0]
+    v1_data_inicio = st.session_state.df_ativo1["Data de Início"].iloc[0]
+    v1_pl_apl = (
+        st.session_state.df_ativo1["PL Aplicado"]
+        .iloc[0][3:]
+        .replace(".", "")
+        .replace(",", ".")
+    )
+    v1_retorno = st.session_state.df_ativo1.retorno.iloc[0]
+    v1_repasse = st.session_state.df_ativo1.repasse.iloc[0]
+    v1_roa_head = st.session_state.df_ativo1.roa_head.iloc[0]
+    v1_roa_rec = st.session_state.df_ativo1.roa_rec.iloc[0]
 
 st.markdown(
     """<hr style="height:1px;border:none;color:#9966ff;background-color:#9966ff;" /> """,

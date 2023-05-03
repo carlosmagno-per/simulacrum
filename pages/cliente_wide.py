@@ -137,11 +137,12 @@ with tab1:
         gb = gridOptions.build()
 
         mycntnr = st.container()
+        #st.dataframe(dark2)
         with mycntnr:
             htmlstr = f"<p style='background-color: #9966ff; color: #000000; font-size: 16px; border-radius: 7px; padding-left: 8px; text-align: center'>Tabela de Ativos</style></p>"
             st.markdown(htmlstr, unsafe_allow_html=True)
 
-            dta = AgGrid(
+            dta1 = AgGrid(
                 dark2,
                 gridOptions=gb,
                 #height=290,
@@ -163,10 +164,10 @@ with tab1:
     container = st.container()
     chart3, chart2= st.columns([6,4])
 
+    st.session_state["df_ativo1"] = pd.DataFrame(dta1["selected_rows"])
     with botao11:
         if st.button("Incluir Ativo InvestSmart",key=1):
             nav_page("novo_ativo")
-    
     with botao31:
         if st.button("Visualizar Ativo InvestSmart"):
             nav_page("edit_ativo")
@@ -180,10 +181,10 @@ with tab1:
             sim, nao = st.columns(2)
             with sim:
                 if st.button("Sim",key=221):
-                    if st.session_state["df_ativo"].empty:
+                    if st.session_state["df_ativo1"].empty:
                         st.error("Não foi selecionado um Cliente")
                     else:
-                        vers = int(st.session_state.df_ativo.ativo_id[0])
+                        vers = int(st.session_state.df_ativo1.ativo_id[0])
                         cursor.execute("DELETE FROM variaveis WHERE ativo_id = ?", (vers,))
                         con.commit()
                         st.success("O ativo foi deletado com sucesso")
@@ -238,7 +239,7 @@ with tab2:
             htmlstr = f"<p style='background-color: #9966ff; color: #000000; font-size: 16px; border-radius: 7px; padding-left: 8px; text-align: center'>Tabela de Produtos</style></p>"
             st.markdown(htmlstr, unsafe_allow_html=True)
 
-            dta = AgGrid(
+            dta2 = AgGrid(
                 dark3,
                 gridOptions=gb,
                 #height=290,
@@ -260,10 +261,10 @@ with tab2:
     container3 = st.container() 
     chart4= st.container()
     
+    st.session_state["df_ativo2"] = pd.DataFrame(dta2["selected_rows"])
     with botao22:
         if st.button("Incluir Produto BeSmart",key="asdf"):
             nav_page("besmart_novo_ativo")
-    
     with botao32:
         if st.button("Visualizar Produto BeSmart"):
             nav_page("besmart_edit_ativo")
@@ -277,10 +278,10 @@ with tab2:
             sim, nao = st.columns(2)
             with sim:
                 if st.button("Sim",key=22):
-                    if st.session_state["df_ativo"].empty:
+                    if st.session_state["df_ativo2"].empty:
                         st.error("Não foi selecionado um Cliente")
                     else:
-                        vers = int(st.session_state.df_ativo.ativo_id[0])
+                        vers = int(st.session_state.df_ativo2.ativo_id[0])
                         cursor.execute("DELETE FROM variaveis WHERE ativo_id = ?", (vers,))
                         con.commit()
                         st.success("O ativo foi deletado com sucesso")
@@ -357,10 +358,10 @@ with geral:
     container1 = st.container() 
     chart1= st.container() 
 
-st.session_state["df_ativo"] = pd.DataFrame(dta["selected_rows"])
 
 # st.dataframe(st.session_state.df_ativo)
 
+st.session_state["df_ativo"] = pd.DataFrame(dta["selected_rows"])
 
 if "button1" not in st.session_state:
     st.session_state["button1"] = False
