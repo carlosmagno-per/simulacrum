@@ -165,11 +165,11 @@ with tab1:
 
     with botao11:
         if st.button("Incluir Ativo InvestSmart",key=1):
-            nav_page("besmart_novo_ativo")
+            nav_page("novo_ativo")
     
     with botao31:
         if st.button("Visualizar Ativo InvestSmart"):
-            nav_page("besmart_edit_ativo")
+            nav_page("edit_ativo")
     if "button441" not in st.session_state:
             st.session_state["button441"] = False
     with botao41:
