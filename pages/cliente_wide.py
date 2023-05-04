@@ -165,6 +165,7 @@ with tab1:
     chart3, chart2= st.columns([6,4])
 
     st.session_state["df_ativo1"] = pd.DataFrame(dta1["selected_rows"])
+    st.dataframe(st.session_state["df_ativo1"])
     with botao11:
         if st.button("Incluir Ativo InvestSmart",key=1):
             nav_page("novo_ativo")
@@ -258,12 +259,14 @@ with tab2:
             """,
             unsafe_allow_html=True,
         )
+    st.session_state["df_ativo2"] = pd.DataFrame(dta2["selected_rows"])
+    st.dataframe(st.session_state["df_ativo2"])
     container3 = st.container() 
     chart4= st.container()
-    
-    st.session_state["df_ativo2"] = pd.DataFrame(dta2["selected_rows"])
     with botao22:
+    
         if st.button("Incluir Produto BeSmart",key="asdf"):
+            st.session_state["df_ativo2"]
             nav_page("besmart_novo_ativo")
     with botao32:
         if st.button("Visualizar Produto BeSmart"):
@@ -361,30 +364,30 @@ with geral:
 
 # st.dataframe(st.session_state.df_ativo)
 
-st.session_state["df_ativo"] = pd.DataFrame(dta["selected_rows"])
-
-if "button1" not in st.session_state:
-    st.session_state["button1"] = False
-with botao1:
-    if st.button("Incluir Ativo InvestSmart"):
-        nav_page("novo_ativo")
-with botao2:
-    if st.button("Incluir Produto Be.Smart"):
-        #         st.session_state["button1"] = not st.session_state["button1"]
-        # if st.session_state["button1"]:
-        # checks = st.radio(
-        #     "Qual tipo de produto será Incluido:",
-        #     [
-        #         "Cambio",
-        #         "Protect",
-        #         "Credito",
-        #         "Diversificações",
-        #         "Empresas",
-        #     ],
-        #     horizontal=True,
-        # )
-        # if st.button("Incluir esse tipo de ativo"):
-        nav_page("besmart_novo_ativo")
+    st.session_state["df_ativo"] = pd.DataFrame(dta["selected_rows"])
+    st.dataframe(st.session_state["df_ativo"])
+    if "button1" not in st.session_state:
+        st.session_state["button1"] = False
+    with botao1:
+        if st.button("Incluir Ativo InvestSmart"):
+            nav_page("novo_ativo")
+    with botao2:
+        if st.button("Incluir Produto Be.Smart"):
+            #         st.session_state["button1"] = not st.session_state["button1"]
+            # if st.session_state["button1"]:
+            # checks = st.radio(
+            #     "Qual tipo de produto será Incluido:",
+            #     [
+            #         "Cambio",
+            #         "Protect",
+            #         "Credito",
+            #         "Diversificações",
+            #         "Empresas",
+            #     ],
+            #     horizontal=True,
+            # )
+            # if st.button("Incluir esse tipo de ativo"):
+            nav_page("besmart_novo_ativo")
 
 
 face_v2 = pd.read_excel("base_besmart_v3.xlsx")
@@ -937,7 +940,7 @@ with chart4:
                 i_n_v = distancia_df[distancia_df["ano"] == DT.datetime.now().year + 2].reset_index().iloc[-1]["index"]
                 inc1, end1 = st.select_slider("Período de tempo do Grafico",options = distancia,value=(distancia[0],distancia[i_n_v]),key="besmart")
             except:
-                inc1, end1 = st.select_slider("Período de tempo do Grafico",options = distancia,value=(distancia[0],distancia[-1]),key="besmart")
+                inc1, end1 = st.select_slider("Período de tempo do Grafico",options = distancia,value=(distancia[0],distancia[-1]),key="besmart_v42")
         try:
             fig = px.bar(
                 final2[(final2["data"]>= inc1) & (final2["data"]<= end1)],

@@ -30,43 +30,42 @@ with col1:
 with col2:
     st.image("BeSmart_Logos_AF_horizontal__branco.png", width=270)
 
-try:
-    v4 = int(st.session_state.df_ativo.ativo_id[0])
-
-    v1_empresa = st.session_state.df_ativo.Empresa.iloc[0]
-    v1_categ = st.session_state.df_ativo.Categoria.iloc[0]
-    v1_ativo = st.session_state.df_ativo.Ativo.iloc[0]
-    v1_data = st.session_state.df_ativo["Data de Vencimento"].iloc[0]
-    v1_data_inicio = st.session_state.df_ativo["Data de Início"].iloc[0]
-    v1_pl_apl = (
-        st.session_state.df_ativo["PL Aplicado"]
-        .iloc[0][3:]
-        .replace(".", "")
-        .replace(",", ".")
-    )
-    v1_retorno = st.session_state.df_ativo.retorno.iloc[0]
-    v1_repasse = st.session_state.df_ativo.repasse.iloc[0]
-    v1_roa_head = st.session_state.df_ativo.roa_head.iloc[0]
-    v1_roa_rec = st.session_state.df_ativo.roa_rec.iloc[0]
-except:
-    v4 = int(st.session_state.df_ativo2.ativo_id[0])
-
-    v1_empresa = st.session_state.df_ativo2.Empresa.iloc[0]
-    v1_categ = st.session_state.df_ativo2.Categoria.iloc[0]
-    v1_ativo = st.session_state.df_ativo2.Ativo.iloc[0]
-    v1_data = st.session_state.df_ativo2["Data de Vencimento"].iloc[0]
-    v1_data_inicio = st.session_state.df_ativo2["Data de Início"].iloc[0]
-    v1_pl_apl = (
-        st.session_state.df_ativo2["PL Aplicado"]
-        .iloc[0][3:]
-        .replace(".", "")
-        .replace(",", ".")
-    )
-    v1_retorno = st.session_state.df_ativo2.retorno.iloc[0]
-    v1_repasse = st.session_state.df_ativo2.repasse.iloc[0]
-    v1_roa_head = st.session_state.df_ativo2.roa_head.iloc[0]
-    v1_roa_rec = st.session_state.df_ativo2.roa_rec.iloc[0]
-    
+#st.dataframe(st.session_state.df_ativo2)
+# try:
+v4 = int(st.session_state.df_ativo2.ativo_id[0])
+v1_empresa = st.session_state.df_ativo2.Empresa.iloc[0]
+v1_categ = st.session_state.df_ativo2.Categoria.iloc[0]
+v1_ativo = st.session_state.df_ativo2.Produto.iloc[0]
+v1_data = st.session_state.df_ativo2["Data de Vencimento"].iloc[0]
+v1_data_inicio = st.session_state.df_ativo2["Data de Início"].iloc[0]
+v1_pl_apl = (
+    st.session_state.df_ativo2["Valor do Produto"]
+    .iloc[0][3:]
+    .replace(".", "")
+    .replace(",", ".")
+)
+v1_retorno = st.session_state.df_ativo2.retorno.iloc[0]
+v1_repasse = st.session_state.df_ativo2.repasse.iloc[0]
+v1_roa_head = st.session_state.df_ativo2.roa_head.iloc[0]
+v1_roa_rec = st.session_state.df_ativo2.roa_rec.iloc[0]
+# except:
+#     v4 = int(st.session_state.df_ativo.ativo_id[0])
+#     v1_empresa = st.session_state.df_ativo.Empresa.iloc[0]
+#     v1_categ = st.session_state.df_ativo.Categoria.iloc[0]
+#     v1_ativo = st.session_state.df_ativo.Ativo.iloc[0]
+#     v1_data = st.session_state.df_ativo["Data de Vencimento"].iloc[0]
+#     v1_data_inicio = st.session_state.df_ativo["Data de Início"].iloc[0]
+#     v1_pl_apl = (
+#         st.session_state.df_ativo["PL Aplicado"]
+#         .iloc[0][3:]
+#         .replace(".", "")
+#         .replace(",", ".")
+#     )
+#     v1_retorno = st.session_state.df_ativo.retorno.iloc[0]
+#     v1_repasse = st.session_state.df_ativo.repasse.iloc[0]
+#     v1_roa_head = st.session_state.df_ativo.roa_head.iloc[0]
+#     v1_roa_rec = st.session_state.df_ativo.roa_rec.iloc[0]
+#roa_reps = float(v1_repasse)
 st.markdown(
     """<hr style="height:1px;border:none;color:#9966ff;background-color:#9966ff;" /> """,
     unsafe_allow_html=True,
