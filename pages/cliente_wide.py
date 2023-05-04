@@ -165,7 +165,7 @@ with tab1:
     chart3, chart2= st.columns([6,4])
 
     st.session_state["df_ativo1"] = pd.DataFrame(dta1["selected_rows"])
-    st.dataframe(st.session_state["df_ativo1"])
+    #st.dataframe(st.session_state["df_ativo1"])
     with botao11:
         if st.button("Incluir Ativo InvestSmart",key=1):
             nav_page("novo_ativo")
@@ -260,7 +260,7 @@ with tab2:
             unsafe_allow_html=True,
         )
     st.session_state["df_ativo2"] = pd.DataFrame(dta2["selected_rows"])
-    st.dataframe(st.session_state["df_ativo2"])
+    #st.dataframe(st.session_state["df_ativo2"])
     container3 = st.container() 
     chart4= st.container()
     with botao22:
@@ -365,7 +365,7 @@ with geral:
 # st.dataframe(st.session_state.df_ativo)
 
     st.session_state["df_ativo"] = pd.DataFrame(dta["selected_rows"])
-    st.dataframe(st.session_state["df_ativo"])
+    #st.dataframe(st.session_state["df_ativo"])
     if "button1" not in st.session_state:
         st.session_state["button1"] = False
     with botao1:
