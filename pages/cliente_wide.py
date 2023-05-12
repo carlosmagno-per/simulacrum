@@ -103,7 +103,7 @@ with tab1:
         st.image("investsmart_endosso_horizontal_fundopreto.png", width=270)
         
         
-    pl1, retorno1, ano1_avg1, ano2_avg1 = st.columns([5, 5, 5, 3])
+    vazio141 ,pl1, retorno1, ano1_avg1, ano2_avg1 = st.columns([1.5,4, 4, 4, 3])
 
     st.write("")
     st.write("")
@@ -171,7 +171,10 @@ with tab1:
             nav_page("novo_ativo")
     with botao31:
         if st.button("Visualizar Ativo InvestSmart"):
-            nav_page("edit_ativo")
+            if st.session_state["df_ativo1"].empty:
+                st.error("Não foi selecionado um ativo")
+            else:
+                nav_page("edit_ativo")
     if "button441" not in st.session_state:
             st.session_state["button441"] = False
     with botao41:
@@ -203,11 +206,11 @@ with tab2:
         st.text("")
         st.image("BeSmart_Logos_AF_horizontal__branco.png", width=270)
         
-    retorno2, ano1_avg2, ano2_avg2 = st.columns([ 5, 5, 3])
+    vacuo141, retorno2, ano1_avg2, ano2_avg2 = st.columns([ 1.5,5, 5, 3])
 
     st.write("")
     st.write("")
-    vacuo,  botao22, botao32, botao42, vacuo = st.columns([7,  5, 5, 5, 7])
+    vacuo,  botao22, botao32, botao42, vacuo = st.columns([7,5, 5,5,7])
             
             
     vazio1, cliente, vazio2 = st.columns([1, 9, 1])
@@ -270,7 +273,10 @@ with tab2:
             nav_page("besmart_novo_ativo")
     with botao32:
         if st.button("Visualizar Produto BeSmart"):
-            nav_page("besmart_edit_ativo")
+            if st.session_state["df_ativo2"].empty:
+                st.error("Não foi selecionado um ativo")
+            else:
+                nav_page("besmart_edit_ativo")
     if "button442" not in st.session_state:
             st.session_state["button442"] = False
     with botao42:
@@ -302,7 +308,7 @@ with geral:
         st.text("")
         st.image("investsmart_endosso_horizontal_fundopreto.png", width=270)
     
-    pl, retorno, ano1_avg, ano2_avg = st.columns([5, 5, 5, 3])
+    vazio212,pl, retorno, ano1_avg, ano2_avg = st.columns([1.5,4, 4, 4, 3])
 
     st.write("")
     st.write("")
