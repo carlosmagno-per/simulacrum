@@ -692,7 +692,7 @@ else:
                 fig.data[0].marker.color = "#482878"
                 fig.data[0]['showlegend']=True
                 fig['data'][0]['name']=super_smart[(super_smart["data"]>= inc) & (super_smart["data"]<= end)]['label'].iloc[0]
-                fig.data[1].marker.color = "#482878"
+                #fig.data[1].marker.color = "#482878"
                 fig.update_xaxes(showgrid=False)
                 fig.update_yaxes(title=None)
                 #fig.update_traces(textposition="top center")
