@@ -29,6 +29,12 @@ with col1:
     st.header("Incluindo um Novo ativo para o Cliente")
 with col2:
     st.image("investsmart_endosso_horizontal_fundopreto.png", width=270)
+    esquerda, direita  = st.columns([5, 4])
+    with direita:
+        if st.button('Logout',key='logout4'):
+            st.session_state["logout"] =None
+            if st.session_state["logout"]==None:
+                nav_page('')
 
 
 st.markdown(

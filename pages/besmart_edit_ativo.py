@@ -29,6 +29,12 @@ with col1:
     st.header("Visualizando um Produto")
 with col2:
     st.image("BeSmart_Logos_AF_horizontal__branco.png", width=270)
+    esquerda, direita  = st.columns([5, 4])
+    with direita:
+        if st.button('Logout',key='logout7'):
+            st.session_state["logout"] =None
+            if st.session_state["logout"]==None:
+                nav_page('')
 
 #st.dataframe(st.session_state.df_ativo2)
 # try:

@@ -11,6 +11,7 @@ from st_aggrid import JsCode, AgGrid, GridOptionsBuilder, ColumnsAutoSizeMode
 from st_aggrid.shared import GridUpdateMode, AgGridTheme
 from database import con, cursor, base_df, besmart_base, moeda
 import locale
+from msal_streamlit_authentication import msal_authentication
 
 locale.setlocale(locale.LC_ALL, "pt_BR.UTF-8")
 
@@ -62,6 +63,12 @@ with col1:
 
 with col2:
     st.image("investsmart_endosso_horizontal_fundopreto.png", width=270)
+    esquerda, direita  = st.columns([5, 4])
+    with direita:
+        if st.button('Logout',key='logout1'):
+            st.session_state["logout"] =None
+            if st.session_state["logout"]==None:
+                nav_page('')
 
 st.markdown(
     """
@@ -812,3 +819,9 @@ else:
             #         fig.update_traces(textposition="top center")
             #         fig.data[0].line.color = "#9966ff"
             #         st.plotly_chart(fig)
+
+
+if st.button('Logout',key='logout2'):
+    st.session_state["logout"] =None
+    if st.session_state["logout"]==None:
+        nav_page('')

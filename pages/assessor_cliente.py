@@ -264,6 +264,7 @@ with botao2:
             st._rerun()
 
 
+
 no_sidebar_style = """
     <style>
         div[data-testid="stSidebarNav"] {display: none;}

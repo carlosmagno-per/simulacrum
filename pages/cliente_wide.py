@@ -47,7 +47,7 @@ st.set_page_config(
 )
 
 
-col1, mid = st.columns([12, 8])
+col1, mid, direita2 = st.columns([12,8,4])
 with col1:
     st.write(
         fr'<p style="font-size:30px;">Nome do Cliente: {name_v1}</p>',
@@ -63,7 +63,18 @@ with col1:
     )
     if st.button("Voltar a visão Geral do Assessor"):
         nav_page("wide_project")
-
+with direita2:
+    st.write('')
+    st.write('')
+    st.write('')
+    st.write('')
+    st.write('')
+    esquerda3, direita3  = st.columns([4, 5])
+    with direita3:
+        if st.button('Logout',key='logout3'):
+            st.session_state["logout"] =None
+            if st.session_state["logout"]==None:
+                nav_page('')
 
 
 st.markdown(
