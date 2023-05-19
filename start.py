@@ -46,16 +46,25 @@ with text:
     if login_token ==None:
         st.write('')
         st.write('')
-        st.write('')
-        st.write('')
-        st.write("Por favor clique no botão ao lado, para entrar na ferramenta com seu email da empresa")
+        # st.write('')
+        # st.write('')
+        st.write(
+        fr'<p style="font-size:26px;">Por favor clique no botão ao lado, para entrar na ferramenta com seu email da empresa</p>',
+        unsafe_allow_html=True,
+    )
+        #st.write("Por favor clique no botão ao lado, para entrar na ferramenta com seu email da empresa")
         st.stop()
     else:
         st.write('')
         st.write('')
         st.write('')
         st.write('')
-        st.subheader(f"BEM VINDO/A, {login_token['account']['name']}")
+        value=login_token['account']['name']
+        st.write(
+        f'<p style="font-size:26px;">BEM VINDO/A,{value}</p>',
+        unsafe_allow_html=True,
+    )
+        #st.subheader(f"BEM VINDO/A, {login_token['account']['name']}")
 
 nome=login_token['account']['name']
 username=login_token['account']['username']
@@ -88,9 +97,12 @@ username=login_token['account']['username']
 
 st.session_state["usuario"] = username
 st.session_state["assessor"] = nome
+st.session_state["logout"] = login_token
 
+st.subheader(f"Você está Utilizando o Email, {username}")
 
-st.subheader(f"VOCÊ ESTÁ UTILIZANDO O EMAIL, {username}")
+st.write('')
+st.write('')
 # if st.button("Iniciar a ferramenta"):
 #     nav_page("assessor_cliente")
 
