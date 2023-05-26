@@ -11,7 +11,6 @@ from st_aggrid.shared import GridUpdateMode, AgGridTheme
 from database import base_df, besmart_base, PositivadorBitrix
 import locale
 import requests
-from variables import *
 
 locale.setlocale(locale.LC_ALL, "pt_BR.UTF-8")
 
