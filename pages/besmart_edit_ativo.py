@@ -11,7 +11,6 @@ import pymysql
 from sqlalchemy import create_engine
 from database import moeda, base_df, besmart_base, PositivadorBitrix
 import locale
-from variables import *
 import requests
 
 locale.setlocale(locale.LC_ALL, "pt_BR.UTF-8")
