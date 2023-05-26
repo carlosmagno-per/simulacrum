@@ -13,7 +13,7 @@ from database import base_df, besmart_base, moeda, PositivadorBitrix
 import locale
 from msal_streamlit_authentication import msal_authentication
 import requests
-from variables import *
+
 
 locale.setlocale(locale.LC_ALL, "pt_BR.UTF-8")
 
