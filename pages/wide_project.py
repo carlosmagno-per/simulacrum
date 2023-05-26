@@ -25,9 +25,10 @@ st.set_page_config(
 )
 
 #df = pd.read_sql("SELECT * FROM cliente", con)
-lista=list(PositivadorBitrix().get_data_default(6)["ID"])
+lista=list(PositivadorBitrix().get_data_default(6)[st.secrets.id])
 df = PositivadorBitrix().get_data_custom(lista)
-df = df.rename(columns={id_deal_var:'client_id',email_var:'sigla',client_name_var:'nome_client',data_cliete_var:'data_cliente'})
+#st.dataframe(df)
+df = df.rename(columns={st.secrets.deal:'client_id',st.secrets.VAR1:'sigla',st.secrets.VAR2:'nome_client',st.secrets.VAR3:'data_cliente'})
 
 dark = df.copy()
 dark = dark.rename(
@@ -94,18 +95,18 @@ list_client_id = list(list_client_id)
 lista2=list(PositivadorBitrix().get_data_default(30)["ID"])
 fair = PositivadorBitrix().get_data_all()
 fair = fair.rename(columns={
-    id_cliente_var:'client_id',
-    empresa_var:'empresa',
-    categoria_var:'categoria',
-    ativo_var:'ativo',
-    pl_aplicado_var:'pl_aplicado',
-    retorno_var:'retorno',
-    repasse_var:'repasse',
-    roa_head_var:'roa_head',
-    roa_rec_var:'roa_rec',
-    data_ativo_var:'data_ativo',
-    data_venc_var:'data_venc',
-    id_deal_var:'ativo_id',
+    st.secrets.VAR11:'client_id',
+    st.secrets.VAR12:'empresa',
+    st.secrets.VAR4:'categoria',
+    st.secrets.VAR5:'ativo',
+    st.secrets.VAR8:'pl_aplicado',
+    st.secrets.VAR13:'retorno',
+    st.secrets.VAR14:'repasse',
+    st.secrets.VAR6:'roa_head',
+    st.secrets.VAR7:'roa_rec',
+    st.secrets.VAR9:'data_ativo',
+    st.secrets.VAR10:'data_venc',
+    st.secrets.deal:'ativo_id',
     })
 fair = fair.dropna()
 fair['pl_aplicado']= fair['pl_aplicado'].astype(int)

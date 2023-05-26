@@ -12,6 +12,7 @@ from database import base_df, besmart_base, PositivadorBitrix
 import locale
 import requests
 
+
 locale.setlocale(locale.LC_ALL, "pt_BR.UTF-8")
 
 
@@ -21,18 +22,18 @@ v3 = st.session_state.df_cliente.client_id[0]
 
 df = PositivadorBitrix().get_data_produto(int(v3))
 df = df.rename(columns={
-    id_cliente_var:'client_id',
-    empresa_var:'empresa',
-    categoria_var:'categoria',
-    ativo_var:'ativo',
-    pl_aplicado_var:'pl_aplicado',
-    retorno_var:'retorno',
-    repasse_var:'repasse',
-    roa_head_var:'roa_head',
-    roa_rec_var:'roa_rec',
-    data_ativo_var:'data_ativo',
-    data_venc_var:'data_venc',
-    id_deal_var:'ativo_id',
+    st.secrets.VAR11:'client_id',
+    st.secrets.VAR12:'empresa',
+    st.secrets.VAR4:'categoria',
+    st.secrets.VAR5:'ativo',
+    st.secrets.VAR8:'pl_aplicado',
+    st.secrets.VAR13:'retorno',
+    st.secrets.VAR14:'repasse',
+    st.secrets.VAR6:'roa_head',
+    st.secrets.VAR7:'roa_rec',
+    st.secrets.VAR9:'data_ativo',
+    st.secrets.VAR10:'data_venc',
+    st.secrets.deal:'ativo_id',
     })
 
 name_v1 = st.session_state.df_cliente["Nome do Cliente"][0]
@@ -195,7 +196,7 @@ with tab1:
     chart3, chart2= st.columns([6,4])
 
     st.session_state["df_ativo1"] = pd.DataFrame(dta1["selected_rows"])
-    st.dataframe(st.session_state["df_ativo1"])
+    #st.dataframe(st.session_state["df_ativo1"])
     with botao11:
         if st.button("Incluir Ativo InvestSmart",key=1):
             nav_page("novo_ativo")
