@@ -10,7 +10,6 @@ from func.redirect import nav_page
 from sqlalchemy import create_engine
 from database import moeda, besmart_base, PositivadorBitrix
 import locale
-from variables import *
 import requests
 
 locale.setlocale(locale.LC_ALL, "pt_BR.UTF-8")
