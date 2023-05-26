@@ -8,12 +8,12 @@ import time as tm
 from func.redirect import nav_page
 import pymysql
 from sqlalchemy import create_engine
-from database import con, cursor, moeda, base_df
+from database import moeda, base_df, PositivadorBitrix
 import locale
+from variables import *
+import requests
 
 locale.setlocale(locale.LC_ALL, "pt_BR.UTF-8")
-
-# from func.connect import con, cursor
 
 
 st.set_page_config(
@@ -150,18 +150,6 @@ with prem:
             disabled=st.session_state.disabled, 
         )
 
-    # with colValue2:
-        # retorno = st.number_input(
-        #     "Retorno Esperado a.a. (%): ",
-        #     min_value=0.0,
-        #     max_value=100.0,
-        #     value=float(v1_retorno),
-        #     format="%f",
-        #     step=1.0,
-        #     disabled=st.session_state.disabled, 
-             
-        # )
-
     colNome3, colValue3 = st.columns(2)
     with colNome3:
         data_inicial = st.date_input(
@@ -183,7 +171,6 @@ with prem:
              
         )
 
-    # colRoa_rec, colroa_head, colRepasse = st.columns(3)
     colRoa_rec, colroa_head= st.columns(2)
 
     with colRoa_rec:
@@ -226,30 +213,15 @@ with prem:
     else:
         retorno = 0
 
-    # with colRepasse:
-    #     roa_reps = st.number_input(
-    #         "Repasse Assessor (%): ",
-    #         min_value=0.0,
-    #         format="%f",
-    #         value=float(v1_repasse),
-    #         max_value=100.0,
-    #         step=1.0,
-    #         disabled=st.session_state.disabled, 
-             
-    #     )
+  
     edit, salve_v3, espaco_10= st.columns([5,5,15])
     with edit:
         if st.button("Editar"):
             st.session_state["disabled"] = not st.session_state["disabled"] 
-# st.markdown(
-#     """<hr style="height:1px;border:none;color:#9966ff;background-color:#9966ff;" />
-#     <p > Visualização do ativo por uma tabela </p>
-#     """,
-#     unsafe_allow_html=True,
-# )
 
 
 
+v3 = int(st.session_state.df_cliente.client_id[0])
 
 with table:
     st.header("Fluxo de Comissão")
@@ -266,40 +238,22 @@ with table:
                     </style>
                     """
 
-        # Inject CSS with Markdown
         st.markdown(hide_dataframe_row_index, unsafe_allow_html=True)
 
         st.dataframe(dataframe)
 
-        sql = """UPDATE variaveis 
-                SET categoria = ? ,
-                ativo = ? ,
-                data_venc = ? ,
-                pl_aplicado = ? ,
-                retorno = ? ,
-                repasse = ? ,
-                roa_head = ? ,
-                roa_rec = ?,
-                data_ativo = ?
-                WHERE ativo_id = ?"""
         with salve_v3:
             if st.button("Salvar"):
-                cursor.execute(
-                    sql,
-                    (
-                        categoria,
-                        ativo,
-                        data,
-                        pl_apl,
-                        retorno,
-                        roa_reps,
-                        roa_head,
-                        roa_rec,
-                        data_inicial,
-                        v4,
-                    ),
-                )
-                con.commit()
+
+                url = "https://"+st.secrets.domain+"rest/"+st.secrets.bignumber+"/"+st.secrets.cod_shhh+"/crm.deal.update.json?"+st.secrets.id+f"={v4}&fields["+st.secrets.VAR4+f"]={categoria}&fields["+st.secrets.VAR5+f"]={ativo}&fields["+st.secrets.VAR6+f"]={roa_head}&fields["+st.secrets.VAR7+f"]={roa_rec}&fields["+st.secrets.VAR8+f"]={pl_apl}&fields["+st.secrets.VAR9+f"]={data_inicial}&fields["+st.secrets.VAR10+f"]={data}&fields["+st.secrets.VAR11+f"]={v3}&fields["+st.secrets.VAR12+f"]=INVESTSMART&fields["+st.secrets.VAR13+f"]={retorno}&fields["+st.secrets.VAR14+f"]={roa_reps}&fields["+st.secrets.category+f"]="+st.secrets.arabian
+
+                payload = {}
+                headers = {
+                'Cookie': 'BITRIX_SM_SALE_UID=0'
+                }
+
+                response = requests.request("POST", url, headers=headers, data=payload)
+
                 st.success("O ativo foi editado com sucesso")
                 tm.sleep(1)
                 with st.spinner("Redirecionando o Assessor para a Página de Ativos"):
@@ -312,10 +266,6 @@ st.markdown(
     """<hr style="height:1px;border:none;color:#9966ff;background-color:#9966ff;" /> """,
     unsafe_allow_html=True,
 )
-
-
-# if st.button("Voltar"):
-#     nav_page("cliente_ativo")
 
 if st.button("Voltar"):
     nav_page("cliente_wide")
@@ -346,5 +296,3 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# cursor.close()
-# con.close()

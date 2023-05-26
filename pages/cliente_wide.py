@@ -8,16 +8,33 @@ import time as tm
 from func.redirect import nav_page
 from st_aggrid import JsCode, AgGrid, GridOptionsBuilder, ColumnsAutoSizeMode
 from st_aggrid.shared import GridUpdateMode, AgGridTheme
-from database import con, cursor, base_df, besmart_base
+from database import base_df, besmart_base, PositivadorBitrix
 import locale
+import requests
+from variables import *
 
 locale.setlocale(locale.LC_ALL, "pt_BR.UTF-8")
-# from func.connect import con, cursor
 
 
-df = pd.read_sql("SELECT * FROM variaveis", con)
 
 v3 = st.session_state.df_cliente.client_id[0]
+
+
+df = PositivadorBitrix().get_data_produto(int(v3))
+df = df.rename(columns={
+    id_cliente_var:'client_id',
+    empresa_var:'empresa',
+    categoria_var:'categoria',
+    ativo_var:'ativo',
+    pl_aplicado_var:'pl_aplicado',
+    retorno_var:'retorno',
+    repasse_var:'repasse',
+    roa_head_var:'roa_head',
+    roa_rec_var:'roa_rec',
+    data_ativo_var:'data_ativo',
+    data_venc_var:'data_venc',
+    id_deal_var:'ativo_id',
+    })
 
 name_v1 = st.session_state.df_cliente["Nome do Cliente"][0]
 dt_cads = st.session_state.df_cliente["Data de Cadastro"][0]
@@ -34,8 +51,13 @@ dark = dark.rename(
         "empresa": "Empresa",
     }
 )
-
-dark = dark[dark["client_id"] == v3]
+dark['PL Aplicado']= dark['PL Aplicado'].astype(int)
+dark['client_id']= dark['client_id'].astype(int)
+dark['retorno']= dark['retorno'].astype(float)
+dark['repasse']= dark['repasse'].astype(float)
+dark['roa_head']= dark['roa_head'].astype(float)
+dark['roa_rec']= dark['roa_rec'].astype(float)
+dark['ativo_id']= dark['ativo_id'].astype(int)
 
 df_ativo = dark.copy()
 
@@ -46,6 +68,7 @@ st.set_page_config(
     layout="wide",
 )
 
+#st.dataframe(dark)
 
 col1, mid, direita2 = st.columns([12,8,4])
 with col1:
@@ -53,10 +76,7 @@ with col1:
         fr'<p style="font-size:30px;">Nome do Cliente: {name_v1}</p>',
         unsafe_allow_html=True,
     )
-    # st.write(
-    #     fr'<p style="font-size:30px;">Data de Cadastro: {dt_cads}</p>',
-    #     unsafe_allow_html=True,
-    # )
+
     st.write(
         fr'<p style="font-size:30px;">Portifólios</p>',
         unsafe_allow_html=True,
@@ -122,7 +142,7 @@ with tab1:
     
     vazio1, cliente, vazio2 = st.columns([1, 9, 1])
     dark["PL Aplicado"] = dark["PL Aplicado"].apply(
-        lambda x: locale.currency(x, grouping=True, symbol=True)
+        lambda x: locale.currency(int(x), grouping=True, symbol=True)
     )
     with cliente:
         dark2 = dark[dark["Empresa"]=="INVESTSMART"]
@@ -176,7 +196,7 @@ with tab1:
     chart3, chart2= st.columns([6,4])
 
     st.session_state["df_ativo1"] = pd.DataFrame(dta1["selected_rows"])
-    #st.dataframe(st.session_state["df_ativo1"])
+    st.dataframe(st.session_state["df_ativo1"])
     with botao11:
         if st.button("Incluir Ativo InvestSmart",key=1):
             nav_page("novo_ativo")
@@ -200,8 +220,14 @@ with tab1:
                         st.error("Não foi selecionado um Cliente")
                     else:
                         vers = int(st.session_state.df_ativo1.ativo_id[0])
-                        cursor.execute("DELETE FROM variaveis WHERE ativo_id = ?", (vers,))
-                        con.commit()
+                        url = "https://"+st.secrets.domain+"rest/"+st.secrets.bignumber+"/"+st.secrets.cod_shhh+"/crm.deal.delete?"+st.secrets.id+f"={vers}"
+                        payload = {}
+                        headers = {
+                        'Cookie': 'BITRIX_SM_SALE_UID=0'
+                        }
+                        response = requests.request("POST", url, headers=headers, data=payload)
+                        #cursor.execute("DELETE FROM variaveis WHERE ativo_id = ?", (vers,))
+                        #con.commit()
                         st.success("O ativo foi deletado com sucesso")
                         tm.sleep(1)
                         st._rerun()
@@ -302,8 +328,14 @@ with tab2:
                         st.error("Não foi selecionado um Cliente")
                     else:
                         vers = int(st.session_state.df_ativo2.ativo_id[0])
-                        cursor.execute("DELETE FROM variaveis WHERE ativo_id = ?", (vers,))
-                        con.commit()
+                        url = "https://"+st.secrets.domain+"rest/"+st.secrets.bignumber+"/"+st.secrets.cod_shhh+"/crm.deal.delete?"+st.secrets.id+f"={vers}"
+                        payload = {}
+                        headers = {
+                        'Cookie': 'BITRIX_SM_SALE_UID=0'
+                        }
+                        response = requests.request("POST", url, headers=headers, data=payload)
+                        # cursor.execute("DELETE FROM variaveis WHERE ativo_id = ?", (vers,))
+                        # con.commit()
                         st.success("O ativo foi deletado com sucesso")
                         tm.sleep(1)
                         st._rerun()
@@ -390,20 +422,6 @@ with geral:
             nav_page("novo_ativo")
     with botao2:
         if st.button("Incluir Produto Be.Smart"):
-            #         st.session_state["button1"] = not st.session_state["button1"]
-            # if st.session_state["button1"]:
-            # checks = st.radio(
-            #     "Qual tipo de produto será Incluido:",
-            #     [
-            #         "Cambio",
-            #         "Protect",
-            #         "Credito",
-            #         "Diversificações",
-            #         "Empresas",
-            #     ],
-            #     horizontal=True,
-            # )
-            # if st.button("Incluir esse tipo de ativo"):
             nav_page("besmart_novo_ativo")
 
 
@@ -425,63 +443,6 @@ with chart1:
         st.text("")
         st.error("Esse Cliente não tem Portifólio")
     else:
-        # tab1, tab2 = st.tabs(["Grafico Geral", "Grafico por Ativo Selecionado"])
-        # with tab2:
-        #     if st.session_state["df_ativo"].empty:
-
-        #         st.text("")
-        #         st.error(
-        #             "Não há como mostrar um gráfico, pois não foi selecionado um ativo"
-        #         )
-        #     else:
-        #         if st.session_state.df_ativo.Empresa.iloc[0] == "INVESTSMART":
-        #             grasph_df = base_df(
-        #                 st.session_state.df_ativo["Data de Vencimento"].iloc[0],
-        #                 st.session_state.df_ativo["Data de Início"].iloc[0],
-        #                 float(
-        #                     st.session_state.df_ativo["PL Aplicado"]
-        #                     .iloc[0][3:]
-        #                     .replace(".", "")
-        #                     .replace(",", ".")
-        #                 ),
-        #                 st.session_state.df_ativo.retorno.iloc[0],
-        #                 st.session_state.df_ativo.roa_head.iloc[0],
-        #                 st.session_state.df_ativo.roa_rec.iloc[0],
-        #                 st.session_state.df_ativo.repasse.iloc[0],
-        #                 moeda_real=False,
-        #             )
-        #         else:
-        #             grasph_df = besmart_base(
-        #                 st.session_state.df_ativo["Data de Vencimento"].iloc[0],
-        #                 st.session_state.df_ativo["Data de Início"].iloc[0],
-        #                 face,
-        #                 st.session_state.df_ativo.Empresa.iloc[0],
-        #                 st.session_state.df_ativo.Categoria.iloc[0],
-        #                 st.session_state.df_ativo.Ativo.iloc[0],
-        #                 float(
-        #                     st.session_state.df_ativo["PL Aplicado"]
-        #                     .iloc[0][3:]
-        #                     .replace(".", "")
-        #                     .replace(",", ".")
-        #                 ),
-        #                 st.session_state.df_ativo.repasse.iloc[0],
-        #             )
-        #         # st.dataframe(grasph_df)
-        #         fig = px.line(
-        #             grasph_df,
-        #             x="Mês",
-        #             y="Resultado assessor",
-        #             width=1000,
-        #             markers=True,
-        #             text="R$ " + round(grasph_df["Resultado assessor"], 2).astype(str),
-        #             title=f"""Categoria: {st.session_state["df_ativo"].Categoria.iloc[0]}<br>Ativo: {st.session_state["df_ativo"].Ativo.iloc[0]}""",  # <br>Cliente: {name_v1}""",
-        #         )
-        #         fig.update_traces(textposition="top center")
-        #         fig.update_xaxes(showgrid=False)
-        #         fig.update_yaxes(title_font_size=24, griddash="dot", rangemode="tozero")
-        #         fig.data[0].line.color = "#9966ff"
-        #         st.plotly_chart(fig)
-        # with tab1:
         smart = pd.DataFrame(columns=["Mês", "Resultado assessor"])
         for i in dark["ativo_id"].unique():
             df_v2 = dark[dark["ativo_id"] == i]
@@ -1054,24 +1015,26 @@ with botao4:
                     st.error("Não foi selecionado um Cliente")
                 else:
                     vers = int(st.session_state.df_ativo.ativo_id[0])
-                    cursor.execute("DELETE FROM variaveis WHERE ativo_id = ?", (vers,))
-                    con.commit()
+                    url = "https://"+st.secrets.domain+"rest/"+st.secrets.bignumber+"/"+st.secrets.cod_shhh+"/crm.deal.delete?"+st.secrets.id+f"={vers}"
+                    payload = {}
+                    headers = {
+                    'Cookie': 'BITRIX_SM_SALE_UID=0'
+                    }
+                    response = requests.request("POST", url, headers=headers, data=payload)
+ 
                     st.success("O ativo foi deletado com sucesso")
                     tm.sleep(1)
                     st._rerun()
         with nao:
             if st.button("Não"):
                 st.session_state["button44"] = False
-        # if st.session_state["df_ativo"].empty:
-        #     st.error("Não foi selecionado um ativo")
-        # else:
-        #
+
 
   
 #st.dataframe(df_ativo)
 pl.metric(
     "Total do Portifólio",
-    "R$ " + locale.currency(df_ativo[df_ativo.Empresa=='INVESTSMART']["PL Aplicado"].sum(), grouping=True, symbol=None)[:-3],
+    "R$ " + locale.currency(df_ativo[df_ativo.Empresa=='INVESTSMART']["PL Aplicado"].astype(int).sum(), grouping=True, symbol=None)[:-3],
 )
     
 
@@ -1148,7 +1111,7 @@ else:
 
 pl1.metric(
     "Total do Portifólio",
-    "R$ " + locale.currency(df_ativo[df_ativo.Empresa=='INVESTSMART']["PL Aplicado"].sum(), grouping=True, symbol=None)[:-3],
+    "R$ " + locale.currency(df_ativo[df_ativo.Empresa=='INVESTSMART']["PL Aplicado"].astype(int).sum(), grouping=True, symbol=None)[:-3],
 )
    
 
@@ -1291,17 +1254,8 @@ else:
         )[:-3],
     )
 
-
-
-
-
-
-
 if st.button("Voltar"):
     nav_page("wide_project")
-
-
-
 
 st.markdown(
     """
@@ -1313,7 +1267,3 @@ st.markdown(
 """,
     unsafe_allow_html=True,
 )
-# [data-testid="collapsedControl"] {
-#         display: none
-#     }
-#footer {visibility: hidden;}

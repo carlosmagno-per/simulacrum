@@ -7,15 +7,17 @@ import math
 import time as tm
 from func.redirect import nav_page
 from sqlalchemy import create_engine
-from database import con, cursor, moeda, base_df
+from database import moeda, base_df, PositivadorBitrix
 import locale
 import streamlit.components.v1 as components
 import plotly.express as px
+from variables import *
+import requests
 
 
 locale.setlocale(locale.LC_ALL, "pt_BR.UTF-8")
 
-# from func.connect import con, cursor
+
 
 
 st.set_page_config(
@@ -90,14 +92,7 @@ with prem:
                 step=1000.0,
             )
             st.text("R$" + locale.currency(pl_apl, grouping=True, symbol=None))
-            # retorno = st.number_input(
-            #     "Retorno Esperado a.a. (%): ",
-            #     min_value=0.0,
-            #     max_value=100.0,
-            #     value=12.0,
-            #     format="%f",
-            #     step=1.0,
-            # )
+     
 
         colNome3, colValue3 = st.columns(2)
         with colNome3:
@@ -129,15 +124,7 @@ with prem:
                 step=0.01,
             )
 
-        # with colRepasse:
-        #     roa_reps = st.number_input(
-        #         "Repasse Assessor (%): ",
-        #         min_value=0.0,
-        #         format="%f",
-        #         value=50.0,
-        #         max_value=100.0,
-        #         step=1.0,
-        #     )
+    
         roa_reps = 50.0
         retorno= 0.0
         
@@ -198,12 +185,7 @@ volte, salve_v2, espaco_10= st.columns([5,5,15])
 with volte:
     if st.button("Voltar"):
         nav_page("cliente_wide")
-# st.markdown(
-#     """<hr style="height:1px;border:none;color:#9966ff;background-color:#9966ff;" />
-#     <p > Visualização do ativo por uma tabela </p>
-#     """,
-#     unsafe_allow_html=True,
-# )
+
 with table:
     st.subheader("**Fluxo de Comissão**")
     if data > data_inicial:
@@ -214,27 +196,18 @@ with table:
 
         st.dataframe(dataframe)
 
-        sql = "INSERT INTO variaveis (client_id, empresa, categoria, ativo, data_venc, pl_aplicado, retorno, repasse, roa_head, roa_rec, data_ativo) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?)"
-        # today = DT.datetime.strftime(DT.datetime.today(), "%Y-%m-%d")
+
         with salve_v2:
             if st.button("Salvar"):
-                cursor.execute(
-                    sql,
-                    (
-                        v3,
-                        "INVESTSMART",
-                        categoria,
-                        ativo,
-                        data,
-                        pl_apl,
-                        retorno,
-                        roa_reps,
-                        roa_head,
-                        roa_rec,
-                        data_inicial,
-                    ),
-                )
-                con.commit()
+     
+                url = "https://"+st.secrets.domain+"rest/"+st.secrets.bignumber+"/"+st.secrets.cod_shhh+"/crm.deal.add.json?fields["+st.secrets.VAR4+f"]={categoria}&fields["+st.secrets.VAR5+f"]={ativo}&fields["+st.secrets.VAR6+f"]={roa_head}&fields["+st.secrets.VAR7+f"]={roa_rec}&fields["+st.secrets.VAR8+f"]={pl_apl}&fields["+st.secrets.VAR9+f"]={data_inicial}&fields["+st.secrets.VAR10+f"]={data}&fields["+st.secrets.VAR11+f"]={v3}&fields["+st.secrets.VAR12+f"]=INVESTSMART&fields["+st.secrets.VAR13+f"]={retorno}&fields["+st.secrets.VAR14+f"]={roa_reps}&fields["+st.secrets.category+"]="+st.secrets.arabian
+
+                payload = {}
+                headers = {
+                'Cookie': 'BITRIX_SM_SALE_UID=0; qmb=0.'
+                }
+
+                response = requests.request("POST", url, headers=headers, data=payload)
                 st.success("O ativo foi editado com sucesso")
                 tm.sleep(1)
                 with st.spinner("Redirecionando o Assessor para a Página de Ativos"):
@@ -242,16 +215,6 @@ with table:
                 nav_page("cliente_wide")
     else:
         st.error("Data de vencimento tem que ser maior que a data de Início.")
-
-
-# if st.button("Voltar"):
-#     nav_page("cliente_ativo")
-# if authenticator.logout("Logout"):
-#     nav_page("Home")
-
-# st.markdown("[Pula lá para cima](#hyper_v1)", unsafe_allow_html=True)
-
-
 
 st.markdown(
     """
@@ -280,6 +243,3 @@ st.markdown(
 """,
     unsafe_allow_html=True,
 )
-
-# cursor.close()
-# con.close()

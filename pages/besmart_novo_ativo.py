@@ -8,13 +8,12 @@ import time as tm
 import numpy
 from func.redirect import nav_page
 from sqlalchemy import create_engine
-from database import con, cursor, moeda, besmart_base
+from database import moeda, besmart_base, PositivadorBitrix
 import locale
+from variables import *
+import requests
 
 locale.setlocale(locale.LC_ALL, "pt_BR.UTF-8")
-
-# from func.connect import con, cursor
-
 
 st.set_page_config(
     page_icon="invest_smart_logo.png",
@@ -147,72 +146,14 @@ with prem:
     else:
         mes = mes
 
-    # colcomi, colrepas = st.columns(2)
-    # with colcomi:
-    #     comissao = st.number_input(
-    #         "Comissão Bruta (%): ",
-    #         min_value=0.0,
-    #         max_value=100.0,
-    #         value=float(
-    #             face["porcem_repasse"][
-    #                 (face["Empresa"] == empresa)
-    #                 & (face["Categoria"] == categoria)
-    #                 & (face["Produto"] == produto)
-    #                 & face["Mês"]
-    #                 == mes
-    #             ].iloc[0]
-    #         ),
-    #         format="%.2f",
-    #         step=0.01,
-    #     )
-
-    # with colrepas:
-    # if produto == "PJ":
-    #     colrepas, situation = st.columns(2)
-    #     with colrepas:
-    #         roa_reps = st.number_input(
-    #             "Repasse Assessor (%): ",
-    #             min_value=0.0,
-    #             format="%f",
-    #             value=50.0,
-    #             max_value=100.0,
-    #             step=1.0,
-    #         )
-    #     with situation:
-    #         roa_rec = st.selectbox("Corretagem Vitalícia (%)", [5, 2, 4, 0])
-    #         if roa_rec == 5:
-    #             st.write("Valor comum para a empresa Assim")
-    #         elif roa_rec == 2:
-    #             st.write(
-    #                 "Valor comum para as empresas Amil, Bradesco, Sulámerica, Golden Cross OU Intermédica"
-    #             )
-    #         elif roa_rec == 4:
-    #             st.write("Valor comum para a empresa Porto Seguro")
-    #         elif roa_rec == 0:
-    #             st.write("Valor comum para as empresas Unimed OU Omint")
-    # else:
+   
     if empresa != "Imóveis":
-        # roa_reps = st.number_input(
-        #     "Repasse Assessor (%): ",
-        #     min_value=0.0,
-        #     format="%f",
-        #     value=50.0,
-        #     max_value=100.0,
-        #     step=1.0,
-        # )
+ 
         roa_reps= 50
     else:
         roa_reps = 100
     roa_rec = 0
 
-# ((valor * com_brut) - 0.2 * (valor * com_brut)) * repas_asse
-
-# st.markdown(
-#     """<hr style="height:1px;border:none;color:#9966ff;background-color:#9966ff;" />
-#     <p > Visualização do produto por uma tabela </p>
-#     """,
-#     unsafe_allow_html=True,
-# )
 
 bad_prod = [
     "GARSON - Antecipação de Recebiveis",
@@ -331,47 +272,6 @@ else:
                     roa_rec,
                 )
 
-            # dias = DT.datetime.strptime(str(data), "%Y-%m-%d") - DT.datetime.strptime(
-            #     str(data_inicial), "%Y-%m-%d"
-            # )
-            # mes = round(dias.days / 30)
-
-            # endDate = DT.datetime.strptime(str(data), "%Y-%m-%d")
-            # startDate = DT.datetime.strptime(str(data_inicial), "%Y-%m-%d")
-
-            # # Getting List of Days using pandas
-            # if mes < 1:
-            #     datesRange = pd.date_range(startDate, periods=1, freq="m")
-            #     datesRange = list(datesRange)
-            # else:
-            #     datesRange = pd.date_range(startDate, periods=mes + 1, freq="m")
-            #     datesRange = list(datesRange)
-
-            # datesRange = [DT.datetime.strftime(x, "%b-%y") for x in datesRange]
-
-            # datesRange = pd.DataFrame(datesRange)
-
-            # df = pd.DataFrame()
-            # masquerede = face[
-            #     (face["Empresa"] == empresa)
-            #     & (face["Categoria"] == categoria)
-            #     & (face["Produto"] == produto)
-            # ][["porcem_repasse", "Mês"]]
-            # df["Mês"] = datesRange.iloc[:, 0:1]
-            # df["Custo do Produto"] = pl_apl
-            # df["numero"] = df.index + 1
-            # df["numero"][df["numero"] > 12] = 12
-            # masquerede = masquerede[masquerede["Mês"].isin(df["numero"])]
-            # dic = masquerede.set_index("Mês").T.to_dict("list")
-            # df["Comissão Bruta"] = (
-            #     df["numero"].map(dic).apply(lambda x: numpy.array(x[0], dtype=float))
-            # )
-            # df["Resulatdo Bruto"] = (df["Comissão Bruta"] / 100) * df["Custo do Produto"]
-            # df["Imposto"] = df["Resulatdo Bruto"] * 0.2
-            # df["Receita Líquida"] = df["Resulatdo Bruto"] - df["Imposto"]
-            # df["Resultado do Assessor"] = df["Receita Líquida"] * (roa_reps / 100)
-
-            # df["Comissão Bruta"] = df["Comissão Bruta"].apply(lambda x: "{:,.2f}%".format(x))
             try:
                 st.dataframe(
                     df[
@@ -401,28 +301,20 @@ else:
                         ]
                     ]
                 )
-            # st.dataframe(masquerede)
-
-            sql = "INSERT INTO variaveis (client_id, empresa, categoria, ativo, data_venc, pl_aplicado, retorno, repasse, roa_head, roa_rec, data_ativo) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?)"
-            # today = DT.datetime.strftime(DT.datetime.today(), "%Y-%m-%d")
+           
             with salve_v2:
                 if st.button("Salvar"):
-                    cursor.execute(
-                        sql,
-                        (   v3,
-                            empresa,
-                            categoria,
-                            produto,
-                            data,
-                            pl_apl,
-                            0,
-                            roa_reps,
-                            0,
-                            roa_rec,
-                            data_inicial,
-                        ),
-                    )
-                    con.commit()
+                  
+                    roa_head=0
+                    retorno=0
+                    url = "https://"+st.secrets.domain+"rest/"+st.secrets.bignumber+"/"+st.secrets.cod_shhh+"/crm.deal.add.json?fields["+st.secrets.VAR4+f"]={categoria}&fields["+st.secrets.VAR5+f"]={produto}&fields["+st.secrets.VAR6+f"]={roa_head}&fields["+st.secrets.VAR7+f"]={roa_rec}&fields["+st.secrets.VAR8+f"]={pl_apl}&fields["+st.secrets.VAR9+f"]={data_inicial}&fields["+st.secrets.VAR10+f"]={data}&fields["+st.secrets.VAR11+f"]={v3}&fields["+st.secrets.VAR12+f"]={empresa}&fields["+st.secrets.VAR13+f"]={retorno}&fields["+st.secrets.VAR14+f"]={roa_reps}&fields["+st.secrets.category+"]="+st.secrets.arabian
+
+                    payload = {}
+                    headers = {
+                    'Cookie': 'BITRIX_SM_SALE_UID=0; qmb=0.'
+                    }
+
+                    response = requests.request("POST", url, headers=headers, data=payload)
                     st.success("O ativo foi editado com sucesso")
                     tm.sleep(1)
                     with st.spinner("Redirecionando o Assessor para a Página de Ativos"):
@@ -430,18 +322,6 @@ else:
                     nav_page("cliente_wide")
         else:
             st.error("Data de vencimento tem que ser maior que a data de Início.")
-
-
-
-# if st.button("Voltar"):
-#     nav_page("cliente_ativo")
-# if authenticator.logout("Logout"):
-#     nav_page("Home")
-# if st.button("Voltar"):
-#     nav_page("cliente_wide")
-
-
-# st.markdown("[Pula lá para cima](#hyper_v1)", unsafe_allow_html=True)
 
 st.markdown(
     """
@@ -469,5 +349,3 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# cursor.close()
-# con.close()

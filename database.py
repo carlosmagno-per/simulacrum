@@ -1,47 +1,17 @@
-import sqlite3
 import locale
-import numpy as np
+import numpy 
 import pandas as pd
 import datetime as DT
 import math
-import numpy
-
-con = sqlite3.connect("Simulador.db", check_same_thread=False)
-cursor = con.cursor()
-
-# cursor.execute(
-#     """CREATE TABLE cliente (
-#                   client_id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-#                   sigla text NOT NULL,
-#                   nome_client text NOT NULL,
-#                   data_cliente text NOT NULL
-#               )"""
-# )
-
-# cursor.execute(
-#     """CREATE TABLE variaveis (
-#                   client_id INTEGER NOT NULL,
-#                   empresa text NOT NULL,
-#                   categoria text NOT NULL,
-#                   ativo text NOT NULL,
-#                   data_venc text NOT NULL,
-#                   pl_aplicado REAL NOT NULL,
-#                   retorno REAL NOT NULL,
-#                   repasse REAL NOT NULL,
-#                   roa_head REAL NOT NULL,
-#                   roa_rec REAL NOT NULL,
-#                   data_ativo text NOT NULL,
-#                   ativo_id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-#                   FOREIGN KEY (client_id) REFERENCES cliente (client_id)
-#                   ON DELETE CASCADE ON UPDATE NO ACTION
-#               )"""
-# )
+import os
+import requests
+import streamlit as st
 
 
 def moeda(df, colunas: list):
     """
 
-    Esta função transforma os voleres das colunas em uma string seguindo a moeda local Brasileira.
+    Esta função transforma os valores das colunas em uma string seguindo a moeda local Brasileira.
 
     df:Recebe um Data Frame;
     colunas: Recebe uma lista com o nome das colunas que serão alteradas.
@@ -212,3 +182,311 @@ def besmart_base(
         )
     return df
 
+class PositivadorBitrix:
+
+    def __init__(self):
+
+        self.base_url = "https://" + st.secrets.domain
+
+        self.relative_path = st.secrets.relative_path
+
+        self.endpoint = self.base_url + self.relative_path
+
+ 
+
+        self.start_date = (DT.datetime.now() - DT.timedelta(days=365)).strftime("%Y-%m-%d")
+
+        self.end_date = DT.datetime.now().strftime("%Y-%m-%d")
+
+ 
+
+    def get_data_default(self,categ_id: int):
+
+        query_params = {"table": "crm_deal"}
+
+ 
+
+        request_body = {
+
+            "dateRange": {"startDate": "2021-01-01", "endDate": self.end_date},
+
+            "key": st.secrets.key,
+
+            "fields": [
+
+                {"name": st.secrets.title},
+
+                {"name": st.secrets.id},
+
+                {"name": st.secrets.oportunidade},
+
+                {"name": st.secrets.contato},
+
+                {"name": st.secrets.assigned},
+
+            ],
+
+            "dimensionsFilters": [
+
+                [
+
+                    {
+
+                        "fieldName": st.secrets.category,
+
+                        "values": [categ_id],
+
+                        "type": "INCLUDE",
+
+                        "operator": "EQUALS",
+
+                    }
+
+                ]
+
+            ],
+
+        }
+
+ 
+
+        headers = {"Content-Type": "application/json"}
+
+ 
+
+        response = requests.post(
+
+            self.endpoint, headers=headers, params=query_params, json=request_body
+
+        )
+
+ 
+
+        df = response.json()
+
+ 
+
+        return pd.DataFrame(df[1:], columns=df[0])
+
+ 
+
+    def get_data_custom(self, list_id: list):
+
+        query_params = {"table": "crm_deal_uf"}
+
+ 
+
+        request_body = {
+
+            "dateRange": {"startDate": "2021-01-01", "endDate": self.end_date},
+
+            "key": st.secrets.key,
+
+            "fields": [
+
+
+                {"name": st.secrets.VAR1}, # "SIGLA_ASSESSOR" METODO DE IDENTIFICAÇÃO DO ASSESSOR OU PESSOA USANDO O SIMULADOR
+
+                {"name": st.secrets.VAR2},  # "NOME_CLIENTE" COLOCADO NO SIMULADOR
+
+                {"name": st.secrets.VAR3},  # "DATA_ENTRADA_CLIENTE"
+
+                {"name": st.secrets.deal},
+                
+
+            ],
+
+            "dimensionsFilters": [
+
+                [
+
+                    {
+
+                        "fieldName": st.secrets.deal,
+
+                        "values": list_id,
+
+                        "type": "INCLUDE",
+
+                        "operator": "EQUALS",
+
+                    }
+
+                ]
+
+            ],
+            
+            
+
+        }
+
+ 
+
+        headers = {"Content-Type": "application/json"}
+
+ 
+
+        response = requests.post(
+
+            self.endpoint, headers=headers, params=query_params, json=request_body
+
+        )
+
+ 
+
+        df = response.json()
+
+ 
+
+        #return print(response.text)
+        return pd.DataFrame(df[1:], columns=df[0])
+    
+    def get_data_produto(self, id_client: int):
+
+        query_params = {"table": "crm_deal_uf"}
+
+ 
+
+        request_body = {
+
+            "dateRange": {"startDate": "2021-01-01", "endDate": self.end_date},
+
+            "key": st.secrets.key,
+
+            "fields": [
+
+
+                {"name": st.secrets.VAR11}, # "ID_CLIENTE" IDENTIFICAR O CLIENTE
+
+                {"name": st.secrets.VAR12},  # "EMPRESA" 
+
+                {"name": st.secrets.VAR4},  # "CATEGORIA"
+                
+                {"name": st.secrets.VAR5},  # "ATIVO"
+                
+                {"name": st.secrets.VAR10},  # "DATA_VENC"
+                
+                {"name": st.secrets.VAR9},  # "DATA_ATIVO"
+                
+                {"name": st.secrets.VAR8},  # "PL_APLICADO"
+                
+                {"name": st.secrets.VAR13},  # "RETORNO"
+                
+                {"name": st.secrets.VAR14},  # "REPASSE"
+                
+                {"name": st.secrets.VAR6},  # "ROA_HEAD"
+                
+                {"name": st.secrets.VAR7},  # "ROA_REC"
+
+                {"name": st.secrets.deal},
+                
+            ],
+
+            "dimensionsFilters": [
+
+                [
+
+                    {
+
+                        "fieldName": st.secrets.VAR11,
+
+                        "values": id_client,
+
+                        "type": "INCLUDE",
+
+                        "operator": "EQUALS",
+
+                    }
+
+                ]
+
+            ],
+            
+            
+
+        }
+
+ 
+
+        headers = {"Content-Type": "application/json"}
+
+ 
+
+        response = requests.post(
+
+            self.endpoint, headers=headers, params=query_params, json=request_body
+
+        )
+
+ 
+
+        df = response.json()
+
+ 
+
+        #return print(response.text)
+        return pd.DataFrame(df[1:], columns=df[0])
+    
+    def get_data_all(self):
+
+        query_params = {"table": "crm_deal_uf"}
+
+ 
+
+        request_body = {
+
+            "dateRange": {"startDate": "2021-01-01", "endDate": self.end_date},
+
+            "key": st.secrets.key,
+
+            "fields": [
+
+
+                {"name": st.secrets.VAR11}, # "ID_CLIENTE" IDENTIFICAR O CLIENTE
+
+                {"name": st.secrets.VAR12},  # "EMPRESA" 
+
+                {"name": st.secrets.VAR4},  # "CATEGORIA"
+                
+                {"name": st.secrets.VAR5},  # "ATIVO"
+                
+                {"name": st.secrets.VAR10},  # "DATA_VENC"
+                
+                {"name": st.secrets.VAR9},  # "DATA_ATIVO"
+                
+                {"name": st.secrets.VAR8},  # "PL_APLICADO"
+                
+                {"name": st.secrets.VAR13},  # "RETORNO"
+                
+                {"name": st.secrets.VAR14},  # "REPASSE"
+                
+                {"name": st.secrets.VAR6},  # "ROA_HEAD"
+                
+                {"name": st.secrets.VAR7},  # "ROA_REC"
+
+                {"name": st.secrets.deal},
+
+            ],
+
+        }
+
+ 
+
+        headers = {"Content-Type": "application/json"}
+
+ 
+
+        response = requests.post(
+
+            self.endpoint, headers=headers, params=query_params, json=request_body
+
+        )
+
+ 
+
+        df = response.json()
+
+ 
+
+        #return print(response.text)
+        return pd.DataFrame(df[1:], columns=df[0])

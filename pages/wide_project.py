@@ -9,9 +9,11 @@ import time as tm
 from func.redirect import nav_page
 from st_aggrid import JsCode, AgGrid, GridOptionsBuilder, ColumnsAutoSizeMode
 from st_aggrid.shared import GridUpdateMode, AgGridTheme
-from database import con, cursor, base_df, besmart_base, moeda
+from database import base_df, besmart_base, moeda, PositivadorBitrix
 import locale
 from msal_streamlit_authentication import msal_authentication
+import requests
+from variables import *
 
 locale.setlocale(locale.LC_ALL, "pt_BR.UTF-8")
 
@@ -21,10 +23,11 @@ st.set_page_config(
     initial_sidebar_state="collapsed",
     layout="wide",
 )
-# from func.connect import con, cursor
 
-
-df = pd.read_sql("SELECT * FROM cliente", con)
+#df = pd.read_sql("SELECT * FROM cliente", con)
+lista=list(PositivadorBitrix().get_data_default(6)["ID"])
+df = PositivadorBitrix().get_data_custom(lista)
+df = df.rename(columns={id_deal_var:'client_id',email_var:'sigla',client_name_var:'nome_client',data_cliete_var:'data_cliente'})
 
 dark = df.copy()
 dark = dark.rename(
@@ -84,12 +87,37 @@ st.markdown(
 
 vazio_nulo ,pl, retorno, ano1_avg, ano2_avg  = st.columns([1,5, 5, 5, 3])
 
-list_client_id = dark["client_id"].unique()
+list_client_id = dark["client_id"].unique().astype(int)
 list_client_id = list(list_client_id)
 
-fair = pd.read_sql("SELECT * FROM variaveis", con)
-
+#fair = pd.read_sql("SELECT * FROM variaveis", con)
+lista2=list(PositivadorBitrix().get_data_default(30)["ID"])
+fair = PositivadorBitrix().get_data_all()
+fair = fair.rename(columns={
+    id_cliente_var:'client_id',
+    empresa_var:'empresa',
+    categoria_var:'categoria',
+    ativo_var:'ativo',
+    pl_aplicado_var:'pl_aplicado',
+    retorno_var:'retorno',
+    repasse_var:'repasse',
+    roa_head_var:'roa_head',
+    roa_rec_var:'roa_rec',
+    data_ativo_var:'data_ativo',
+    data_venc_var:'data_venc',
+    id_deal_var:'ativo_id',
+    })
+fair = fair.dropna()
+fair['pl_aplicado']= fair['pl_aplicado'].astype(int)
+fair['client_id']= fair['client_id'].astype(int)
+fair['retorno']= fair['retorno'].astype(float)
+fair['repasse']= fair['repasse'].astype(float)
+fair['roa_head']= fair['roa_head'].astype(float)
+fair['roa_rec']= fair['roa_rec'].astype(float)
+fair['ativo_id']= fair['ativo_id'].astype(int)
 fair = fair[fair.client_id.isin(list_client_id)]
+
+#st.dataframe(fair)
 dicio = fair.groupby("client_id")["pl_aplicado"].sum()
 dark["PL Aplicado"] = (
     df["client_id"]
@@ -426,6 +454,7 @@ with cliente:
     )
 
 st.session_state["df_cliente"] = pd.DataFrame(dta["selected_rows"])
+
 if st.session_state["df_cliente"].empty:
     table2 = fair.copy()
 else:
@@ -443,48 +472,9 @@ table2 = table2.rename(
     }
 )
 
-# with ativo:
-#     htmlstr = f"<p style='background-color: #9966ff; color: #000000; font-size: 16px; border-radius: 7px; padding-left: 8px; text-align: center'>Tabela de Ativos</style></p>"
-#     st.markdown(htmlstr, unsafe_allow_html=True)
-
-#     gridOptions = GridOptionsBuilder.from_dataframe(
-#         table2[
-#             [
-#                 # "client_id",
-#                 "Empresa",
-#                 "Categoria",
-#                 "Ativo",
-#                 "PL Aplicado",
-#                 "Data de Início",
-#                 "Data de Vencimento",
-#                 # "shelf_id",
-#             ]
-#         ]
-#     )
-
-#     gridOptions.configure_selection(
-#         selection_mode="single", use_checkbox=True, pre_selected_rows=[0]
-#     )
-
-#     gb = gridOptions.build()
-
-#     dta_2 = AgGrid(
-#         table2,
-#         gridOptions=gb,
-#         height=300,
-#         allow_unsafe_jscode=True,
-#         theme=AgGridTheme.ALPINE,
-#         update_mode=GridUpdateMode.SELECTION_CHANGED,
-#         columns_auto_size_mode=ColumnsAutoSizeMode.FIT_ALL_COLUMNS_TO_VIEW,
-#         reload_data=True,
-#     )
-
-sql = "INSERT INTO cliente (sigla, nome_client, data_cliente) VALUES (?, ?, ?)"
 today = DT.datetime.strftime(DT.datetime.today(), "%Y-%m-%d")
 hoje = today
 
-
-# vacuo, botao_1, botao_2, botao_3, vacuo_2 = st.columns([4,3,3,3,3])
 with botao_1:
     if "button1" not in st.session_state:
         st.session_state["button1"] = False
@@ -495,13 +485,15 @@ with botao_1:
     if st.session_state["button1"]:
         disco = st.text_input("Nome do Cliente: ", value="")
         if st.button("Salvar"):
-            cursor.execute(sql, (id_v1, disco, today))
+            
+            url = "https://"+st.secrets.domain+"rest/"+st.secrets.bignumber+"/"+st.secrets.cod_shhh+"/crm.deal.add.json?fields["+st.secrets.VAR1+f"]={id_v1}&fields["+st.secrets.VAR2+f"]={disco}&fields["+st.secrets.VAR3+f"]={today}&fields["+st.secrets.category+"]="+st.secrets.courier
+            payload = {}
+            headers = {
+            'Cookie': 'BITRIX_SM_SALE_UID=0; qmb=0.'
+            }
+            response = requests.request("POST", url, headers=headers, data=payload)
             st.success("O cliente foi adicionado ao banco de dados")
-            con.commit()
-            # st.session_state["df_cliente"] = pd.DataFrame(
-            #     dta.data[dta.data["Nome do Cliente"] == disco]
-            # )
-            # nav_page("cliente_ativo")
+            
             st._rerun()
 
 with botao_3:
@@ -523,10 +515,13 @@ with botao_3:
                     st.error("Não foi selecionado um Cliente")
                 else:
                     v2_client = int(st.session_state.df_cliente.client_id[0])
-                    cursor.execute(
-                        "DELETE FROM cliente WHERE client_id = ?", (v2_client,)
-                    )
-                    con.commit()
+                    url = "https://"+st.secrets.domain+"rest/"+st.secrets.bignumber+"/"+st.secrets.cod_shhh+"/crm.deal.delete?["+st.secrets.id+f"]={v2_client}"
+                    payload = {}
+                    headers = {
+                    'Cookie': 'BITRIX_SM_SALE_UID=0'
+                    }
+                    response = requests.request("POST", url, headers=headers, data=payload)
+                
                     st.success("O cliente foi deletado com sucesso")
                     tm.sleep(1)
                     st._rerun()
@@ -630,9 +625,7 @@ else:
 
             st.error("Você não possui um Portifólio nesta ferramenta")
         else:
-            # tab1, tab2 = st.tabs(["Grafico Geral", "Grafico Geral por Cliente"])
-            # with tab1:
-            #st.dataframe(super_smart)
+           
             try:
                 fig = px.bar(
                         super_smart[(super_smart["data"]>= inc) & (super_smart["data"]<= end)],
@@ -704,124 +697,12 @@ else:
                 fig.update_yaxes(title=None)
                 #fig.update_traces(textposition="top center")
                 st.plotly_chart(fig,use_container_width=True)
-                # fig = px.line(
-                #     final,
-                #     x="Mês",
-                #     y="Resultado assessor",
-                #     markers=True,
-                #     width=1000,
-                #     text="R$ " + round(final["Resultado assessor"], 2).astype(str),
-                #     title=f"Comissão Total Mensal",
-                # )
-                # fig.update_xaxes(showgrid=False)
-                # fig.update_yaxes(title=None, griddash="dot", rangemode="tozero")
-                # fig.update_traces(textposition="top center")
-                # fig.data[0].line.color = "#9966ff"
-                # st.plotly_chart(fig)
-            # st.dataframe(st.session_state["df_cliente"])
-            # with tab2:
-            #     try:
-            #         if (
-            #             st.session_state["df_cliente"]["Qnt. Ativos InvestSmart"].iloc[0]
-            #             + st.session_state["df_cliente"]["Qnt. Produtos BeSmart"].iloc[0]
-            #             == 0
-            #         ):
-            #             st.error("Esse Cliente não tem Portifólio")
-            #         else:
-            #             if not st.session_state["df_cliente"].empty:
-            #                 fair = fair[
-            #                     fair["client_id"]
-            #                     == st.session_state["df_cliente"].client_id.iloc[0]
-            #                 ]
-            #                 smart_v2 = pd.DataFrame()
-            #                 for i in fair["ativo_id"].unique():
-            #                     df = fair[fair["ativo_id"] == i]
-            #                     df = df.reset_index().drop("index", 1)
-
-            #                     # st.dataframe(df)
-            #                     if df.empresa.iloc[0] == "INVESTSMART":
-            #                         grasph_df = base_df(
-            #                             df.data_venc.iloc[0],
-            #                             df.data_ativo.iloc[0],
-            #                             df.pl_aplicado.iloc[0],
-            #                             df.retorno.iloc[0],
-            #                             df.roa_head.iloc[0],
-            #                             df.roa_rec.iloc[0],
-            #                             df.repasse.iloc[0],
-            #                             moeda_real=False,
-            #                         )
-            #                     else:
-            #                         grasph_df = besmart_base(
-            #                             df.data_venc.iloc[0],
-            #                             df.data_ativo.iloc[0],
-            #                             face,
-            #                             df.empresa.iloc[0],
-            #                             df.categoria.iloc[0],
-            #                             df.ativo.iloc[0],
-            #                             df.pl_aplicado.iloc[0],
-            #                             df.repasse.iloc[0],
-            #                         )
-            #                     smart_v2 = smart_v2.append(grasph_df)
-            #                 smart_v2["Mês"] = smart_v2["Mês"].apply(
-            #                     lambda x: DT.datetime.strptime(x, "%b-%y")
-            #                 )
-            #                 smart_v2["Mês"] = smart_v2["Mês"].apply(
-            #                     lambda x: DT.datetime.strftime(x, "%m-%y")
-            #                 )
-            #                 # st.dataframe(smart_v2)
-            #                 final_v2 = (
-            #                     smart_v2[["Mês", "Resultado assessor"]]
-            #                     .groupby(smart_v2["Mês"])["Resultado assessor"]
-            #                     .sum()
-            #                     .reset_index()
-            #                 )
-            #                 final_v2["Mês"] = final_v2["Mês"].apply(
-            #                     lambda x: DT.datetime.strptime(x, "%m-%y")
-            #                 )
-            #                 final_v2["ano"] = final_v2["Mês"].astype("datetime64").dt.year
-            #                 final_v2["mes"] = final_v2["Mês"].astype("datetime64").dt.month
-            #                 final_v2["Mês"] = final_v2["Mês"].apply(
-            #                     lambda x: DT.datetime.strftime(x, "%b-%y")
-            #                 )
-            #                 final_v2 = final_v2.sort_values(["ano", "mes"]).reset_index(
-            #                     drop=True
-            #                 )
-            #                 name_v2 = st.session_state.df_cliente["Nome do Cliente"][0]
-            #                 fig = px.line(
-            #                     final_v2,
-            #                     x="Mês",
-            #                     y="Resultado assessor",
-            #                     width=1000,
-            #                     markers=True,
-            #                     text="R$ "
-            #                     + round(final_v2["Resultado assessor"], 2).astype(str),
-            #                     title=f"Resultado Geral do Assessor por mês de {name_v2}",
-            #                 )
-            #                 fig.update_xaxes(showgrid=False)
-            #                 fig.update_yaxes(
-            #                     title_font_size=24, griddash="dot", rangemode="tozero"
-            #                 )
-            #                 fig.update_traces(textposition="top center")
-            #                 fig.data[0].line.color = "#9966ff"
-            #                 st.plotly_chart(fig)
-            #     except:
-            #         fig = px.line(
-            #             final,
-            #             x="Mês",
-            #             y="Resultado assessor",
-            #             width=1000,
-            #             markers=True,
-            #             text="R$ " + round(final["Resultado assessor"], 2).astype(str),
-            #             title=f"Resultado Geral do Assessor por mês",
-            #         )
-            #         fig.update_xaxes(showgrid=False)
-            #         fig.update_yaxes(griddash="dot", rangemode="tozero")
-            #         fig.update_traces(textposition="top center")
-            #         fig.data[0].line.color = "#9966ff"
-            #         st.plotly_chart(fig)
-
 
 if st.button('Logout',key='logout2'):
     st.session_state["logout"] =None
     if st.session_state["logout"]==None:
         nav_page('')
+        
+
+
+
