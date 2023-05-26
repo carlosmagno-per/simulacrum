@@ -11,7 +11,6 @@ from database import moeda, base_df, PositivadorBitrix
 import locale
 import streamlit.components.v1 as components
 import plotly.express as px
-from variables import *
 import requests
 
 
