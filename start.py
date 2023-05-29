@@ -79,7 +79,7 @@ if st.button("Iniciar a ferramenta"):
 
 no_sidebar_style = """
     <style>
-        css-1wbqy5l e10z71041 {display: none;}
+        div[data-testid="stToolbar"] {display: none;}
         #MainMenu {visibility: hidden;}
         div[data-testid="stSidebarNav"] {display: none;}
         footer {visibility: hidden;}
