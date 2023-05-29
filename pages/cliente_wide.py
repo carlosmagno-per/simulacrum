@@ -22,7 +22,7 @@ v3 = st.session_state.df_cliente.client_id[0]
 
 df = PositivadorBitrix().get_data_produto(int(v3))
 df = df.rename(columns={
-    st.secrets.VAR11:'client_id',
+     st.secrets.VAR11:'client_id',
     st.secrets.VAR12:'empresa',
     st.secrets.VAR4:'categoria',
     st.secrets.VAR5:'ativo',
@@ -205,6 +205,7 @@ with tab1:
             if st.session_state["df_ativo1"].empty:
                 st.error("Não foi selecionado um ativo")
             else:
+                st.session_state["df_ativo"] = pd.DataFrame()
                 nav_page("edit_ativo")
     if "button441" not in st.session_state:
             st.session_state["button441"] = False
@@ -313,6 +314,7 @@ with tab2:
             if st.session_state["df_ativo2"].empty:
                 st.error("Não foi selecionado um ativo")
             else:
+                st.session_state["df_ativo1"] = pd.DataFrame()
                 nav_page("besmart_edit_ativo")
     if "button442" not in st.session_state:
             st.session_state["button442"] = False
@@ -411,8 +413,6 @@ with geral:
     chart1= st.container() 
 
 
-# st.dataframe(st.session_state.df_ativo)
-
     st.session_state["df_ativo"] = pd.DataFrame(dta["selected_rows"])
     #st.dataframe(st.session_state["df_ativo"])
     if "button1" not in st.session_state:
@@ -424,6 +424,7 @@ with geral:
         if st.button("Incluir Produto Be.Smart"):
             nav_page("besmart_novo_ativo")
 
+#st.dataframe(st.session_state.df_ativo)
 
 face_v2 = pd.read_excel("base_besmart_v3.xlsx")
 face_v2["Categoria"] = face_v2["Categoria"].apply(lambda x: x.replace("_", " "))
@@ -990,15 +991,17 @@ with chart4:
             #fig.update_traces(textposition="top center")
             st.plotly_chart(fig,use_container_width=True)
     
-
+#st.dataframe(st.session_state["df_ativo"])
 with botao3:
     if st.button("Visualizar o Ativo Selecionado"):
         if st.session_state["df_ativo"].empty:
             st.error("Não foi selecionado um ativo")
         else:
             if st.session_state.df_ativo.Empresa.iloc[0] == "INVESTSMART":
+                st.session_state["df_ativo1"] = pd.DataFrame()
                 nav_page("edit_ativo")
             else:
+                st.session_state["df_ativo2"] = pd.DataFrame()
                 nav_page("besmart_edit_ativo")
 with botao4:
     if "button44" not in st.session_state:

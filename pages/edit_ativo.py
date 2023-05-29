@@ -74,6 +74,7 @@ except:
     v1_roa_rec = st.session_state.df_ativo.roa_rec.iloc[0]
 roa_reps = float(v1_repasse)
 prem, table = st.columns(2)
+
 with prem:
     st.subheader("**Premissas**")
 

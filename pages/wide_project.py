@@ -25,9 +25,8 @@ st.set_page_config(
 )
 
 #df = pd.read_sql("SELECT * FROM cliente", con)
-lista=list(PositivadorBitrix().get_data_default(6)[st.secrets.id])
+lista=list(PositivadorBitrix().get_data_default(6)["ID"])
 df = PositivadorBitrix().get_data_custom(lista)
-#st.dataframe(df)
 df = df.rename(columns={st.secrets.deal:'client_id',st.secrets.VAR1:'sigla',st.secrets.VAR2:'nome_client',st.secrets.VAR3:'data_cliente'})
 
 dark = df.copy()
