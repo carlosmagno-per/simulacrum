@@ -1262,11 +1262,26 @@ if st.button("Voltar"):
 
 st.markdown(
     """
-<style>
-    img{
-    background-color: rgb(18, 19, 18);
-}
-</style>
+    <style>
+        #MainMenu {visibility: hidden;}
+        div[data-testid="stSidebarNav"] {display: none;}
+        footer {visibility: hidden;}
+        
+        [data-testid="collapsedControl"] {display: none}
+        footer {visibility: hidden;}        
+    </style>
 """,
     unsafe_allow_html=True,
 )
+
+
+# st.markdown(
+#     """
+# <style>
+#     img{
+#     background-color: rgb(18, 19, 18);
+# }
+# </style>
+# """,
+#     unsafe_allow_html=True,
+# )

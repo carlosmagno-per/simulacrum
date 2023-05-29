@@ -79,6 +79,7 @@ if st.button("Iniciar a ferramenta"):
 
 no_sidebar_style = """
     <style>
+        #MainMenu {visibility: hidden;}
         div[data-testid="stSidebarNav"] {display: none;}
         footer {visibility: hidden;}
     </style>

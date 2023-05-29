@@ -549,16 +549,12 @@ with botao_2:
 st.markdown(
     """
     <style>
+        #MainMenu {visibility: hidden;}
         div[data-testid="stSidebarNav"] {display: none;}
         footer {visibility: hidden;}
         
         [data-testid="collapsedControl"] {display: none}
-        footer {visibility: hidden;}
-
-        img{
-        background-color: rgb(18, 19, 18);
-            }
-        
+        footer {visibility: hidden;}        
     </style>
 """,
     unsafe_allow_html=True,
