@@ -1273,15 +1273,3 @@ st.markdown(
 """,
     unsafe_allow_html=True,
 )
-
-
-# st.markdown(
-#     """
-# <style>
-#     img{
-#     background-color: rgb(18, 19, 18);
-# }
-# </style>
-# """,
-#     unsafe_allow_html=True,
-# )
