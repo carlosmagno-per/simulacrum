@@ -1266,7 +1266,7 @@ st.markdown(
         #MainMenu {visibility: hidden;}
         div[data-testid="stSidebarNav"] {display: none;}
         footer {visibility: hidden;}
-        
+        div[data-testid="stToolbar"] {display: none;}
         [data-testid="collapsedControl"] {display: none}
         footer {visibility: hidden;}        
     </style>
