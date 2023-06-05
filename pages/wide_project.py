@@ -91,7 +91,8 @@ list_client_id = dark["client_id"].unique().astype(int)
 list_client_id = list(list_client_id)
 
 #fair = pd.read_sql("SELECT * FROM variaveis", con)
-lista2=list(PositivadorBitrix().get_data_default(30)["ID"])
+arabian= int(st.secrets.arabian)
+lista2=list(PositivadorBitrix().get_data_default(arabian)["ID"])
 fair = PositivadorBitrix().get_data_all()
 fair = fair.rename(columns={
     st.secrets.VAR11:'client_id',
