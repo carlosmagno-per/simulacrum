@@ -107,7 +107,7 @@ fair = fair.rename(columns={
     st.secrets.VAR10:'data_venc',
     st.secrets.deal:'ativo_id',
     })
-fair = fair.dropna()
+fair=fair[fair['client_id'].isin(dark['client_id'].astype(str))]
 fair['pl_aplicado']= fair['pl_aplicado'].astype(int)
 fair['client_id']= fair['client_id'].astype(int)
 fair['retorno']= fair['retorno'].astype(float)
