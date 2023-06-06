@@ -54,11 +54,11 @@ except:
     v4 = int(st.session_state.df_ativo.ativo_id[0])
     v1_empresa = st.session_state.df_ativo.Empresa.iloc[0]
     v1_categ = st.session_state.df_ativo.Categoria.iloc[0]
-    v1_ativo = st.session_state.df_ativo.Produto.iloc[0]
+    v1_ativo = st.session_state.df_ativo.Ativo.iloc[0]
     v1_data = st.session_state.df_ativo["Data de Vencimento"].iloc[0]
     v1_data_inicio = st.session_state.df_ativo["Data de Início"].iloc[0]
     v1_pl_apl = (
-        st.session_state.df_ativo["Valor do Produto"]
+        st.session_state.df_ativo["PL Aplicado"]
         .iloc[0][3:]
         .replace(".", "")
         .replace(",", ".")
