@@ -94,6 +94,7 @@ list_client_id = list(list_client_id)
 arabian= int(st.secrets.arabian)
 lista2=list(PositivadorBitrix().get_data_default(arabian)["ID"])
 fair = PositivadorBitrix().get_data_all()
+fair = fair.dropna(axis=0,thresh=12)
 fair = fair.rename(columns={
     st.secrets.VAR11:'client_id',
     st.secrets.VAR12:'empresa',
@@ -108,6 +109,7 @@ fair = fair.rename(columns={
     st.secrets.VAR10:'data_venc',
     st.secrets.deal:'ativo_id',
     })
+#st.dataframe(dark)
 fair=fair[fair['client_id'].isin(dark['client_id'].astype(str))]
 fair['pl_aplicado']= fair['pl_aplicado'].astype(int)
 fair['client_id']= fair['client_id'].astype(int)
@@ -238,10 +240,11 @@ for i in fair["ativo_id"].unique():
     smart = smart.append(grasph_df)
 smart["Mês"] = smart["Mês"].apply(lambda x: DT.datetime.strptime(x, "%b-%y"))
 smart["Mês"] = smart["Mês"].apply(lambda x: DT.datetime.strftime(x, "%m-%y"))
+smart['Total Bruto'] = smart['Faturamento'].fillna(0) + smart['Resultado Bruto'].fillna(0)
 try:
     Invest = smart[smart['PL Retido'].notna()]
-    Invest = (Invest[["Mês", "Resultado assessor"]]
-        .groupby(Invest["Mês"])["Resultado assessor"]
+    Invest = (Invest[["Mês", "Resultado assessor","Total Bruto"]]
+        .groupby(Invest["Mês"])#["Resultado assessor"]
         .sum()
         .reset_index())
     Invest["Mês"] = Invest["Mês"].apply(lambda x: DT.datetime.strptime(x, "%m-%y"))
@@ -250,19 +253,19 @@ try:
     Invest["Mês"] = Invest["Mês"].apply(lambda x: DT.datetime.strftime(x, "%b-%y"))
     Invest = Invest.sort_values(["ano", "mes"]).reset_index(drop=True)
     Invest["label"]= "InvestSmart"
-
 except:
     Invest = pd.DataFrame(columns={
         "Mês",
         "Resultado assessor",
         "ano",
         "mes",
-        "label"
+        "label",
+        "Total Bruto"
     })
 try:
     Besmart = smart[smart['Custo do Produto'].notna()]
-    Besmart = (Besmart[["Mês", "Resultado assessor"]]
-        .groupby(Besmart["Mês"])["Resultado assessor"]
+    Besmart = (Besmart[["Mês", "Resultado assessor","Total Bruto"]]
+        .groupby(Besmart["Mês"])#["Resultado assessor"]
         .sum()
         .reset_index())
     Besmart["Mês"] = Besmart["Mês"].apply(lambda x: DT.datetime.strptime(x, "%m-%y"))
@@ -276,7 +279,8 @@ except:
         "Resultado assessor",
         "ano",
         "mes",
-        "label"
+        "label",
+        "Total Bruto"
     })
 try:
     super_smart = Besmart.append(Invest)
@@ -288,11 +292,12 @@ except:
         "Resultado assessor",
         "ano",
         "mes",
-        "label"
+        "label",
+        "Total Bruto"
     })
 final = (
-    smart[["Mês", "Resultado assessor"]]
-    .groupby(smart["Mês"])["Resultado assessor"]
+    smart[["Mês", "Resultado assessor","Total Bruto"]]
+    .groupby(smart["Mês"])#["Resultado assessor"]
     .sum()
     .reset_index()
 )
@@ -411,6 +416,7 @@ st.markdown(
     """,
     unsafe_allow_html=True,
 )
+choice= st.container()
 container = st.container()
 chart1, chart2 = st.columns([6, 4])
 
@@ -553,14 +559,14 @@ st.markdown(
         #MainMenu {visibility: hidden;}
         div[data-testid="stSidebarNav"] {display: none;}
         footer {visibility: hidden;}
-        div[data-testid="stToolbar"] {display: none;}
+        div [data-testid="stToolbar"] {display: none;}
         [data-testid="collapsedControl"] {display: none}
         footer {visibility: hidden;}        
     </style>
 """,
     unsafe_allow_html=True,
 )
-
+#st.dataframe(super_smart)
 # chart1, chart2 = st.columns([6, 4])
 if super_smart.empty:
     st.text("")
@@ -574,6 +580,14 @@ else:
     distancia_df = pd.DataFrame(distancia)
     #st.dataframe(distancia_df)
     distancia_df["ano"] = distancia_df[0].astype("datetime64").dt.year
+    #st.dataframe(super_smart)
+    #super_smart['Total Bruto'] = super_smart['Faturamento'].fillna(0) + super_smart['Resultado Bruto'].fillna(0)
+    with choice:
+        coluna = st.radio("Qual tipo de Gráfico é desejado ?",["Comissão Líquida - Assessor","Resultado Bruto"],horizontal=True,key='uno_first')
+        if coluna == "Comissão Líquida - Assessor":
+            subst = "Resultado assessor"
+        else:
+            subst = "Total Bruto"
     with container:
         try:
             i_n_v = distancia_df[distancia_df["ano"] == DT.datetime.now().year + 2].reset_index().iloc[-1]["index"]
@@ -593,7 +607,7 @@ else:
                 x="pl_aplicado",
                 y="categoria",
                 #width=700,
-                # height=500,
+                height=600,
                 text=df_categ.label,
                 color="categoria",
                 color_discrete_sequence=px.colors.sequential.Viridis,
@@ -627,14 +641,14 @@ else:
                 fig = px.bar(
                         super_smart[(super_smart["data"]>= inc) & (super_smart["data"]<= end)],
                         x="Mês",
-                        y="Resultado assessor",
+                        y=subst,
                         color="label",
                         width=1000,
-                        height=425,
+                        height=600,
                         text_auto='.2s',
                         title=f"Comissão Total Mensal",
                         color_discrete_sequence=px.colors.sequential.Viridis,
-                        labels = {"label":"Empresa","Resultado assessor":"Comissão do Assessor (R$)"}
+                        labels = {"label":"Empresa",subst:subst+"(R$)"}
                     )
                 fig.update_layout(
                     #showlegend=False,
@@ -649,7 +663,20 @@ else:
                     # x=0.2
                     )
                     )
-                fig.update_traces(textfont_size=12)
+                fig.update_traces(textfont_size=12,textposition='inside')
+                temp=super_smart[(super_smart["data"]>= inc) & (super_smart["data"]<= end)]
+                temp=temp[['Mês',subst]].groupby('Mês').sum().reset_index()
+                fig.add_trace(go.Scatter(x=temp["Mês"], 
+                    y=temp[subst],
+                    text=temp[subst],
+                    mode='text',
+                    textposition='top center',
+                    textfont=dict(
+                        size=18,
+                    ),
+                    showlegend=False,
+                    hovertemplate='<extra></extra>'))
+                
                 fig.data[0].textfont.color = "white"
                 fig.data[0].marker.color = "#9966ff"
                 fig.data[1].marker.color = "#482878"
@@ -661,14 +688,14 @@ else:
                 fig = px.bar(
                         super_smart[(super_smart["data"]>= inc) & (super_smart["data"]<= end)],
                         x="Mês",
-                        y="Resultado assessor",
+                        y=subst,
                         #color="label",
                         #width=1000,
-                        height=425,
+                        height=600,
                         text_auto='.2s',
                         title=f"Comissão Total Mensal",
                         color_discrete_sequence=px.colors.sequential.Viridis,
-                        labels = {"label":"Empresa","Resultado assessor":"Comissão do Assessor (R$)"}
+                        labels = {"label":"Empresa",subst:subst+"(R$)"}
                     )
                 fig.update_layout(
                     #showlegend=False,
@@ -684,7 +711,20 @@ else:
                     # x=0.2,
                     )
                     )
-                fig.update_traces(textfont_size=12)
+                fig.update_traces(textfont_size=12,textposition='inside')
+                temp=super_smart[(super_smart["data"]>= inc) & (super_smart["data"]<= end)]
+                temp=temp[['Mês',subst]].groupby('Mês').sum().reset_index()
+                fig.add_trace(go.Scatter(x=temp["Mês"], 
+                    y=temp[subst],
+                    text=temp[subst],
+                    mode='text',
+                    textposition='top center',
+                    textfont=dict(
+                        size=18,
+                    ),
+                    showlegend=False,
+                    hovertemplate='<extra></extra>'))
+                
                 fig.data[0].textfont.color = "white"
                 fig.data[0].marker.color = "#482878"
                 fig.data[0]['showlegend']=True

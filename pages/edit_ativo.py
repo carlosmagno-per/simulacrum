@@ -240,7 +240,8 @@ with table:
 
         st.markdown(hide_dataframe_row_index, unsafe_allow_html=True)
 
-        st.dataframe(dataframe)
+        #st.dataframe(dataframe)
+        st.dataframe(dataframe[['Mês','Roa/Mês(%)','Faturamento','Imposto','Receita Líquida', 'Resultado assessor']])
 
         with salve_v3:
             if st.button("Salvar"):
@@ -273,7 +274,7 @@ if st.button("Voltar"):
 st.markdown(
     """
 <style>
-    div[data-testid="stToolbar"] {display: none;}
+    div [data-testid="stToolbar"] {display: none;}
     #MainMenu {visibility: hidden;}
     [data-testid="collapsedControl"] {
         display: none
@@ -283,3 +284,29 @@ st.markdown(
 """,
     unsafe_allow_html=True,
 )
+
+# st.markdown(
+#     """
+# <style>
+#     .st-bw {
+#     background-color: rgb(63, 63, 63);
+#     }
+#     [data-testid="collapsedControl"] {
+#         display: none
+#     }
+#     footer {visibility: hidden;}
+
+#     .css-qriz5p:hover:enabled, .css-qriz5p:focus:enabled {
+#     color: rgb(255, 255, 255);
+#     background-color: rgb(153, 102, 255);
+#     transition: none 0s ease 0s;
+#     outline: none;
+# }
+#     img {
+#     background-color: rgb(18, 19, 18);
+#     }
+
+# </style>
+# """,
+#     unsafe_allow_html=True,
+# )

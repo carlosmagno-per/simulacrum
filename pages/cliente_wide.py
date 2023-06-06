@@ -1,5 +1,6 @@
 import streamlit as st
 import plotly.express as px
+import plotly.graph_objects as go
 import numpy as np
 import pandas as pd
 import datetime as DT
@@ -192,6 +193,8 @@ with tab1:
             """,
             unsafe_allow_html=True,
         )
+    
+    choice = st.container()
     container = st.container()
     chart3, chart2= st.columns([6,4])
 
@@ -302,6 +305,7 @@ with tab2:
         )
     st.session_state["df_ativo2"] = pd.DataFrame(dta2["selected_rows"])
     #st.dataframe(st.session_state["df_ativo2"])
+    choice2 = st.container()
     container3 = st.container() 
     chart4= st.container()
     with botao22:
@@ -409,6 +413,7 @@ with geral:
             """,
             unsafe_allow_html=True,
         )
+    choice1 = st.container()
     container1 = st.container() 
     chart1= st.container() 
 
@@ -497,11 +502,12 @@ with chart1:
         )
         mapas = dict(dark[["ativo_id","Ativo"]].values)
         smart["Produtos"] = smart.ativo_id.map(mapas)
+        smart['Total Bruto'] = smart['Faturamento'].fillna(0) + smart['Resultado Bruto'].fillna(0)
         #st.dataframe(smart)
         
         
         final = (
-            smart[["Mês", "Resultado assessor","Produtos"]]
+            smart[["Mês", "Resultado assessor","Produtos",'Total Bruto']]
             .groupby(["Mês","Produtos"]).sum()
             .reset_index()
         )
@@ -524,6 +530,12 @@ with chart1:
         distancia = list(final["data"].unique())
         distancia_df = pd.DataFrame(distancia)
         distancia_df["ano"] = distancia_df[0].astype("datetime64").dt.year
+        with choice1:
+            coluna = st.radio("Qual tipo de Gráfico é desejado ?",["Comissão Líquida - Assessor","Resultado Bruto"],horizontal=True,key='uno_nameless')
+            if coluna == "Comissão Líquida - Assessor":
+                subst = "Resultado assessor"
+            else:
+                subst = "Total Bruto"
         with container1:
             try:
                 i_n_v = distancia_df[distancia_df["ano"] == DT.datetime.now().year + 2].reset_index().iloc[-1]["index"]
@@ -534,14 +546,14 @@ with chart1:
             fig = px.bar(
                 final[(final["data"]>= inc1) & (final["data"]<= end1)],
                 x="Mês",
-                y="Resultado assessor",
+                y=subst,
                 color="Produtos",
                 #width=1700,
-                #height=600,
-                text_auto='.2s',
+                height=600,
+                text_auto='%.2f',
                 title=f"Comissão Total Mensal",
                 color_discrete_sequence=px.colors.sequential.Viridis,
-                labels = {"Resultado assessor":"Comissão do Assessor (R$)"}
+                labels = {subst:subst + "(R$)"}
             )
             fig.update_layout(
                 #showlegend=False,
@@ -556,7 +568,20 @@ with chart1:
                 #x=1
                 )
                 )
-            fig.update_traces(textfont_size=25)
+            fig.update_traces(textfont_size=20,textposition='inside')
+            temp=final[(final["data"]>= inc1) & (final["data"]<= end1)]
+            temp=temp[['Mês',subst]].groupby('Mês').sum().reset_index()
+            fig.add_trace(go.Scatter(x=temp["Mês"], 
+                y=temp[subst],
+                text=temp[subst].round(2),
+                mode='text',
+                textposition='top center',
+                textfont=dict(
+                    size=18,
+                ),
+                showlegend=False,
+                hovertemplate='<extra></extra>'))
+            
             fig.data[0].textfont.color = "white"
             fig.data[0].marker.color = "#9966ff"
             fig.data[1].marker.color = "#482878"
@@ -568,14 +593,14 @@ with chart1:
             fig = px.bar(
                 final[(final["data"]>= inc1) & (final["data"]<= end1)],
                 x="Mês",
-                y="Resultado assessor",
+                y=subst,
                 #color="Produtos",
                 #width=4000,
-                #height=600,
-                text_auto='.2s',
+                height=600,
+                text_auto='%.2f',
                 title=f"Comissão Total Mensal",
                 color_discrete_sequence=px.colors.sequential.Viridis,
-                labels = {"Resultado assessor":"Comissão do Assessor (R$)"}
+                labels = {subst:subst + "(R$)"}
             )
             fig.update_layout(
                 #showlegend=False,
@@ -590,7 +615,20 @@ with chart1:
                 #x=1
                 )
                 )
-            fig.update_traces(textfont_size=25)
+            fig.update_traces(textfont_size=20,textposition='inside')
+            temp=final[(final["data"]>= inc1) & (final["data"]<= end1)]
+            temp=temp[['Mês',subst]].groupby('Mês').sum().reset_index()
+            fig.add_trace(go.Scatter(x=temp["Mês"], 
+                y=temp[subst],
+                text=temp[subst].round(2),
+                mode='text',
+                textposition='top center',
+                textfont=dict(
+                    size=18,
+                ),
+                showlegend=False,
+                hovertemplate='<extra></extra>'))
+            
             fig.data[0].textfont.color = "white"
             fig.data[0].marker.color = "#9966ff"
             fig.data[0]['showlegend']=True
@@ -717,11 +755,12 @@ with chart3:
         )
         mapas = dict(dark[["ativo_id","Ativo"]].values)
         smart["Produtos"] = smart.ativo_id.map(mapas)
+        smart['Total Bruto'] = smart['Faturamento'].fillna(0) + smart['Resultado Bruto'].fillna(0)
         #st.dataframe(smart)
         
         
         final1 = (
-            smart[["Mês", "Resultado assessor","Produtos"]]
+            smart[["Mês", "Resultado assessor","Produtos",'Total Bruto']]
             .groupby(["Mês","Produtos"]).sum()
             .reset_index()
         )
@@ -744,6 +783,12 @@ with chart3:
         distancia1 = list(final1["data"].unique())
         distancia_df1 = pd.DataFrame(distancia)
         distancia_df1["ano"] = distancia_df1[0].astype("datetime64").dt.year
+        with choice:
+            coluna = st.radio("Qual tipo de Gráfico é desejado ?",["Comissão Líquida - Assessor","Resultado Bruto"],horizontal=True,key='dois_castoff')
+            if coluna == "Comissão Líquida - Assessor":
+                subst = "Resultado assessor"
+            else:
+                subst = "Total Bruto"
         with container:
             try:
                 i_n_v = distancia_df1[distancia_df1["ano"] == DT.datetime.now().year + 2].reset_index().iloc[-1]["index"]
@@ -754,14 +799,14 @@ with chart3:
             fig = px.bar(
                 final1[(final1["data"]>= inc2) & (final1["data"]<= end2)],
                 x="Mês",
-                y="Resultado assessor",
+                y=subst,
                 color="Produtos",
                 #width=1000,
-                #height=600,
-                text_auto='.2s',
+                height=600,
+                text_auto='%.2f',
                 title=f"Comissão InvestSmart Mensal",
                 color_discrete_sequence=px.colors.sequential.Viridis,
-                labels = {"Resultado assessor":"Comissão do Assessor (R$)"}
+                labels = {subst:subst + "(R$)"}
             )
             fig.update_layout(
                 #showlegend=False,
@@ -776,7 +821,20 @@ with chart3:
                 #x=1
                 )
                 )
-            fig.update_traces(textfont_size=25)
+            fig.update_traces(textfont_size=20,textposition='inside')
+            temp=final1[(final1["data"]>= inc2) & (final1["data"]<= end2)]
+            temp=temp[['Mês',subst]].groupby('Mês').sum().reset_index()
+            fig.add_trace(go.Scatter(x=temp["Mês"], 
+                y=temp[subst],
+                text=temp[subst].round(2),
+                mode='text',
+                textposition='top center',
+                textfont=dict(
+                    size=18,
+                ),
+                showlegend=False,
+                hovertemplate='<extra></extra>'))
+            
             fig.data[0].textfont.color = "white"
             fig.data[0].marker.color = "#9966ff"
             fig.data[1].marker.color = "#482878"
@@ -788,14 +846,14 @@ with chart3:
             fig = px.bar(
                 final1[(final1["data"]>= inc2) & (final1["data"]<= end2)],
                 x="Mês",
-                y="Resultado assessor",
+                y=subst,
                 #color="Produtos",
                 #width=1000,
-                #height=600,
-                text_auto='.2s',
+                height=600,
+                text_auto='%.2f',
                 title=f"Comissão InvestSmart Mensal",
                 color_discrete_sequence=px.colors.sequential.Viridis,
-                labels = {"Resultado assessor":"Comissão do Assessor (R$)"}
+                labels = {subst:subst + "(R$)"}
             )
             fig.update_layout(
                 #showlegend=False,
@@ -810,7 +868,20 @@ with chart3:
                 #x=1
                 )
                 )
-            fig.update_traces(textfont_size=25)
+            fig.update_traces(textfont_size=20,textposition='inside')
+            temp=final1[(final1["data"]>= inc2) & (final1["data"]<= end2)]
+            temp=temp[['Mês',subst]].groupby('Mês').sum().reset_index()
+            fig.add_trace(go.Scatter(x=temp["Mês"], 
+                y=temp[subst],
+                text=temp[subst].round(2),
+                mode='text',
+                textposition='top center',
+                textfont=dict(
+                    size=18,
+                ),
+                showlegend=False,
+                hovertemplate='<extra></extra>'))
+            
             fig.data[0].textfont.color = "white"
             fig.data[0].marker.color = "#9966ff"
             fig.data[0]['showlegend']=True
@@ -887,11 +958,12 @@ with chart4:
         )
         mapas = dict(dark[["ativo_id","Ativo"]].values)
         smart["Produtos"] = smart.ativo_id.map(mapas)
+        smart['Total Bruto'] = smart['Faturamento'].fillna(0) + smart['Resultado Bruto'].fillna(0)
         #st.dataframe(smart)
         
         
         final2 = (
-            smart[["Mês", "Resultado assessor","Produtos"]]
+            smart[["Mês", "Resultado assessor","Produtos",'Total Bruto']]
             .groupby(["Mês","Produtos"]).sum()
             .reset_index()
         )
@@ -914,7 +986,14 @@ with chart4:
         distancia = list(final2["data"].unique())
         distancia_df = pd.DataFrame(distancia)
         distancia_df["ano"] = distancia_df[0].astype("datetime64").dt.year
+        with choice2:
+            coluna = st.radio("Qual tipo de Gráfico é desejado ?",["Comissão Líquida - Assessor","Resultado Bruto"],horizontal=True,key='tres_O')
+            if coluna == "Comissão Líquida - Assessor":
+                subst = "Resultado assessor"
+            else:
+                subst = "Total Bruto"
         with container3:
+            #coluna = st.radio("Escolha o Tipo de Grafico a ser observado",["Resultado assessor"])
             try:
                 i_n_v = distancia_df[distancia_df["ano"] == DT.datetime.now().year + 2].reset_index().iloc[-1]["index"]
                 inc1, end1 = st.select_slider("Período de tempo do Grafico",options = distancia,value=(distancia[0],distancia[i_n_v]),key="besmart")
@@ -924,14 +1003,14 @@ with chart4:
             fig = px.bar(
                 final2[(final2["data"]>= inc1) & (final2["data"]<= end1)],
                 x="Mês",
-                y="Resultado assessor",
+                y=subst,
                 color="Produtos",
                 #width=1700,
-                #height=600,
-                text_auto='.2s',
+                height=600,
+                text_auto='%.2f',
                 title=f"Comissão Be.Smart Mensal",
                 color_discrete_sequence=px.colors.sequential.Viridis,
-                labels = {"Resultado assessor":"Comissão do Assessor (R$)"}
+                labels = {subst:subst + "(R$)"}
             )
             fig.update_layout(
                 #showlegend=False,
@@ -946,7 +1025,20 @@ with chart4:
                 #x=1
                 )
                 )
-            fig.update_traces(textfont_size=25)
+            fig.update_traces(textfont_size=20,textposition='inside')
+            temp=final2[(final2["data"]>= inc1) & (final2["data"]<= end1)]
+            temp=temp[['Mês',subst]].groupby('Mês').sum().reset_index()
+            fig.add_trace(go.Scatter(x=temp["Mês"], 
+                y=temp[subst],
+                text=temp[subst].round(2),
+                mode='text',
+                textposition='top center',
+                textfont=dict(
+                    size=18,
+                ),
+                showlegend=False,
+                hovertemplate='<extra></extra>'))
+            
             fig.data[0].textfont.color = "white"
             fig.data[0].marker.color = "#9966ff"
             fig.data[1].marker.color = "#482878"
@@ -958,14 +1050,14 @@ with chart4:
             fig = px.bar(
                 final2[(final2["data"]>= inc1) & (final2["data"]<= end1)],
                 x="Mês",
-                y="Resultado assessor",
+                y=subst,
                 #color="Produtos",
                 #width=1000,
-                #height=600,
-                text_auto='.2s',
+                height=600,
+                text_auto='%.2f',
                 title=f"Comissão Be.Smart Mensal",
                 color_discrete_sequence=px.colors.sequential.Viridis,
-                labels = {"Resultado assessor":"Comissão do Assessor (R$)"}
+                labels = {subst:subst + "(R$)"}
             )
             fig.update_layout(
                 #showlegend=False,
@@ -980,11 +1072,24 @@ with chart4:
                 #x=1
                 )
                 )
-            fig.update_traces(textfont_size=25)
+            fig.update_traces(textfont_size=20,textposition='inside')
+            temp=final2[(final2["data"]>= inc1) & (final2["data"]<= end1)]
+            temp=temp[['Mês',subst]].groupby('Mês').sum().reset_index()
+            fig.add_trace(go.Scatter(x=temp["Mês"], 
+                y=temp[subst],
+                text=temp[subst].round(2),
+                mode='text',
+                textposition='top center',
+                textfont=dict(
+                    size=18,
+                ),
+                showlegend=False,
+                hovertemplate='<extra></extra>'))
+            
             fig.data[0].textfont.color = "white"
             fig.data[0].marker.color = "#9966ff"
             fig.data[0]['showlegend']=True
-            fig['data'][0]['name']=final[(final["data"]>= inc1) & (final["data"]<= end1)]["Produtos"].iloc[0]
+            fig['data'][0]['name']=final2[(final2["data"]>= inc1) & (final2["data"]<= end1)]["Produtos"].iloc[0]
             #fig.data[1].marker.color = "#482878"
             fig.update_xaxes(showgrid=False)
             fig.update_yaxes(title=None)
@@ -1266,10 +1371,22 @@ st.markdown(
         #MainMenu {visibility: hidden;}
         div[data-testid="stSidebarNav"] {display: none;}
         footer {visibility: hidden;}
-        div[data-testid="stToolbar"] {display: none;}
+        div [data-testid="stToolbar"] {display: none;}
         [data-testid="collapsedControl"] {display: none}
         footer {visibility: hidden;}        
     </style>
 """,
     unsafe_allow_html=True,
 )
+
+
+# st.markdown(
+#     """
+# <style>
+#     img{
+#     background-color: rgb(18, 19, 18);
+# }
+# </style>
+# """,
+#     unsafe_allow_html=True,
+# )

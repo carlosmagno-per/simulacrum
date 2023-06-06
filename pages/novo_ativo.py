@@ -192,8 +192,8 @@ with table:
         dataframe = base_df(
             data, data_inicial, pl_apl, retorno, roa_head, roa_rec, roa_reps
         )
-
-        st.dataframe(dataframe)
+        #st.dataframe(dataframe)
+        st.dataframe(dataframe[['Mês','Roa/Mês(%)','Faturamento','Imposto','Receita Líquida', 'Resultado assessor']])
 
 
         with salve_v2:
@@ -218,6 +218,7 @@ with table:
 st.markdown(
     """
 <style>
+    div [data-testid="stToolbar"] {display: none;}
     #MainMenu {visibility: hidden;}
     [data-testid="collapsedControl"] {
         display: none
@@ -227,3 +228,32 @@ st.markdown(
 """,
     unsafe_allow_html=True,
 )
+
+
+# st.markdown(
+#     """
+# <style>
+#     .st-bw {
+#     background-color: rgb(63, 63, 63);
+#     }
+    
+#     [data-testid="collapsedControl"] {
+#         display: none
+#     }
+#     footer {visibility: hidden;}
+    
+#     .css-qriz5p:hover:enabled, .css-qriz5p:focus:enabled {
+#     color: rgb(255, 255, 255);
+#     background-color: rgb(153, 102, 255);
+#     transition: none 0s ease 0s;
+#     outline: none;
+# }
+#     img {
+#     background-color: rgb(18, 19, 18);
+#     }
+
+
+# </style>
+# """,
+#     unsafe_allow_html=True,
+# )
