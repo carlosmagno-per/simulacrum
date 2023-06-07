@@ -25,7 +25,8 @@ st.set_page_config(
 )
 
 #df = pd.read_sql("SELECT * FROM cliente", con)
-lista=list(PositivadorBitrix().get_data_default(6)["ID"])
+courier= int(st.secrets.courier)
+lista=list(PositivadorBitrix().get_data_default(courier)["ID"])
 df = PositivadorBitrix().get_data_custom(lista)
 df = df.rename(columns={st.secrets.deal:'client_id',st.secrets.VAR1:'sigla',st.secrets.VAR2:'nome_client',st.secrets.VAR3:'data_cliente'})
 
@@ -80,12 +81,115 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
+#######################################################################################
+################################# LAYOUT DO CONTEÚDO ##################################
+#######################################################################################
+vazio_nulo ,pl, retorno, ano1_avg, ano2_avg  = st.columns([1,5, 5, 5, 3])
+
+
+st.markdown(
+    """
+    <hr style="height:1px;border:none;color:#9966ff;background-color:#9966ff;" /> 
+    """,
+    unsafe_allow_html=True,
+)
+st.write(
+        fr'<p style="font-size:26px;">Repasses de Comissão</p>',
+        unsafe_allow_html=True,
+    )
+
+df_reps = PositivadorBitrix().get_data_repasse(st.session_state["usuario"])
+df_reps = df_reps.rename(columns={
+    st.secrets.VAR15:'id_email',
+    st.secrets.VAR16:'repasse_investsmart',
+    st.secrets.VAR17:'repasse_seguros',
+    st.secrets.VAR18:'repasse_cambio',
+    st.secrets.VAR19:'repasse_credito',
+    st.secrets.VAR20:'repasse_imovel',
+    st.secrets.deal:'repasse_id',
+    })
+#st.dataframe(df_reps)
+
+space,reps1, reps2, reps3, reps4, reps5, space2 = st.columns( [5,3 ,3 ,3 ,3 ,3, 5] )
+
+space3,salve,space4=st.columns( [5,1,5] )
+st.markdown(
+    """
+    <hr style="height:1px;border:none;color:#9966ff;background-color:#9966ff;" /> 
+    """,
+    unsafe_allow_html=True,
+)
+vacuo, botao_1, botao_2, botao_3, vacuo_2 = st.columns([9, 3, 3, 3, 9])
+
+
+vazio1, cliente, vazio2 = st.columns([0.1, 15, 0.1])
+
+st.markdown(
+    """
+    <hr style="height:1px;border:none;color:#9966ff;background-color:#9966ff;" /> 
+    """,
+    unsafe_allow_html=True,
+)
+space5,choice,space6= st.columns([6,5,5])
+container = st.container()
+chart1, chart2 = st.columns([6, 4])
+
+#######################################################################################
+############################ PARTE DO REPASSE ############################
+#######################################################################################
+
+try:
+    repasse_invest=df_reps['repasse_investsmart'].iloc[0]
+    repasse_seguro=df_reps['repasse_seguros'].iloc[0]
+    repasse_cambio=df_reps['repasse_cambio'].iloc[0]
+    repasse_credito=df_reps['repasse_credito'].iloc[0]
+    repasse_imovel=df_reps['repasse_imovel'].iloc[0]
+    repasse_id = df_reps['repasse_id'].iloc[0]
+    with reps1:
+        st.session_state['reps_investsmart']=st.number_input('(%) Repasse da InvestSmart',value=int(repasse_invest),min_value=0,max_value=100)
+    with reps2:
+        st.session_state['reps_seguro']=st.number_input('(%) Repasse de Seguros',value=int(repasse_seguro),min_value=0,max_value=100)
+    with reps3:
+        st.session_state['reps_cambio']=st.number_input('(%) Repasse de Câmbio',value=int(repasse_cambio),min_value=0,max_value=100)
+    with reps4:
+        st.session_state['reps_credito']=st.number_input('(%) Repasse de Crédito',value=int(repasse_credito),min_value=0,max_value=100)
+    with reps5:
+        st.session_state['reps_imovel']=st.number_input('(%) Repasse de Imóveis',value=int(repasse_imovel),min_value=0,max_value=100)
+    upgrade = True 
+except:    
+    with reps1:
+        st.session_state['reps_investsmart']=st.number_input('(%) Repasse da InvestSmart',value=50,min_value=0,max_value=100)
+    with reps2:
+        st.session_state['reps_seguro']=st.number_input('(%) Repasse de Seguros',value=50,min_value=0,max_value=100)
+    with reps3:
+        st.session_state['reps_cambio']=st.number_input('(%) Repasse de Câmbio',value=50,min_value=0,max_value=100)
+    with reps4:
+        st.session_state['reps_credito']=st.number_input('(%) Repasse de Crédito',value=50,min_value=0,max_value=100)
+    with reps5:
+        st.session_state['reps_imovel']=st.number_input('(%) Repasse de Imóveis',value=50,min_value=0,max_value=100)
+    upgrade = False
+    
+with salve:
+    if st.button('Salvar valores'):
+        if upgrade:
+            url = "https://"+st.secrets.domain+"rest/"+st.secrets.bignumber+"/"+st.secrets.cod_shhh+f"/crm.deal.update.json?ID={repasse_id}fields["+st.secrets.VAR15+f"]={st.session_state.usuario}&fields["+st.secrets.VAR16+f"]={st.session_state.reps_investsmart}&fields["+st.secrets.VAR17+f"]={st.session_state.reps_seguro}&fields["+st.secrets.VAR18+f"]={st.session_state.reps_cambio}&fields["+st.secrets.VAR19+f"]={st.session_state.reps_credito}&fields["+st.secrets.VAR20+f"]={st.session_state.reps_imovel}&fields["+st.secrets.category+"]="+st.secrets.bigby
+        else:
+            url = "https://"+st.secrets.domain+"rest/"+st.secrets.bignumber+"/"+st.secrets.cod_shhh+"/crm.deal.add.json?fields["+st.secrets.VAR15+f"]={st.session_state.usuario}&fields["+st.secrets.VAR16+f"]={st.session_state.reps_investsmart}&fields["+st.secrets.VAR17+f"]={st.session_state.reps_seguro}&fields["+st.secrets.VAR18+f"]={st.session_state.reps_cambio}&fields["+st.secrets.VAR19+f"]={st.session_state.reps_credito}&fields["+st.secrets.VAR20+f"]={st.session_state.reps_imovel}&fields["+st.secrets.category+"]="+st.secrets.bigby
+        payload = {}
+        headers = {
+        'Cookie': 'BITRIX_SM_SALE_UID=0; qmb=0.'
+        }
+        response = requests.request("POST", url, headers=headers, data=payload)
+        st.success("O cliente foi adicionado ao banco de dados")
+        
+        st._rerun()
+
 
 #######################################################################################
 ############################ METRICS USADAS NOS BIGNUMBERS ############################
 #######################################################################################
 
-vazio_nulo ,pl, retorno, ano1_avg, ano2_avg  = st.columns([1,5, 5, 5, 3])
+
 
 list_client_id = dark["client_id"].unique().astype(int)
 list_client_id = list(list_client_id)
@@ -220,11 +324,19 @@ for i in fair["ativo_id"].unique():
             df.retorno.iloc[0],
             df.roa_head.iloc[0],
             df.roa_rec.iloc[0],
-            df.repasse.iloc[0],
+            st.session_state.reps_investsmart,
             moeda_real=False,
         )
         grasph_df["id"] = df.client_id[0]
     else:
+        if df.empresa.iloc[0] == "Seguros":
+            repasse = st.session_state.reps_seguro
+        elif df.empresa.iloc[0] == "Câmbio":
+            repasse = st.session_state.reps_cambio
+        elif df.empresa.iloc[0] == "Crédito":
+            repasse = st.session_state.reps_credito
+        else:
+            repasse = st.session_state.reps_imovel
         grasph_df = besmart_base(
             df.data_venc.iloc[0],
             df.data_ativo.iloc[0],
@@ -233,7 +345,7 @@ for i in fair["ativo_id"].unique():
             df.categoria.iloc[0],
             df.ativo.iloc[0],
             df.pl_aplicado.iloc[0],
-            df.repasse.iloc[0],
+            repasse,
         )
         grasph_df["id"] = df.client_id[0]
     #st.dataframe(grasph_df)
@@ -395,30 +507,6 @@ except:
 dark = dark.replace("R$ nan", "R$ 0")
 
 
-#######################################################################################
-################################# LAYOUT DO CONTEÚDO ##################################
-#######################################################################################
-
-st.markdown(
-    """
-    <hr style="height:1px;border:none;color:#9966ff;background-color:#9966ff;" /> 
-    """,
-    unsafe_allow_html=True,
-)
-
-vacuo, botao_1, botao_2, botao_3, vacuo_2 = st.columns([4,3,3,3,3])
-
-vazio1, cliente, vazio2 = st.columns([0.1, 15, 0.1])
-
-st.markdown(
-    """
-    <hr style="height:1px;border:none;color:#9966ff;background-color:#9966ff;" /> 
-    """,
-    unsafe_allow_html=True,
-)
-choice= st.container()
-container = st.container()
-chart1, chart2 = st.columns([6, 4])
 
 #######################################################################################
 ############################### TABLES CLIENTE E ATIVOS ###############################
@@ -547,6 +635,10 @@ with botao_2:
             nav_page("cliente_wide")
 
 
+
+
+
+
 #######################################################################################
 ################################### GRAFICOS FEITOS ###################################
 #######################################################################################
@@ -668,11 +760,11 @@ else:
                 temp=temp[['Mês',subst]].groupby('Mês').sum().reset_index()
                 fig.add_trace(go.Scatter(x=temp["Mês"], 
                     y=temp[subst],
-                    text=temp[subst],
+                    text=round(temp[subst]).apply(lambda x: locale.currency(x, grouping=True,symbol=None)[:-3]),
                     mode='text',
                     textposition='top center',
                     textfont=dict(
-                        size=18,
+                        size=12,
                     ),
                     showlegend=False,
                     hovertemplate='<extra></extra>'))
@@ -716,11 +808,11 @@ else:
                 temp=temp[['Mês',subst]].groupby('Mês').sum().reset_index()
                 fig.add_trace(go.Scatter(x=temp["Mês"], 
                     y=temp[subst],
-                    text=temp[subst],
+                    text=round(temp[subst]).apply(lambda x: locale.currency(x, grouping=True,symbol=None)[:-3]),
                     mode='text',
                     textposition='top center',
                     textfont=dict(
-                        size=18,
+                        size=12,
                     ),
                     showlegend=False,
                     hovertemplate='<extra></extra>'))

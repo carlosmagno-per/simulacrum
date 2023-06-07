@@ -69,7 +69,7 @@ except:
         .replace(",", ".")
     )
     v1_retorno = st.session_state.df_ativo.retorno.iloc[0]
-    v1_repasse = st.session_state.df_ativo.repasse.iloc[0]
+    v1_repasse = st.session_state.reps_investsmart
     v1_roa_head = st.session_state.df_ativo.roa_head.iloc[0]
     v1_roa_rec = st.session_state.df_ativo.roa_rec.iloc[0]
 roa_reps = float(v1_repasse)

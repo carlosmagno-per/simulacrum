@@ -490,3 +490,80 @@ class PositivadorBitrix:
 
         #return print(response.text)
         return pd.DataFrame(df[1:], columns=df[0])
+    
+    
+    def get_data_repasse(self, id_client):
+
+        query_params = {"table": "crm_deal_uf"}
+
+ 
+
+        request_body = {
+
+            "dateRange": {"startDate": "2021-01-01", "endDate": self.end_date},
+
+            "key": st.secrets.key,
+
+            "fields": [
+
+
+                {"name": st.secrets.VAR15}, # "ID_EMAIL" 
+
+                {"name": st.secrets.VAR16},  # "REPASSE INVESTSMART" 
+
+                {"name": st.secrets.VAR17},  # "REPASSE SEGUROS"
+                
+                {"name": st.secrets.VAR18},  # "REPASSE CAMBIO"
+                
+                {"name": st.secrets.VAR19},  # "REPASSE CREDITO"
+                
+                {"name": st.secrets.VAR20},  # "REPASSE IMOVEL"
+
+                {"name": st.secrets.deal},
+                
+            ],
+
+            "dimensionsFilters": [
+
+                [
+
+                    {
+
+                        "fieldName": st.secrets.VAR15,
+
+                        "values": id_client,
+
+                        "type": "INCLUDE",
+
+                        "operator": "EQUALS",
+
+                    }
+
+                ]
+
+            ],
+            
+            
+
+        }
+
+ 
+
+        headers = {"Content-Type": "application/json"}
+
+ 
+
+        response = requests.post(
+
+            self.endpoint, headers=headers, params=query_params, json=request_body
+
+        )
+
+ 
+
+        df = response.json()
+
+ 
+
+        #return print(response.text)
+        return pd.DataFrame(df[1:], columns=df[0])

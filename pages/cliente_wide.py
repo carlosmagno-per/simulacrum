@@ -194,7 +194,7 @@ with tab1:
             unsafe_allow_html=True,
         )
     
-    choice = st.container()
+    space5,choice,space6= st.columns([6,5,5])
     container = st.container()
     chart3, chart2= st.columns([6,4])
 
@@ -305,7 +305,7 @@ with tab2:
         )
     st.session_state["df_ativo2"] = pd.DataFrame(dta2["selected_rows"])
     #st.dataframe(st.session_state["df_ativo2"])
-    choice2 = st.container()
+    space15,choice2,space16= st.columns([6,5,5])
     container3 = st.container() 
     chart4= st.container()
     with botao22:
@@ -413,7 +413,7 @@ with geral:
             """,
             unsafe_allow_html=True,
         )
-    choice1 = st.container()
+    space51,choice1,space61= st.columns([6,5,5])
     container1 = st.container() 
     chart1= st.container() 
 
@@ -469,11 +469,19 @@ with chart1:
                     df_v2.retorno.iloc[0],
                     df_v2.roa_head.iloc[0],
                     df_v2.roa_rec.iloc[0],
-                    df_v2.repasse.iloc[0],
+                    st.session_state.reps_investsmart,
                     moeda_real=False,
                 )
                 grasph_df["ativo_id"] = i
             else:
+                if df_v2.Empresa.iloc[0] == "Seguros":
+                    repasse1 = st.session_state.reps_seguro
+                elif df_v2.Empresa.iloc[0] == "Câmbio":
+                    repasse1 = st.session_state.reps_cambio
+                elif df_v2.Empresa.iloc[0] == "Crédito":
+                    repasse1 = st.session_state.reps_credito
+                else:
+                    repasse1 = st.session_state.reps_imovel
 
                 grasph_df = besmart_base(
                     df_v2["Data de Vencimento"].iloc[0],
@@ -488,7 +496,7 @@ with chart1:
                         .replace(".", "")
                         .replace(",", ".")
                     ),
-                    df_v2.repasse.iloc[0],
+                    repasse1,
                 )
                 grasph_df["ativo_id"] = i
             # st.dataframe(grasph_df)
@@ -573,11 +581,11 @@ with chart1:
             temp=temp[['Mês',subst]].groupby('Mês').sum().reset_index()
             fig.add_trace(go.Scatter(x=temp["Mês"], 
                 y=temp[subst],
-                text=temp[subst].round(2),
+                text=round(temp[subst]).apply(lambda x: locale.currency(x, grouping=True,symbol=None)[:-3]),
                 mode='text',
                 textposition='top center',
                 textfont=dict(
-                    size=18,
+                    size=12,
                 ),
                 showlegend=False,
                 hovertemplate='<extra></extra>'))
@@ -620,11 +628,11 @@ with chart1:
             temp=temp[['Mês',subst]].groupby('Mês').sum().reset_index()
             fig.add_trace(go.Scatter(x=temp["Mês"], 
                 y=temp[subst],
-                text=temp[subst].round(2),
+               text=round(temp[subst]).apply(lambda x: locale.currency(x, grouping=True,symbol=None)[:-3]),
                 mode='text',
                 textposition='top center',
                 textfont=dict(
-                    size=18,
+                    size=12,
                 ),
                 showlegend=False,
                 hovertemplate='<extra></extra>'))
@@ -721,11 +729,19 @@ with chart3:
                     df_v2.retorno.iloc[0],
                     df_v2.roa_head.iloc[0],
                     df_v2.roa_rec.iloc[0],
-                    df_v2.repasse.iloc[0],
+                    st.session_state.reps_investsmart,
                     moeda_real=False,
                 )
                 grasph_df["ativo_id"] = i
             else:
+                if df_v2.Empresa.iloc[0] == "Seguros":
+                    repasse1 = st.session_state.reps_seguro
+                elif df_v2.Empresa.iloc[0] == "Câmbio":
+                    repasse1 = st.session_state.reps_cambio
+                elif df_v2.Empresa.iloc[0] == "Crédito":
+                    repasse1 = st.session_state.reps_credito
+                else:
+                    repasse1 = st.session_state.reps_imovel
 
                 grasph_df = besmart_base(
                     df_v2["Data de Vencimento"].iloc[0],
@@ -740,7 +756,7 @@ with chart3:
                         .replace(".", "")
                         .replace(",", ".")
                     ),
-                    df_v2.repasse.iloc[0],
+                    repasse1,
                 )
                 grasph_df["ativo_id"] = i
             # st.dataframe(grasph_df)
@@ -826,11 +842,11 @@ with chart3:
             temp=temp[['Mês',subst]].groupby('Mês').sum().reset_index()
             fig.add_trace(go.Scatter(x=temp["Mês"], 
                 y=temp[subst],
-                text=temp[subst].round(2),
+                text=round(temp[subst]).apply(lambda x: locale.currency(x, grouping=True,symbol=None)[:-3]),
                 mode='text',
                 textposition='top center',
                 textfont=dict(
-                    size=18,
+                    size=12,
                 ),
                 showlegend=False,
                 hovertemplate='<extra></extra>'))
@@ -873,11 +889,11 @@ with chart3:
             temp=temp[['Mês',subst]].groupby('Mês').sum().reset_index()
             fig.add_trace(go.Scatter(x=temp["Mês"], 
                 y=temp[subst],
-                text=temp[subst].round(2),
+                text=round(temp[subst]).apply(lambda x: locale.currency(x, grouping=True,symbol=None)[:-3]),
                 mode='text',
                 textposition='top center',
                 textfont=dict(
-                    size=18,
+                    size=12,
                 ),
                 showlegend=False,
                 hovertemplate='<extra></extra>'))
@@ -925,11 +941,19 @@ with chart4:
                     df_v2.retorno.iloc[0],
                     df_v2.roa_head.iloc[0],
                     df_v2.roa_rec.iloc[0],
-                    df_v2.repasse.iloc[0],
+                    st.session_state.reps_investsmart,
                     moeda_real=False,
                 )
                 grasph_df["ativo_id"] = i
             else:
+                if df_v2.Empresa.iloc[0] == "Seguros":
+                    repasse1 = st.session_state.reps_seguro
+                elif df_v2.Empresa.iloc[0] == "Câmbio":
+                    repasse1 = st.session_state.reps_cambio
+                elif df_v2.Empresa.iloc[0] == "Crédito":
+                    repasse1 = st.session_state.reps_credito
+                else:
+                    repasse1 = st.session_state.reps_imovel
                 grasph_df = besmart_base(
                     df_v2["Data de Vencimento"].iloc[0],
                     df_v2["Data de Início"].iloc[0],
@@ -943,7 +967,7 @@ with chart4:
                         .replace(".", "")
                         .replace(",", ".")
                     ),
-                    df_v2.repasse.iloc[0],
+                    repasse1,
                 )
                 grasph_df["ativo_id"] = i
             # st.dataframe(grasph_df)
@@ -1030,11 +1054,11 @@ with chart4:
             temp=temp[['Mês',subst]].groupby('Mês').sum().reset_index()
             fig.add_trace(go.Scatter(x=temp["Mês"], 
                 y=temp[subst],
-                text=temp[subst].round(2),
+                text=round(temp[subst]).apply(lambda x: locale.currency(x, grouping=True,symbol=None)[:-3]),
                 mode='text',
                 textposition='top center',
                 textfont=dict(
-                    size=18,
+                    size=12,
                 ),
                 showlegend=False,
                 hovertemplate='<extra></extra>'))
@@ -1077,11 +1101,11 @@ with chart4:
             temp=temp[['Mês',subst]].groupby('Mês').sum().reset_index()
             fig.add_trace(go.Scatter(x=temp["Mês"], 
                 y=temp[subst],
-                text=temp[subst].round(2),
+                text=round(temp[subst]).apply(lambda x: locale.currency(x, grouping=True,symbol=None)[:-3]),
                 mode='text',
                 textposition='top center',
                 textfont=dict(
-                    size=18,
+                    size=12,
                 ),
                 showlegend=False,
                 hovertemplate='<extra></extra>'))

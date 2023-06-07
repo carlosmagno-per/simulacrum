@@ -172,7 +172,7 @@ with prem:
                 format="%.2f",
                 step=0.01,
             )
-        roa_reps = 50.0
+        roa_reps = st.session_state.reps_investsmart
         retorno= 0.0
 
 st.markdown(

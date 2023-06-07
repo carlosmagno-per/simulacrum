@@ -237,19 +237,27 @@ with prem:
         mes = mes
 
    
-    if empresa != "Imóveis":
-        roa_reps = st.number_input(
-            "Repasse Assessor (%): ",
-            min_value=0.0,
-            format="%f",
-            value=50.0,
-            max_value=100.0,
-            step=1.0,
-            on_change=disable,
-            disabled=st.session_state.disabled,
-        )
+    # if empresa != "Imóveis":
+    #     roa_reps = st.number_input(
+    #         "Repasse Assessor (%): ",
+    #         min_value=0.0,
+    #         format="%f",
+    #         value=50.0,
+    #         max_value=100.0,
+    #         step=1.0,
+    #         on_change=disable,
+    #         disabled=st.session_state.disabled,
+    #     )
+    # else:
+    #     roa_reps = 100
+    if empresa == "Seguros":
+        roa_reps = st.session_state.reps_seguro
+    elif empresa == "Câmbio":
+        roa_reps = st.session_state.reps_cambio
+    elif empresa == "Crédito":
+        roa_reps = st.session_state.reps_credito
     else:
-        roa_reps = 100
+        roa_reps = st.session_state.reps_imovel
     roa_rec = 0
     edit, salve_v2, espaco_10= st.columns([5,5,15])
     with edit:

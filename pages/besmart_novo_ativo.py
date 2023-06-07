@@ -146,11 +146,21 @@ with prem:
         mes = mes
 
    
-    if empresa != "Imóveis":
+    # if empresa != "Imóveis":
  
-        roa_reps= 50
+    #     roa_reps= 50
+    # else:
+    #     roa_reps = 100
+        
+    if empresa == "Seguros":
+        roa_reps = st.session_state.reps_seguro
+    elif empresa == "Câmbio":
+        roa_reps = st.session_state.reps_cambio
+    elif empresa == "Crédito":
+        roa_reps = st.session_state.reps_credito
     else:
-        roa_reps = 100
+        roa_reps = st.session_state.reps_imovel
+    
     roa_rec = 0
 
 
