@@ -298,7 +298,7 @@ else:
 
 
 
-smart = pd.DataFrame(columns=["Mês", "Resultado assessor"])
+smart = pd.DataFrame(columns=["Mês", "Resultado assessor",'Faturamento','Resultado Bruto'])
 
 
 face = pd.read_excel("base_besmart_v3.xlsx")
@@ -352,6 +352,7 @@ for i in fair["ativo_id"].unique():
     smart = smart.append(grasph_df)
 smart["Mês"] = smart["Mês"].apply(lambda x: DT.datetime.strptime(x, "%b-%y"))
 smart["Mês"] = smart["Mês"].apply(lambda x: DT.datetime.strftime(x, "%m-%y"))
+#st.dataframe(smart)
 smart['Total Bruto'] = smart['Faturamento'].fillna(0) + smart['Resultado Bruto'].fillna(0)
 try:
     Invest = smart[smart['PL Retido'].notna()]
@@ -407,6 +408,7 @@ except:
         "label",
         "Total Bruto"
     })
+
 final = (
     smart[["Mês", "Resultado assessor","Total Bruto"]]
     .groupby(smart["Mês"])#["Resultado assessor"]
@@ -421,11 +423,16 @@ final["mes"] = final["Mês"].astype("datetime64").dt.month
 final["Mês"] = final["Mês"].apply(lambda x: DT.datetime.strftime(x, "%b-%y"))
 final = final.sort_values(["ano", "mes"]).reset_index(drop=True)
 #st.dataframe(final)
-result_month = final["Resultado assessor"][(final["mes"] == DT.datetime.now().month)& (final["ano"] == DT.datetime.now().year)]
-avrg_year1 = (final["Resultado assessor"][final["ano"] == DT.datetime.now().year].sum())
-avrg_year2 = (final["Resultado assessor"][
-    final["ano"] == DT.datetime.now().year + 1
-].sum())
+try:
+    result_month = final["Resultado assessor"][(final["mes"] == DT.datetime.now().month)& (final["ano"] == DT.datetime.now().year)]
+    avrg_year1 = (final["Resultado assessor"][final["ano"] == DT.datetime.now().year].sum())
+    avrg_year2 = (final["Resultado assessor"][
+        final["ano"] == DT.datetime.now().year + 1
+    ].sum())
+except:
+    result_month = 0
+    avrg_year1 = 0
+    avrg_year2 = 0
 try:
     retorno.metric(
         "Comissão Esperada para esse mês",
