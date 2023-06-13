@@ -576,7 +576,7 @@ with chart1:
                 #x=1
                 )
                 )
-            fig.update_traces(textfont_size=20,textposition='inside')
+            fig.update_traces(textfont_size=12,textposition='inside')
             temp=final[(final["data"]>= inc1) & (final["data"]<= end1)]
             temp=temp[['Mês',subst]].groupby('Mês').sum().reset_index()
             fig.add_trace(go.Scatter(x=temp["Mês"], 
@@ -623,7 +623,7 @@ with chart1:
                 #x=1
                 )
                 )
-            fig.update_traces(textfont_size=20,textposition='inside')
+            fig.update_traces(textfont_size=12,textposition='inside')
             temp=final[(final["data"]>= inc1) & (final["data"]<= end1)]
             temp=temp[['Mês',subst]].groupby('Mês').sum().reset_index()
             fig.add_trace(go.Scatter(x=temp["Mês"], 
@@ -837,7 +837,7 @@ with chart3:
                 #x=1
                 )
                 )
-            fig.update_traces(textfont_size=20,textposition='inside')
+            fig.update_traces(textfont_size=12,textposition='inside')
             temp=final1[(final1["data"]>= inc2) & (final1["data"]<= end2)]
             temp=temp[['Mês',subst]].groupby('Mês').sum().reset_index()
             fig.add_trace(go.Scatter(x=temp["Mês"], 
@@ -884,7 +884,7 @@ with chart3:
                 #x=1
                 )
                 )
-            fig.update_traces(textfont_size=20,textposition='inside')
+            fig.update_traces(textfont_size=12,textposition='inside')
             temp=final1[(final1["data"]>= inc2) & (final1["data"]<= end2)]
             temp=temp[['Mês',subst]].groupby('Mês').sum().reset_index()
             fig.add_trace(go.Scatter(x=temp["Mês"], 
@@ -1049,7 +1049,7 @@ with chart4:
                 #x=1
                 )
                 )
-            fig.update_traces(textfont_size=20,textposition='inside')
+            fig.update_traces(textfont_size=12,textposition='inside')
             temp=final2[(final2["data"]>= inc1) & (final2["data"]<= end1)]
             temp=temp[['Mês',subst]].groupby('Mês').sum().reset_index()
             fig.add_trace(go.Scatter(x=temp["Mês"], 
@@ -1096,7 +1096,7 @@ with chart4:
                 #x=1
                 )
                 )
-            fig.update_traces(textfont_size=20,textposition='inside')
+            fig.update_traces(textfont_size=12,textposition='inside')
             temp=final2[(final2["data"]>= inc1) & (final2["data"]<= end1)]
             temp=temp[['Mês',subst]].groupby('Mês').sum().reset_index()
             fig.add_trace(go.Scatter(x=temp["Mês"], 
