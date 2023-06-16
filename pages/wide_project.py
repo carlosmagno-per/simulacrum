@@ -617,7 +617,7 @@ with botao_3:
                     st.error("Não foi selecionado um Cliente")
                 else:
                     v2_client = int(st.session_state.df_cliente.client_id[0])
-                    url = "https://"+st.secrets.domain+"rest/"+st.secrets.bignumber+"/"+st.secrets.cod_shhh+"/crm.deal.delete?["+st.secrets.id+f"]={v2_client}"
+                    url = "https://"+st.secrets.domain+"rest/"+st.secrets.bignumber+"/"+st.secrets.cod_shhh+"/crm.deal.delete?"+st.secrets.id+f"={v2_client}"
                     payload = {}
                     headers = {
                     'Cookie': 'BITRIX_SM_SALE_UID=0'
