@@ -597,7 +597,8 @@ with botao_1:
             st.success("O cliente foi adicionado ao banco de dados")
             
             st._rerun()
-
+#st.dataframe(st.session_state.df_cliente)
+#st.write("https://"+st.secrets.domain+"rest/"+st.secrets.bignumber+"/"+st.secrets.cod_shhh+"/crm.deal.delete?["+st.secrets.id+f"]={st.session_state.df_cliente.client_id.iloc[0]}")
 with botao_3:
     if "button42" not in st.session_state:
         st.session_state["button42"] = False
@@ -616,16 +617,15 @@ with botao_3:
                 ):
                     st.error("Não foi selecionado um Cliente")
                 else:
-                    v2_client = int(st.session_state.df_cliente.client_id[0])
-                    url = "https://"+st.secrets.domain+"rest/"+st.secrets.bignumber+"/"+st.secrets.cod_shhh+"/crm.deal.delete?"+st.secrets.id+f"={v2_client}"
+                    vers = st.session_state.df_cliente.client_id.iloc[0]
+                    url = "https://"+st.secrets.domain+"rest/"+st.secrets.bignumber+"/"+st.secrets.cod_shhh+"/crm.deal.delete?"+st.secrets.id+f"={vers}"
                     payload = {}
                     headers = {
-                    'Cookie': 'BITRIX_SM_SALE_UID=0'
+                    'Cookie': 'BITRIX_SM_SALE_UID=30; qmb=0.'
                     }
                     response = requests.request("POST", url, headers=headers, data=payload)
-                
+                    print(response.text)
                     st.success("O cliente foi deletado com sucesso")
-                    tm.sleep(1)
                     st._rerun()
         with nao:
             if st.button("Não"):
@@ -641,7 +641,7 @@ with botao_2:
         else:
             nav_page("cliente_wide")
 
-
+#st.write(int(st.session_state.df_cliente.client_id.iloc[0]))
 
 
 

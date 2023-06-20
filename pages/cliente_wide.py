@@ -449,7 +449,7 @@ with chart1:
         st.text("")
         st.error("Esse Cliente não tem Portifólio")
     else:
-        smart = pd.DataFrame(columns=["Mês", "Resultado assessor"])
+        smart = pd.DataFrame(columns=["Mês", "Resultado assessor",'Faturamento','Resultado Bruto'])
         for i in dark["ativo_id"].unique():
             df_v2 = dark[dark["ativo_id"] == i]
             df_v2 = df_v2.reset_index().drop("index", 1)
@@ -510,7 +510,13 @@ with chart1:
         )
         mapas = dict(dark[["ativo_id","Ativo"]].values)
         smart["Produtos"] = smart.ativo_id.map(mapas)
-        smart['Total Bruto'] = smart['Faturamento'].fillna(0) + smart['Resultado Bruto'].fillna(0)
+        try:
+            smart['Total Bruto'] = smart['Faturamento'].fillna(0) + smart['Resultado Bruto'].fillna(0)
+        except:
+            try:
+                smart['Total Bruto'] = smart['Faturamento'].fillna(0)
+            except:
+                smart['Total Bruto'] = smart['Resultado Bruto'].fillna(0)
         #st.dataframe(smart)
         
         
@@ -709,7 +715,7 @@ with chart3:
         st.text("")
         st.error("Esse Cliente não tem Portifólio Investsmart")
     else:
-        smart = pd.DataFrame(columns=["Mês", "Resultado assessor"])
+        smart = pd.DataFrame(columns=["Mês", "Resultado assessor",'Faturamento','Resultado Bruto'])
         for i in dark["ativo_id"].unique():
             df_v2 = dark[dark["ativo_id"] == i]
             df_v2 = df_v2.reset_index().drop("index", 1)
@@ -921,7 +927,7 @@ with chart4:
         st.text("")
         st.error("Esse Cliente não tem Portifólio Besmart")
     else:
-        smart = pd.DataFrame(columns=["Mês", "Resultado assessor"])
+        smart = pd.DataFrame(columns=["Mês", "Resultado assessor",'Faturamento','Resultado Bruto'])
         for i in dark["ativo_id"].unique():
             df_v2 = dark[dark["ativo_id"] == i]
             df_v2 = df_v2.reset_index().drop("index", 1)
