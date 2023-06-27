@@ -6,7 +6,7 @@ import datetime as DT
 import math
 import time as tm
 from func.redirect import nav_page
-from sqlalchemy import create_engine
+#from sqlalchemy import create_engine
 from database import moeda, base_df, PositivadorBitrix
 import locale
 import streamlit.components.v1 as components
