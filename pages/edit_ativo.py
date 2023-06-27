@@ -6,8 +6,8 @@ import datetime as DT
 import math
 import time as tm
 from func.redirect import nav_page
-import pymysql
-from sqlalchemy import create_engine
+#import pymysql
+#from sqlalchemy import create_engine
 from database import moeda, base_df, PositivadorBitrix
 import locale
 import requests
