@@ -7,7 +7,7 @@ import math
 import time as tm
 import numpy
 from func.redirect import nav_page
-from sqlalchemy import create_engine
+#from sqlalchemy import create_engine
 from database import moeda, besmart_base, PositivadorBitrix
 import locale
 import requests
